@@ -4,7 +4,7 @@ RSpec.describe 'Users::Sessions API', type: :request do
   member_attributes = {
     id: { type: :integer, example: 1 },
     email: { type: :string, example: 'john.doe@example.com' },
-    name: { type: :string0, example: 'John Doe' },
+    name: { type: :string, example: 'John Doe' },
     user_id: { type: %i[ integer nil ], example: 3 },
     organization_id: { type: :integer, example: 1 },
     created_at: { type: :string, example: '2026-02-20 10:52:46.787878000 +0000' },

@@ -20,7 +20,7 @@ RSpec.describe Department, type: :model do
     it "is not valid with a name does not containing at least one translation" do
       department = build(:department, name: {}, organization: organization)
       expect(department).not_to be_valid
-      expect(department.errors[:name]).to include("must contain at least one translation")
+      expect(department.errors[:name].join(", ")).to include("must contain at least one")
     end
 
     it "is valid with a name containing at least one translation" do

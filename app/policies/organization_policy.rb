@@ -46,6 +46,10 @@ class OrganizationPolicy < ApplicationPolicy
     user.is_go3_admin?
   end
 
+  def administrate?
+    user.member(record).has_permission?(Permission::ORG_ADMIN)
+  end
+
   class Scope < Scope
     def resolve
       if user.is_go3_admin?

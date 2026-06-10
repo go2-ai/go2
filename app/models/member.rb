@@ -1,16 +1,14 @@
 class Member < ApplicationRecord
   include TranslationHelper
 
-  # Will enable PaperTrail later
   has_paper_trail
   acts_as_archival
 
-  # Enable Mobility for translations with fallback to English
   extend Mobility
-  translates :name, backend: :jsonb, fallbacks: true
+  translates :name
 
   # Associations
-  belongs_to :organization, optional: false
+  belongs_to :organization
   belongs_to :user, optional: true
   has_many :role_assignments, -> { active }
   has_many :roles, through: :role_assignments, source: :role
@@ -24,8 +22,6 @@ class Member < ApplicationRecord
   validates :email,
             uniqueness: { scope: :organization_id, allow_blank: true },
             format: { with: URI::MailTo::EMAIL_REGEXP, allow_blank: true }
-
-  validates :organization, presence: true
 
   validates_non_empty_translation :name, locales: ->(member) { [ member.organization&.locale ] }
 

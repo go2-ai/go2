@@ -1,25 +1,20 @@
 class Department < ApplicationRecord
-  # Enable PaperTrail for versioning
+  include TranslationHelper
+
   has_paper_trail
 
-  # Enable Mobility for translations with fallback to English
   extend Mobility
-  translates :name, backend: :jsonb, fallbacks: true
-  translates :description, backend: :jsonb, fallbacks: true
-
-  # Ensure name is always initialized as a hash
-  after_initialize :initialize_name
-  before_validation :initialize_name
+  translates :name
+  translates :description
 
   # Associations
-  belongs_to :organization, optional: false
+  belongs_to :organization
   has_many :roles, dependent: :nullify
   has_many :permissions, as: :grantee, dependent: :destroy
 
   # Validations
   validates :abbreviation, presence: true
-  validate :name_has_at_least_one_translation
-  validate :name_translations_are_unique
+  validates_non_empty_translation :name, locales: ->(dept) { [ dept.organization&.locale ] }
 
   def members
     Member.joins(:roles).where(roles: { department_id: id }).distinct
@@ -46,28 +41,5 @@ class Department < ApplicationRecord
     return unless roles.include?(role)
 
     role.update(department: nil)
-  end
-
-  private
-
-  def initialize_name
-    write_attribute(:name, {}) if read_attribute(:name).nil?
-  end
-
-  def name_has_at_least_one_translation
-    return if Mobility.available_locales.any? { |loc| name(locale: loc).present? }
-    errors.add(:name, "must contain at least one translation")
-  end
-
-  def name_translations_are_unique
-    name_translations = read_attribute(:name) || {}
-    name_translations.each do |locale, name_value|
-      next if name_value.blank?
-      Mobility.with_locale(locale) do
-        if organization.departments.where.not(id: id).where("name ->> ? = ?", locale.to_s, name_value.to_s).exists?
-          errors.add(:name, "must be unique within the organization for locale #{locale}")
-        end
-      end
-    end
   end
 end

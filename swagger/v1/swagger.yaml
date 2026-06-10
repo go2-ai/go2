@@ -12,6 +12,197 @@ tags:
 - name: Authentication
   description: User authentication endpoints
 paths:
+  "/organizations/{organization_id}/departments":
+    parameters:
+    - name: organization_id
+      in: path
+      description: Organization ID
+      required: true
+      schema:
+        type: integer
+    get:
+      summary: Get all organization departments
+      tags:
+      - Departments
+      responses:
+        '200':
+          description: Loaded successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                      example: 1
+                    name:
+                      type: string
+                      example: Engineering
+                    description:
+                      type:
+                      - string
+                      - nil
+                      example: Developers, UI/UX, QA, and mobile
+                    abbreviation:
+                      type:
+                      - string
+                      - nil
+                      example: ENG
+    post:
+      summary: Creating a new department
+      tags:
+      - Departments
+      parameters: []
+      responses:
+        '200':
+          description: Creates the new department successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    example: 1
+                  name:
+                    type: string
+                    example: Engineering
+                  description:
+                    type:
+                    - string
+                    - nil
+                    example: Developers, UI/UX, QA, and mobile
+                  abbreviation:
+                    type:
+                    - string
+                    - nil
+                    example: ENG
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name_en:
+                  type: string
+                  example: Engineering
+                name_fa:
+                  type: string
+                  example: مهندسی
+                description_en:
+                  type: string
+                  example: Engineering team
+                description_fa:
+                  type: string
+                  example: تیم مهندسی
+                abbreviation:
+                  type: string
+                  example: ENG
+  "/organizations/{organization_id}/departments/{id}":
+    parameters:
+    - name: organization_id
+      in: path
+      description: Organization ID
+      required: true
+      schema:
+        type: integer
+    - name: id
+      in: path
+      description: Department ID
+      required: true
+      schema:
+        type: integer
+    get:
+      summary: Get the department
+      tags:
+      - Departments
+      responses:
+        '200':
+          description: Loaded successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    example: 1
+                  name:
+                    type: string
+                    example: Engineering
+                  description:
+                    type:
+                    - string
+                    - nil
+                    example: Developers, UI/UX, QA, and mobile
+                  abbreviation:
+                    type:
+                    - string
+                    - nil
+                    example: ENG
+                  t:
+                    type: object
+                  example:
+                    name:
+                      en: Engineering
+                      fa: مهندسی
+    patch:
+      summary: Updates the department
+      tags:
+      - Departments
+      parameters: []
+      responses:
+        '200':
+          description: Updates the department successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    example: 1
+                  name:
+                    type: string
+                    example: Engineering
+                  description:
+                    type:
+                    - string
+                    - nil
+                    example: Developers, UI/UX, QA, and mobile
+                  abbreviation:
+                    type:
+                    - string
+                    - nil
+                    example: ENG
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name_en:
+                  type: string
+                  example: Updated Name
+                description_en:
+                  type:
+                  - string
+                  - nil
+                  example: Updated description
+                abbreviation:
+                  type:
+                  - string
+                  - nil
+                  example: ENG2
+    delete:
+      summary: Deletes the department
+      tags:
+      - Departments
+      responses:
+        '200':
+          description: Deletes the department successfully
   "/organizations/{organization_id}/members":
     parameters:
     - name: organization_id
@@ -66,7 +257,7 @@ paths:
                       type: string
                       example: john.doe@example.com
                     name:
-                      type: string0
+                      type: string
                       example: John Doe
                     user_id:
                       type:
@@ -142,7 +333,7 @@ paths:
                     type: string
                     example: john.doe@example.com
                   name:
-                    type: string0
+                    type: string
                     example: John Doe
                   user_id:
                     type:
@@ -254,7 +445,7 @@ paths:
                     type: string
                     example: john.doe@example.com
                   name:
-                    type: string0
+                    type: string
                     example: John Doe
                   user_id:
                     type:
@@ -330,7 +521,7 @@ paths:
                     type: string
                     example: john.doe@example.com
                   name:
-                    type: string0
+                    type: string
                     example: John Doe
                   user_id:
                     type:
@@ -423,7 +614,7 @@ paths:
                     type: string
                     example: john.doe@example.com
                   name:
-                    type: string0
+                    type: string
                     example: John Doe
                   user_id:
                     type:
@@ -513,7 +704,7 @@ paths:
                     type: string
                     example: john.doe@example.com
                   name:
-                    type: string0
+                    type: string
                     example: John Doe
                   user_id:
                     type:
@@ -603,7 +794,7 @@ paths:
                     type: string
                     example: john.doe@example.com
                   name:
-                    type: string0
+                    type: string
                     example: John Doe
                   user_id:
                     type:
@@ -693,7 +884,7 @@ paths:
                     type: string
                     example: john.doe@example.com
                   name:
-                    type: string0
+                    type: string
                     example: John Doe
                   user_id:
                     type:
@@ -783,7 +974,7 @@ paths:
                     type: string
                     example: john.doe@example.com
                   name:
-                    type: string0
+                    type: string
                     example: John Doe
                   user_id:
                     type:
