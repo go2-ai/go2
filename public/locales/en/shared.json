@@ -1,5 +1,6 @@
 {
   "en": {
+    "abbreviation": "Abbreviation",
     "actions": "Actions",
     "commonActions": {
       "archive": "Archive",
@@ -11,6 +12,7 @@
       "update": "Update"
     },
     "confirmPassword": "Password repeat",
+    "description": "Description",
     "email": "Email",
     "firstName": "ّFirst name",
     "lastName": "Last name",

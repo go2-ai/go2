@@ -8,6 +8,7 @@ import { Onboarding } from './features/organizations/Onboarding';
 import { AppLayout } from './features/app/AppLayout';
 import { Dashboard } from './features/app/Dashboard';
 import { MembersPage } from './features/members/MembersPage';
+import { DepartmentsPage } from './features/departments/DepartmentsPage';
 
 
 function App() {
@@ -23,6 +24,7 @@ function App() {
           <Route path="app/organizations" element={<AppLayout />}>
             <Route path=":organizationId" element={<Dashboard />} />
             <Route path="/app/organizations/:organizationId/members" element={<MembersPage />} />
+            <Route path="/app/organizations/:organizationId/departments" element={<DepartmentsPage />} />
           </Route>
           <Route path="app/" element={<Navigate to="/signup" />} />
         </Routes>
