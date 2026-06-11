@@ -1,0 +1,15 @@
+{
+  "en": {
+    "addDepartment": "Add Department",
+    "deleteDepartmentMessage": "Are you sure you want to delete department \"{{name}}\"?",
+    "deleteDepartmentTitle": "Deleting department",
+    "deleteSuccess": "The department delete successfully.",
+    "departments": "Departments",
+    "editDepartment": "Edit Department",
+    "failedToLoadDepartments": "Failed to load departments. Please try again.",
+    "loadingDepartments": "Loading Departments ...",
+    "noDepartmentsFound": "No departments found.",
+    "searchDepartments": "Search Departments ...",
+    "tryAgain": "Try again"
+  }
+}

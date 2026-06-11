@@ -20,6 +20,7 @@ import {
   Business as BusinessIcon,
   Assignment as TasksIcon,
   CalendarToday as CalendarIcon,
+  ApartmentOutlined as DepartmentIcon,
 } from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
@@ -41,6 +42,7 @@ export const Sidebar = () => {
 
   const navItems: NavItem[] = [
     { path: `/app/organizations/${currentOrganization?.id}/members`, label: t('members'), icon: <PeopleIcon /> },
+    { path: `/app/organizations/${currentOrganization?.id}/departments`, label: t('departments'), icon: <DepartmentIcon /> },
   ];
 
   return (

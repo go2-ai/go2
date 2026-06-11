@@ -4,7 +4,7 @@ class DepartmentsController < ApplicationController
   def index
     authorize current_organization, :administrate?
     departments = current_organization.departments.order(id: :desc)
-    render json: DepartmentBlueprint.render(departments, view: :index), status: :ok
+    render json: DepartmentBlueprint.render(departments), status: :ok
   end
 
   def show
@@ -12,7 +12,7 @@ class DepartmentsController < ApplicationController
     department = current_organization.departments.find_by_id(params[:id])
     return render json: { errors: [ controller_t("not_found") ] }, status: :not_found unless department
     # Tech debt: Add translation
-    render json: DepartmentBlueprint.render(department, view: :show), status: :ok
+    render json: DepartmentBlueprint.render(department), status: :ok
   end
 
   def create
@@ -20,7 +20,7 @@ class DepartmentsController < ApplicationController
     department = current_organization.departments.new(permitted_params)
 
     if department.save
-      render json: DepartmentBlueprint.render(department, view: :index), status: :ok
+      render json: DepartmentBlueprint.render(department), status: :ok
     else
       render json: { errors: department.errors.full_messages }, status: :unprocessable_content
     end
@@ -32,7 +32,7 @@ class DepartmentsController < ApplicationController
     return render json: { errors: [ controller_t("not_found") ] }, status: :not_found unless department
     # Tech debt: Add translation
     if department.update(permitted_params)
-      render json: DepartmentBlueprint.render(department, view: :index), status: :ok
+      render json: DepartmentBlueprint.render(department), status: :ok
     else
       render json: { errors: department.errors.full_messages }, status: :unprocessable_content
     end
@@ -44,7 +44,7 @@ class DepartmentsController < ApplicationController
     return render json: { errors: [ controller_t("not_found") ] }, status: :not_found unless department
     # Tech debt: Add translation
     department.destroy
-    render json: DepartmentBlueprint.render(department, view: :index), status: :ok
+    render json: DepartmentBlueprint.render(department), status: :ok
   end
 
   private

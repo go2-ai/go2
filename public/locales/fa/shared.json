@@ -1,5 +1,6 @@
 {
   "fa": {
+    "abbreviation": "اختصار",
     "actions": "اقدامات",
     "commonActions": {
       "archive": "بایگانی",
@@ -11,6 +12,7 @@
       "update": "به روز رسانی"
     },
     "confirmPassword": "تکرار رمز عبور",
+    "description": "توضیحات",
     "email": "ایمیل",
     "firstName": "نام",
     "lastName": "نام خانوادگی",
