@@ -1,10 +1,21 @@
 import { createApi } from '@reduxjs/toolkit/query/react';
 import { baseQueryWithCsrf } from '../../app/baseQuery';
 
+export interface CurrentUser {
+  id: number;
+  email: string;
+  first_name: string;
+  last_name: string;
+  locale: string;
+}
+
 export const authApi = createApi({
   reducerPath: 'authApi',
   baseQuery: baseQueryWithCsrf,
   endpoints: (builder) => ({
+    getMe: builder.query<CurrentUser, void>({
+      query: () => '/api/me',
+    }),
     signUp: builder.mutation({
       query: (userData) => ({
         url: '/users',
@@ -28,4 +39,9 @@ export const authApi = createApi({
   }),
 });
 
-export const { useSignUpMutation, useConfirmEmailMutation, useSignInMutation } = authApi;
+export const {
+  useGetMeQuery,
+  useSignUpMutation,
+  useConfirmEmailMutation,
+  useSignInMutation,
+} = authApi;

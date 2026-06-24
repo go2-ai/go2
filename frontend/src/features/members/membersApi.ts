@@ -1,5 +1,5 @@
 import { createApi } from '@reduxjs/toolkit/query/react';
-import type { Member, CreateMemberRequest } from './types';
+import type { Member, MemberPayload } from './types';
 import { baseQueryWithCsrf } from '../../app/baseQuery';
 
 const onMemberQueryStarted = async (
@@ -38,7 +38,7 @@ export const membersApi = createApi({
       providesTags: (result, error, { memberId }) => [{ type: 'Member', id: memberId }],
     }),
     
-    createMember: builder.mutation<Member, { organizationId: number; data: CreateMemberRequest }>({
+    createMember: builder.mutation<Member, { organizationId: number; data: MemberPayload }>({
       query: ({ organizationId, data }) => ({
         url: `/organizations/${organizationId}/members`,
         method: 'POST',
@@ -47,7 +47,7 @@ export const membersApi = createApi({
       invalidatesTags: [{ type: 'Member', id: 'LIST' }],
     }),
     
-    updateMember: builder.mutation<Member, { organizationId: number; memberId: number; data: Partial<CreateMemberRequest> }>({
+    updateMember: builder.mutation<Member, { organizationId: number; memberId: number; data: MemberPayload }>({
       query: ({ organizationId, memberId, data }) => ({
         url: `/organizations/${organizationId}/members/${memberId}`,
         method: 'PATCH',

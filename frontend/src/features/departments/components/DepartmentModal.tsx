@@ -12,9 +12,10 @@ import {
 import { useTranslation } from 'react-i18next';
 import { useCreateDepartmentMutation, useUpdateDepartmentMutation } from '../departmentsApi';
 import { useOrganizationLocales } from '../../../hooks/useOrganizationLocales';
-import { useLocale } from '../../../shared/hooks/useLocale';
 import type { Department, DepartmentFormData, TranslatedField } from '../types';
-import { flattenTranslations } from '../../../utils/translationHelper';
+import { buildLocaleMap, flattenTranslations, type LocaleMap } from '../../../utils/translationHelper';
+import { useTranslatableLocales } from '../../../hooks/useTranslatableLocales';
+import MultiLocaleInput from '../../../components/shared/MultiLocaleInput';
 
 interface DepartmentModalProps {
   open: boolean;
@@ -27,17 +28,17 @@ export const DepartmentModal = ({ open, onClose, organizationId, department }: D
   const { t } = useTranslation('shared');
   const { t: tDepartments } = useTranslation('departments');
 
-  const { activeLocales } = useOrganizationLocales(organizationId);
-  const { localeDirection } = useLocale();
-
+  const { defaultLocale } = useOrganizationLocales(organizationId);
 
   const [createDepartment, { isLoading: isCreating }] = useCreateDepartmentMutation();
   const [updateDepartment, { isLoading: isUpdating }] = useUpdateDepartmentMutation();
 
   const isLoading = isCreating || isUpdating;
-
+  
+  const { allLocales } = useTranslatableLocales({ organizationId });
+  
   const emptyTranslations = (): TranslatedField =>
-    Object.fromEntries(activeLocales.map(l => [l, '']));
+    Object.fromEntries(allLocales.map(l => [l, '']));
 
   const [formData, setFormData] = useState<DepartmentFormData>({
     name: emptyTranslations(),
@@ -47,11 +48,12 @@ export const DepartmentModal = ({ open, onClose, organizationId, department }: D
 
   const [errors, setErrors] = useState<{ name?: string; abbreviation?: string }>({});
 
+
   useEffect(() => {
     if (department) {
       setFormData({
-        name: { ...emptyTranslations(), ...department.t.name },
-        description: { ...emptyTranslations(), ...department.t.description },
+        name: buildLocaleMap(department.t?.name, allLocales),
+        description: buildLocaleMap(department.t?.description, allLocales),
         abbreviation: department.abbreviation,
       });
     } else {
@@ -62,14 +64,15 @@ export const DepartmentModal = ({ open, onClose, organizationId, department }: D
       });
     }
     setErrors({});
-  }, [department, open, activeLocales.join(',')]);
+  }, [department, open, allLocales.join(',')]);
 
   const validateForm = (): boolean => {
     const newErrors: { name?: string; abbreviation?: string } = {};
 
-    if (!formData.name[activeLocales[0]]?.trim()) {
+    if (!formData.name[defaultLocale]?.trim()) {
       newErrors.name = t('validations.required');
     }
+
     if (!formData.abbreviation) {
       newErrors.abbreviation = t('validations.required');
     }
@@ -78,18 +81,13 @@ export const DepartmentModal = ({ open, onClose, organizationId, department }: D
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleTranslatedChange = (
-    field: 'name' | 'description',
-    locale: string,
-    value: string
-  ) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: { ...prev[field], [locale]: value },
-    }));
-    if (field === 'name' && errors.name) {
-      setErrors(prev => ({ ...prev, name: undefined }));
-    }
+  const handleNameChange = (val: LocaleMap) => {
+    setFormData((prev) => ({ ...prev, name: val }));
+    if (errors.name) setErrors((prev) => ({ ...prev, name: undefined }));
+  };
+
+  const handleDescriptionChange = (val: LocaleMap) => {
+    setFormData((prev) => ({ ...prev, description: val }));
   };
 
   const handleAbbreviationChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -100,6 +98,7 @@ export const DepartmentModal = ({ open, onClose, organizationId, department }: D
   };
 
   const handleSave = async () => {
+    console.log(validateForm());
     if (!validateForm()) return;
 
     const payload = flattenTranslations(formData, ['name', 'description']);
@@ -131,21 +130,13 @@ export const DepartmentModal = ({ open, onClose, organizationId, department }: D
 
       <DialogContent>
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4, mt: 1 }}>
-          {activeLocales.map((locale, idx) => (
-            <TextField
-              key={`name-${locale}`}
-              label={`${tDepartments('name')}`}
-              value={formData.name[locale] ?? ''}
-              onChange={e => handleTranslatedChange('name', locale, e.target.value)}
-              inputProps={{ dir: localeDirection(locale) }}
-              error={idx === 0 && !!errors.name}
-              helperText={idx === 0 ? errors.name : undefined}
-              fullWidth
-              required={idx === 0}
-              autoFocus={idx === 0}
-              size="small"
-            />
-          ))}
+          <MultiLocaleInput
+            field="name"
+            value={formData.name}
+            onChange={handleNameChange}
+            error={!!errors.name}
+            required
+          />
 
           <TextField
             label={tDepartments('abbreviation')}
@@ -158,17 +149,11 @@ export const DepartmentModal = ({ open, onClose, organizationId, department }: D
             size="small"
           />
 
-          {activeLocales.map(locale => (
-            <TextField
-              key={`description-${locale}`}
-              label={`${tDepartments('description')}`}
-              value={formData.description[locale] ?? ''}
-              onChange={e => handleTranslatedChange('description', locale, e.target.value)}
-              inputProps={{ dir: localeDirection(locale) }}
-              fullWidth
-              size="small"
-            />
-          ))}
+          <MultiLocaleInput
+            field="description"
+            value={formData.description}
+            onChange={handleDescriptionChange}
+          />
         </Box>
       </DialogContent>
 

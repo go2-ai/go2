@@ -10,134 +10,170 @@ import {
   CircularProgress,
 } from '@mui/material';
 import { useTranslation } from 'react-i18next';
-import { useCreateMemberMutation, useUpdateMemberMutation, useSendInvitationMutation } from '../membersApi';
-import type { Member, MemberStatus, MemberFormData } from '../types';
+import {
+  useCreateMemberMutation,
+  useUpdateMemberMutation,
+  useSendInvitationMutation,
+} from '../membersApi';
+import type { Member, MemberStatus, MemberPayload } from '../types';
 import ColorPicker from '../../../components/ColorPicker';
 import { isValidEmail } from '../../../utils/validators';
+import MultiLocaleInput from '../../../components/shared/MultiLocaleInput';
+import { useTranslatableLocales } from '../../../hooks/useTranslatableLocales';
+import {
+  buildLocaleMap,
+  emptyLocaleMap,
+  flattenTranslations,
+  type LocaleMap,
+} from '../../../utils/translationHelper';
+
+// ─── Types ───────────────────────────────────────────────────────────────────
+
+interface MemberFormData {
+  email: string;
+  name: LocaleMap;
+  initial: string;
+  color: string;
+}
 
 interface MemberModalProps {
   open: boolean;
   onClose: () => void;
   organizationId: number;
-  member?: Member | null;  // If provided, we're in edit mode
+  member?: Member | null;
   status?: MemberStatus;
 }
 
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+
 const generateInitials = (name: string): string => {
   const words = name.trim().split(/\s+/);
-  if (words.length === 1) {
-    return words[0].charAt(0).toUpperCase();
-  }
+  if (words.length === 1) return words[0].charAt(0).toUpperCase();
   return (words[0].charAt(0) + words[words.length - 1].charAt(0)).toUpperCase();
 };
 
-export const MemberModal = ({ open, onClose, organizationId, member, status }: MemberModalProps) => {
+const EMPTY_FORM: MemberFormData = {
+  email: '',
+  name: {},
+  initial: '',
+  color: '#4F46E5',
+};
+
+// ─── Component ───────────────────────────────────────────────────────────────
+
+export const MemberModal = ({
+  open,
+  onClose,
+  organizationId,
+  member,
+  status,
+}: MemberModalProps) => {
   const { t } = useTranslation('shared');
   const { t: tMembers } = useTranslation('members');
-  const { i18n } = useTranslation();
-  const currentLocale = i18n.language;
-  
+  const { primaryLocale, allLocales, isReady } = useTranslatableLocales({
+    organizationId,
+  });
+
   const [createMember, { isLoading: isCreating }] = useCreateMemberMutation();
   const [updateMember, { isLoading: isUpdating }] = useUpdateMemberMutation();
   const [sendInvitation, { isLoading: isSending }] = useSendInvitationMutation();
-  
-  const isLoading = isCreating || isUpdating || isSending;
-  
-  // Get member name in current locale
-  const getMemberName = (member: Member): string => {
-    if (currentLocale === 'fa' && member.translations?.name?.fa) {
-      return member.translations.name.fa;
-    }
-    return member.name;
-  };
-  
-  const [formData, setFormData] = useState<MemberFormData>({
-    email: '',
-    name: '',
-    initial: '',
-    color: '#4F46E5',
-  });
-  
-  const [errors, setErrors] = useState<{ email?: string; name?: string }>({});
 
-  // Populate form when editing
+  const isLoading = isCreating || isUpdating || isSending;
+
+  const [formData, setFormData] = useState<MemberFormData>(EMPTY_FORM);
+  const [errors, setErrors] = useState<{ email?: string; name?: string }>({});
+  // ── Populate form on open ────────────────────────────────────────────────
+
   useEffect(() => {
+    if (!open || !isReady) return;
+
     if (member) {
       setFormData({
         email: member.email,
-        name: getMemberName(member),
+        name: buildLocaleMap(member.t?.name, allLocales),
         initial: member.initial,
         color: member.color || '#4F46E5',
       });
     } else {
       setFormData({
-        email: '',
-        name: '',
-        initial: '',
-        color: '#4F46E5',
+        ...EMPTY_FORM,
+        name: emptyLocaleMap(allLocales),
       });
     }
-  }, [member, open, currentLocale]);
 
-  const validateForm = (requireEmail: boolean = false): boolean => {
-    const newErrors: { email?: string; name?: string } = {};
-    
-    if (!formData.name) {
-      newErrors.name = t('validations.required');
+    setErrors({});
+  }, [member, open, isReady, allLocales.join(',')]);
+
+  // ── Validation ───────────────────────────────────────────────────────────
+
+  const validate = (requireEmail = false): boolean => {
+    const next: typeof errors = {};
+
+    if (!formData.name[primaryLocale]?.trim()) {
+      next.name = t('validations.required');
     }
-    
+
     if (requireEmail && !formData.email) {
-      newErrors.email = t('validations.required');
+      next.email = t('validations.required');
     } else if (formData.email && !isValidEmail(formData.email)) {
-      newErrors.email = t('validations.invalidFormat');
+      next.email = t('validations.invalidFormat');
     }
-    
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+
+    setErrors(next);
+    return Object.keys(next).length === 0;
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    
-    setFormData(prev => {
-      const newData = { ...prev, [name]: value };
-      
-      return newData;
-    });
-    
-    if (errors[name as keyof typeof errors]) {
-      setErrors(prev => ({ ...prev, [name]: undefined }));
+  // ── Field handlers ───────────────────────────────────────────────────────
+
+  const handleNameChange = (val: LocaleMap) => {
+    setFormData((prev) => ({ ...prev, name: val }));
+    if (errors.name) setErrors((prev) => ({ ...prev, name: undefined }));
+  };
+
+  const handleNameBlur = () => {
+    if (!formData.initial && formData.name[primaryLocale]) {
+      setFormData((prev) => ({
+        ...prev,
+        initial: generateInitials(prev.name[primaryLocale]),
+      }));
     }
   };
+
+  const handleFieldChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+    if (errors[name as keyof typeof errors]) {
+      setErrors((prev) => ({ ...prev, [name]: undefined }));
+    }
+  };
+
+  // ── API calls ────────────────────────────────────────────────────────────
+
+  const buildUpdatePayload = (): MemberPayload => ({
+    ...flattenTranslations({ name: formData.name }, ['name']),
+    initial: formData.initial,
+    color: formData.color,
+  });
+
+  const buildCreatePayload = (invite: boolean): MemberPayload => ({
+    ...flattenTranslations(formData, ['name']),
+    invite,
+  });
 
   const handleSaveOnly = async () => {
-    if (!validateForm(false)) return;
-    
+    if (!validate(false)) return;
+
     try {
       if (member) {
-        // Update existing member
         await updateMember({
           organizationId,
           memberId: member.id,
-          data: {
-            name_en: currentLocale === 'en' ? formData.name : undefined,
-            name_fa: currentLocale === 'fa' ? formData.name : undefined,
-            initial: formData.initial,
-            color: formData.color,
-          },
+          data: buildUpdatePayload(),
         }).unwrap();
       } else {
-        // Create new member without invitation
         await createMember({
           organizationId,
-          data: {
-            email: formData.email,
-            name_en: formData.name,
-            name_fa: formData.name,
-            initial: formData.initial,
-            color: formData.color,
-            invite: false,
-          },
+          data: buildCreatePayload(false),
         }).unwrap();
       }
       onClose();
@@ -147,38 +183,20 @@ export const MemberModal = ({ open, onClose, organizationId, member, status }: M
   };
 
   const handleSaveAndInvite = async () => {
-    if (!validateForm(true)) return;
-    
+    if (!validate(true)) return;
+
     try {
       if (member) {
-        // Update and resend invitation
         await updateMember({
           organizationId,
           memberId: member.id,
-          data: {
-            name_en: currentLocale === 'en' ? formData.name : undefined,
-            name_fa: currentLocale === 'fa' ? formData.name : undefined,
-            initial: formData.initial,
-            color: formData.color,
-          },
+          data: buildUpdatePayload(),
         }).unwrap();
-        
-        await sendInvitation({
-          organizationId,
-          memberId: member.id,
-        }).unwrap();
+        await sendInvitation({ organizationId, memberId: member.id }).unwrap();
       } else {
-        // Create and send invitation
         await createMember({
           organizationId,
-          data: {
-            email: formData.email,
-            name_en: formData.name,
-            name_fa: formData.name,
-            initial: formData.initial,
-            color: formData.color,
-            invite: true,
-          },
+          data: buildCreatePayload(true),
         }).unwrap();
       }
       onClose();
@@ -187,108 +205,97 @@ export const MemberModal = ({ open, onClose, organizationId, member, status }: M
     }
   };
 
-  // Determine button text and visibility
+  // ── Derived UI state ─────────────────────────────────────────────────────
+
   const isEditMode = !!member;
   const canSendInvitation = status === 'invited' || status === 'not_invited';
   const showInviteButton = !isEditMode || canSendInvitation;
-  
-  let inviteButtonText = tMembers('createAndSendInvitation');
-  if (isEditMode) {
-    if (status === 'invited') {
-      inviteButtonText = tMembers('updateAndResendInvitation');
-    } else if (status !== 'joined' && status !== 'archived') {
-      inviteButtonText = tMembers('updateAndSendInvitation');
-    }
-  }
 
-  const handleNameBlur = () => {
-    // Generate initials from name only if initials field is empty
-    if (!formData.initial && formData.name) {
-      setFormData(prev => ({
-        ...prev,
-        initial: generateInitials(prev.name)
-      }));
-    }
-  };
+  const inviteButtonText = !isEditMode
+    ? tMembers('createAndSendInvitation')
+    : status === 'invited'
+    ? tMembers('updateAndResendInvitation')
+    : tMembers('updateAndSendInvitation');
+
+  // ── Render ───────────────────────────────────────────────────────────────
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
       <DialogTitle>
-        {member ? tMembers('editMember') : tMembers('addMember')}
+        {isEditMode ? tMembers('editMember') : tMembers('addMember')}
       </DialogTitle>
-      
+
       <DialogContent>
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4, mt: 1 }}>
-          <TextField
-            label={tMembers('fullName')}
-            name="name"
+          <MultiLocaleInput
+            field="name"
             value={formData.name}
-            onChange={handleChange}
-            onBlur={handleNameBlur}
+            onChange={handleNameChange}
             error={!!errors.name}
-            helperText={errors.name}
-            fullWidth
+            helperText={errors.name ?? tMembers('fullName')}
             required
-            autoFocus
-            size="small"
           />
-          
+
           <TextField
             label={tMembers('initials')}
             name="initial"
             value={formData.initial}
-            onChange={handleChange}
+            onChange={handleFieldChange}
+            onBlur={handleNameBlur}
             helperText="Maximum 2 characters"
             fullWidth
             inputProps={{ maxLength: 2 }}
             size="small"
           />
-          
+
           <TextField
             label={t('email')}
             name="email"
             type="email"
             value={formData.email}
-            onChange={handleChange}
+            onChange={handleFieldChange}
             error={!!errors.email}
             helperText={errors.email}
             fullWidth
-            disabled={!!member && status === 'joined'}
+            disabled={isEditMode && status === 'joined'}
             size="small"
           />
-          
+
           <Box>
             <ColorPicker
               value={formData.color}
-              onChange={(newColor) => setFormData(prev => ({ ...prev, color: newColor }))}
+              onChange={(newColor) =>
+                setFormData((prev) => ({ ...prev, color: newColor }))
+              }
             />
           </Box>
         </Box>
       </DialogContent>
-      
+
       <DialogActions sx={{ px: 3, pb: 3, gap: 1 }}>
         <Button onClick={onClose} disabled={isLoading}>
           {t('commonActions.cancel')}
         </Button>
-                
+
         <Button
           onClick={handleSaveOnly}
           variant="contained"
+          disabled={isLoading}
           startIcon={isLoading ? <CircularProgress size={20} /> : null}
         >
-          {member ? t('commonActions.update') : t('commonActions.create')}
+          {isEditMode ? t('commonActions.update') : t('commonActions.create')}
         </Button>
 
         {showInviteButton && (
           <Button
             onClick={handleSaveAndInvite}
             variant="contained"
+            disabled={isLoading}
             startIcon={isLoading ? <CircularProgress size={20} /> : null}
           >
             {inviteButtonText}
           </Button>
         )}
-
       </DialogActions>
     </Dialog>
   );

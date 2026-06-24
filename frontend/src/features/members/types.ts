@@ -16,11 +16,8 @@ export interface Member {
   status: string;
   localized_status: string;
   org_admin: boolean;
-  translations: {
-    name: {
-      en: string;
-      fa: string;
-    };
+  t: {
+    name: Record<string, string>;
   };
 }
 
@@ -35,12 +32,4 @@ export interface MemberFormData {
   color: string;
 }
 
-// API request for creating a member
-export interface CreateMemberRequest {
-  email: string;
-  name_en: string;
-  name_fa: string;
-  initial: string;
-  color: string;
-  invite?: boolean;    // If true, send invitation email
-}
+export type MemberPayload = Record<string, string | boolean | undefined>;

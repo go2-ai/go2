@@ -1,5 +1,36 @@
+export type LocaleMap = Record<string, string>;
+
 export interface TranslatedField {
   [locale: string]: string;
+}
+
+export function getOrganizationLocales(organization: {
+  locale: string;
+  active_locales: string[];
+}): string[] {
+  return [...new Set([organization.locale, ...organization.active_locales])];
+}
+
+export function getNonPrimaryLocales(
+  organization: { locale: string; active_locales: string[] },
+  primaryLocale: string
+): string[] {
+  return getOrganizationLocales(organization).filter((locale) => locale !== primaryLocale);
+}
+
+/** Builds a locale map with empty strings for every requested locale. */
+export function emptyLocaleMap(locales: string[]): LocaleMap {
+  return Object.fromEntries(locales.map((locale) => [locale, '']));
+}
+
+/** Merges stored translations into a complete locale map for the given locales. */
+export function buildLocaleMap(
+  translations: TranslatedField | undefined,
+  locales: string[]
+): LocaleMap {
+  return Object.fromEntries(
+    locales.map((locale) => [locale, translations?.[locale] ?? ''])
+  );
 }
 
 /**

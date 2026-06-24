@@ -5,11 +5,17 @@
     "commonActions": {
       "archive": "بایگانی",
       "cancel": "انصراف",
+      "confirm": "تایید",
       "create": "ایجاد",
       "delete": "حذف",
       "save": "ذخیره",
       "unarchive": "لغو بایگانی",
       "update": "به روز رسانی"
+    },
+    "components": {
+      "MultiLocaleInput": {
+        "title": "معادل \"{{field}}\" در سایر زبان ها"
+      }
     },
     "confirmPassword": "تکرار رمز عبور",
     "description": "توضیحات",

@@ -74,7 +74,8 @@ export const SignUp = () => {
           id: result.id, 
           email: result.email,
           first_name: '', // Add if available in response
-          last_name: ''   // Add if available in response
+          last_name: '',   // Add if available in response
+          locale: result.locale || 'en', // Default to 'en' if not provided
         }));
         navigate('/app/organization-resolver')
       } 

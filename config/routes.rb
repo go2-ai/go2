@@ -101,6 +101,8 @@ Rails.application.routes.draw do
     resources :messages
   end
 
+  resources :users, only: [:show]
+
   namespace :admin do
     resources :organizations do
       member do

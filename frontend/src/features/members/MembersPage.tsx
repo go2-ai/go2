@@ -1,11 +1,11 @@
+import { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Container, Box, Typography, Button } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
-import { useGetMembersQuery } from './membersApi';
+import { useGetMembersQuery, useGetMemberQuery } from './membersApi';
 import { MembersTable } from './components/MembersTable';
 import { MemberModal } from './components/MemberModal';
-import { useState } from 'react';
 import type { Member } from './types';
 
 export const MembersPage = () => {
@@ -14,22 +14,33 @@ export const MembersPage = () => {
   const orgId = parseInt(organizationId || '0', 10);
 
   const [showModal, setShowModal] = useState(false);
-  const [selectedMember, setSelectedMember] = useState<Member | null>(null);
+  const [selectedMemberId, setSelectedMemberId] = useState<number | null>(null);
 
   const { data: members, isLoading, error, refetch } = useGetMembersQuery(
-    orgId, 
+    orgId,
     { skip: !orgId || orgId === 0 }
   );
 
+  const { data: selectedMember } = useGetMemberQuery(
+    { organizationId: orgId, memberId: selectedMemberId! },
+    { skip: selectedMemberId === null }
+  );
+
   const handleRowClick = (member: Member) => {
-    setSelectedMember(member);
+    setSelectedMemberId(member.id);
     setShowModal(true);
   };
 
   const handleCloseModal = () => {
     setShowModal(false);
-    setSelectedMember(null);
+    setSelectedMemberId(null);
   };
+
+  const memberStatus = selectedMember
+    ? selectedMember.joined_at ? 'joined'
+    : selectedMember.invited_at ? 'invited'
+    : 'not_invited'
+    : undefined;
 
   return (
     <Container maxWidth="xl" sx={{ height: 'calc(100% - 170px)', display: 'flex', flexDirection: 'column' }}>
@@ -42,7 +53,7 @@ export const MembersPage = () => {
             {tMembers('manageYourTeam')}
           </Typography>
         </Box>
-        
+
         <Button
           variant="contained"
           startIcon={<PersonAddIcon />}
@@ -52,7 +63,7 @@ export const MembersPage = () => {
         </Button>
       </Box>
 
-      <MembersTable 
+      <MembersTable
         members={members}
         organizationId={orgId}
         onRowClick={handleRowClick}
@@ -65,9 +76,8 @@ export const MembersPage = () => {
         open={showModal}
         onClose={handleCloseModal}
         organizationId={orgId}
-        member={selectedMember}
-        status={selectedMember?.joined_at !== null ? 'joined' : 
-          selectedMember?.invited_at !== null ? 'invited' : 'not_invited'}
+        member={selectedMember ?? null}
+        status={memberStatus}
       />
     </Container>
   );

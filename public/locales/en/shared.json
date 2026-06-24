@@ -5,11 +5,17 @@
     "commonActions": {
       "archive": "Archive",
       "cancel": "Cancel",
+      "confirm": "Confirm",
       "create": "Create",
       "delete": "Delete",
       "save": "Save",
       "unarchive": "Unarchive",
       "update": "Update"
+    },
+    "components": {
+      "MultiLocaleInput": {
+        "title": "Translations for \"{{field}}\" in other locales"
+      }
     },
     "confirmPassword": "Password repeat",
     "description": "Description",

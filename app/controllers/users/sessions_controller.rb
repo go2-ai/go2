@@ -9,7 +9,7 @@ class Users::SessionsController < Devise::SessionsController
     self.resource = warden.authenticate(auth_options)
 
     if resource && sign_in(resource_name, resource)
-      render json: resource, only: %i[id email], status: :ok
+      render json: resource, only: %i[id email locale], status: :ok
     else
       render json: { errors: [ "authentication_failed" ] }, status: :unauthorized
     end

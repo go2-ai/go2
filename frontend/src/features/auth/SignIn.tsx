@@ -50,11 +50,12 @@ export const SignIn = () => {
         },
       }).unwrap();
       
-      dispatch(setUser({ 
-        id: result.id, 
+      dispatch(setUser({
+        id: result.id,
         email: result.email,
-        first_name: '', // Add if available in response
-        last_name: ''   // Add if available in response
+        first_name: result.first_name ?? '',
+        last_name: result.last_name ?? '',
+        locale: result.locale ?? 'en',
       }));
 
       navigate('/app/organization-resolver');
