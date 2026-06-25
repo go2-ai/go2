@@ -76,7 +76,7 @@ export const MembersPage = () => {
         open={showModal}
         onClose={handleCloseModal}
         organizationId={orgId}
-        member={selectedMember ?? null}
+        member={selectedMemberId ? selectedMember : null}
         status={memberStatus}
       />
     </Container>
