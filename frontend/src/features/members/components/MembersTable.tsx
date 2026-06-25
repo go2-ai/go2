@@ -165,9 +165,9 @@ export const MembersTable = ({
   // Loading state
   if (isLoading) {
     return (
-      <Paper sx={{ p: 4, display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 400 }}>
+      <Paper sx={{ p: 4, gap: 2, display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 400 }}>
         <CircularProgress />
-        <Typography sx={{ ms: 2 }}>{tMembers('loadingMembers')}</Typography>
+        <Typography>{ tMembers('loadingMembers') }</Typography>
       </Paper>
     );
   }
