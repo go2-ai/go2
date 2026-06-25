@@ -116,7 +116,7 @@ export const DepartmentsTable = ({
     return (
       <Paper sx={{ p: 4, display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 400 }}>
         <CircularProgress />
-        <Typography sx={{ ml: 2 }}>{tDepartments('loadingDepartments')}</Typography>
+        <Typography sx={{ ms: 2 }}>{tDepartments('loadingDepartments')}</Typography>
       </Paper>
     );
   }
@@ -186,7 +186,7 @@ export const DepartmentsTable = ({
           '& .MuiDataGrid-cell:focus': { outline: 'none' },
           '& .MuiDataGrid-row:hover': { cursor: 'pointer' },
           '& .MuiDataGrid-columnHeaderTitle': { fontWeight: 'bold' },
-          '& .MuiDataGrid-cell': {paddingRight: 0}
+          '& .MuiDataGrid-cell': {paddingInlineEnd: 0}
         }}
       />
     </Paper>

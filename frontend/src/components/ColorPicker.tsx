@@ -10,15 +10,18 @@ import {
 } from "@mui/material";
 import { SketchPicker } from "react-color";
 import SquareIcon from "@mui/icons-material/Square";
+import { useTranslation } from 'react-i18next';
 
 interface ColorPickerProps {
+  label?: string,
   value: string;
   onChange: (color: string) => void;
 }
 
-export default function ColorPicker({ value, onChange }: ColorPickerProps) {
+export default function ColorPicker({ label, value, onChange }: ColorPickerProps) {
   const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
   const [tempColor, setTempColor] = useState(value);
+  const { t } = useTranslation('shared');
 
   const open = Boolean(anchorEl);
   const id = open ? "color-picker-popover" : undefined;
@@ -44,7 +47,7 @@ export default function ColorPicker({ value, onChange }: ColorPickerProps) {
   return (
     <Fragment>
       <TextField
-        label="Member Color"
+        label={label || t("color")}
         value={value}
         size="small"
         fullWidth

@@ -18,6 +18,8 @@ class ApplicationController < ActionController::Base
 
   helper_method :current_locale
 
+  around_action :switch_locale
+
   protected
 
   def configure_permitted_parameters
@@ -185,5 +187,10 @@ class ApplicationController < ActionController::Base
 
   def t_params(attribute)
     current_organization.available_locales.map { |locale| "#{attribute}_#{locale}".to_sym }
+  end
+
+  def switch_locale(&action)
+    locale = current_user&.locale || I18n.default_locale
+    I18n.with_locale(locale, &action)
   end
 end

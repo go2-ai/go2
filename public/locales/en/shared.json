@@ -2,6 +2,7 @@
   "en": {
     "abbreviation": "Abbreviation",
     "actions": "Actions",
+    "color": "Color",
     "commonActions": {
       "archive": "Archive",
       "cancel": "Cancel",

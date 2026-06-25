@@ -167,7 +167,7 @@ export const MembersTable = ({
     return (
       <Paper sx={{ p: 4, display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 400 }}>
         <CircularProgress />
-        <Typography sx={{ ml: 2 }}>{tMembers('loadingMembers')}</Typography>
+        <Typography sx={{ ms: 2 }}>{tMembers('loadingMembers')}</Typography>
       </Paper>
     );
   }

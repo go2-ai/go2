@@ -2,6 +2,9 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { ThemeProvider as MuiThemeProvider } from '@mui/material/styles';
 import { useTranslation } from 'react-i18next';
 import CssBaseline from '@mui/material/CssBaseline';
+import { CacheProvider } from '@emotion/react';
+import createCache from '@emotion/cache';
+import rtlPlugin from 'stylis-plugin-rtl';
 import { createAppTheme } from '../theme';
 import type { ThemeMode } from '../theme';
 
@@ -20,10 +23,14 @@ export const useTheme = () => {
   return context;
 };
 
+const ltrCache = createCache({ key: 'muiltr' });
+const rtlCache = createCache({ key: 'muirtl', stylisPlugins: [rtlPlugin] });
+
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { i18n } = useTranslation();
   const currentLocale = i18n.language;
-  
+  const isRtl = currentLocale === 'fa' || currentLocale === 'ar';
+
   const [mode, setMode] = useState<ThemeMode>(() => {
     const savedMode = localStorage.getItem('themeMode');
     return (savedMode as ThemeMode) || 'light';
@@ -33,6 +40,12 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     localStorage.setItem('themeMode', mode);
   }, [mode]);
 
+  // Update <html> dir and lang attributes when locale changes
+  useEffect(() => {
+    document.documentElement.dir = isRtl ? 'rtl' : 'ltr';
+    document.documentElement.lang = currentLocale;
+  }, [currentLocale, isRtl]);
+
   const toggleTheme = () => {
     setMode((prev) => (prev === 'light' ? 'dark' : 'light'));
   };
@@ -41,10 +54,12 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   return (
     <ThemeContext.Provider value={{ mode, toggleTheme }}>
-      <MuiThemeProvider theme={theme}>
-        <CssBaseline />
-        {children}
-      </MuiThemeProvider>
+      <CacheProvider value={isRtl ? rtlCache : ltrCache}>
+        <MuiThemeProvider theme={theme}>
+          <CssBaseline />
+          {children}
+        </MuiThemeProvider>
+      </CacheProvider>
     </ThemeContext.Provider>
   );
 };

@@ -7,8 +7,10 @@ export type ThemeMode = 'light' | 'dark';
 export const createAppTheme = (locale: string = 'en', mode: ThemeMode = 'light'): Theme => {
   const fontFamily = getFontFamily(locale);
   const isDark = mode === 'dark';
+  const isRtl = locale === 'fa' || locale === 'ar';
 
   return createTheme({
+    direction: isRtl ? 'rtl' : 'ltr',
     palette: {
       mode,
       primary: {

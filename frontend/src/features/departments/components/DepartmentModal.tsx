@@ -131,7 +131,7 @@ export const DepartmentModal = ({ open, onClose, organizationId, department }: D
       <DialogContent>
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4, mt: 1 }}>
           <MultiLocaleInput
-            field="name"
+            field={ t("name") }
             value={formData.name}
             onChange={handleNameChange}
             error={!!errors.name}
@@ -143,14 +143,14 @@ export const DepartmentModal = ({ open, onClose, organizationId, department }: D
             value={formData.abbreviation}
             onChange={handleAbbreviationChange}
             error={!!errors.abbreviation}
-            helperText={errors.abbreviation ?? 'Maximum 5 characters'}
+            helperText={errors.abbreviation ?? tDepartments('max5chars')}
             fullWidth
             inputProps={{ maxLength: 5 }}
             size="small"
           />
 
           <MultiLocaleInput
-            field="description"
+            field={t("description")}
             value={formData.description}
             onChange={handleDescriptionChange}
           />

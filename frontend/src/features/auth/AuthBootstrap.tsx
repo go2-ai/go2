@@ -3,14 +3,18 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useGetMeQuery } from './authApi';
 import { setUser, clearUser, setAuthInitialized } from './authSlice';
 import type { RootState } from '../../app/store';
+import { useTranslation } from 'react-i18next';
 
 export const AuthBootstrap: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const dispatch = useDispatch();
   const { isInitialized } = useSelector((state: RootState) => state.auth);
   const { data, isError, isSuccess } = useGetMeQuery(undefined, { skip: isInitialized });
+  const { i18n } = useTranslation();
 
   useEffect(() => {
     if (!isSuccess || !data) return;
+
+    i18n.changeLanguage(data.locale);
 
     dispatch(setUser({
       id: data.id,

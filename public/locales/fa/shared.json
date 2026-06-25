@@ -2,6 +2,7 @@
   "fa": {
     "abbreviation": "اختصار",
     "actions": "اقدامات",
+    "color": "رنگ",
     "commonActions": {
       "archive": "بایگانی",
       "cancel": "انصراف",

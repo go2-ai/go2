@@ -228,7 +228,7 @@ export const MemberModal = ({
       <DialogContent>
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4, mt: 1 }}>
           <MultiLocaleInput
-            field="name"
+            field={t("name")}
             value={formData.name}
             onChange={handleNameChange}
             error={!!errors.name}
@@ -242,7 +242,7 @@ export const MemberModal = ({
             value={formData.initial}
             onChange={handleFieldChange}
             onBlur={handleNameBlur}
-            helperText="Maximum 2 characters"
+            helperText={tMembers("max2Chars")}
             fullWidth
             inputProps={{ maxLength: 2 }}
             size="small"

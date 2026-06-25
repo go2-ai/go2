@@ -39,7 +39,7 @@ export const DepartmentsPage = () => {
             {tDepartments('departments')}
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            {tDepartments('manageYourTeam')}
+            {tDepartments('manageDepartments')}
           </Typography>
         </Box>
         

@@ -1,5 +1,6 @@
 {
   "en": {
+    "abbreviation": "Abbreviation",
     "addDepartment": "Add Department",
     "deleteDepartmentMessage": "Are you sure you want to delete department \"{{name}}\"?",
     "deleteDepartmentTitle": "Deleting department",
@@ -8,6 +9,8 @@
     "editDepartment": "Edit Department",
     "failedToLoadDepartments": "Failed to load departments. Please try again.",
     "loadingDepartments": "Loading Departments ...",
+    "max5chars": "Maximum 5 characters",
+    "manageDepartments": "Manage your organization departments",
     "noDepartmentsFound": "No departments found.",
     "searchDepartments": "Search Departments ...",
     "tryAgain": "Try again"
