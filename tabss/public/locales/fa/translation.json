@@ -1,0 +1,39 @@
+{
+  "app": {
+    "title": "سوک تبز",
+    "welcome": "به تبز خوش آمدید"
+  },
+  "pages": {
+    "dashboard": "داشبورد",
+    "inventory": "موجودی",
+    "sales": "فروش",
+    "calendar": "تقویم",
+    "shops": "فروشگاه‌ها",
+    "settings": "تنظیمات",
+    "appearance": "ظاهر"
+  },
+  "tabs": {
+    "closeTab": "بستن تب",
+    "closeOthers": "بستن سایر تب‌ها",
+    "closeAll": "بستن همه تب‌ها",
+    "splitRight": "تقسیم به راست",
+    "splitDown": "تقسیم به پایین",
+    "duplicate": "کپی",
+    "pinTab": "سنجاق کردن تب",
+    "unpinTab": "برداشتن سنجاق",
+    "copyLink": "کپی لینک",
+    "noTabsOpen": "هیچ تبی باز نیست. یک صفحه از نوار کناری انتخاب کنید."
+  },
+  "settings": {
+    "appearance": {
+      "title": "ظاهر",
+      "description": "شخصی‌سازی ظاهر و حس GO2 در دستگاه شما.",
+      "theme": "ترجیح تم",
+      "language": "زبان و منطقه",
+      "selectLanguage": "زبان ترجیحی رابط کاربری را انتخاب کنید."
+    }
+  },
+  "toast": {
+    "linkCopied": "لینک فضای کار در کلیپ‌بورد کپی شد"
+  }
+}

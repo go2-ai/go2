@@ -11,9 +11,9 @@ import {
   Select,
   Typography,
   useColorScheme,
-} from '@mui/material';
-import { Monitor, Moon, Sun } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
+} from "@mui/material";
+import { Monitor, Moon, Sun } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 export function AppearanceSection() {
   const { mode, setMode } = useColorScheme();
@@ -31,12 +31,12 @@ export function AppearanceSection() {
     <Box>
       <Box sx={{ mb: 4 }}>
         <Typography variant="h5" sx={{ mb: 1, fontWeight: 700 }}>
-          {t('settings.appearance.title', 'Appearance')}
+          {t("settings.appearance.title", "Appearance")}
         </Typography>
         <Typography variant="body2" color="text.secondary">
           {t(
-            'settings.appearance.description',
-            'Customize how GO2 looks and feels on your device.',
+            "settings.appearance.description",
+            "Customize how GO2 looks and feels on your device.",
           )}
         </Typography>
       </Box>
@@ -52,14 +52,14 @@ export function AppearanceSection() {
             row
             value={mode}
             onChange={(event) =>
-              setMode(event.target.value as 'light' | 'dark' | 'system')
+              setMode(event.target.value as "light" | "dark" | "system")
             }
             sx={{ gap: 2 }}
           >
             {[
-              { value: 'light', label: 'Light', icon: Sun },
-              { value: 'dark', label: 'Dark', icon: Moon },
-              { value: 'system', label: 'System', icon: Monitor },
+              { value: "light", label: "Light", icon: Sun },
+              { value: "dark", label: "Dark", icon: Moon },
+              { value: "system", label: "System", icon: Monitor },
             ].map((option) => {
               const Icon = option.icon;
               const isSelected = mode === option.value;
@@ -68,28 +68,28 @@ export function AppearanceSection() {
                 <FormControlLabel
                   key={option.value}
                   value={option.value}
-                  control={<Radio sx={{ display: 'none' }} />}
+                  control={<Radio sx={{ display: "none" }} />}
                   label={
                     <Box
                       sx={{
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'center',
+                        display: "flex",
+                        flexDirection: "column",
+                        alignItems: "center",
                         gap: 1.5,
                         p: 2,
                         width: 120,
                         borderRadius: 1,
-                        border: '2px solid',
-                        borderColor: isSelected ? 'primary.main' : 'divider',
-                        bgcolor: isSelected ? 'primary.main' : 'transparent',
+                        border: "2px solid",
+                        borderColor: isSelected ? "primary.main" : "divider",
+                        bgcolor: isSelected ? "primary.main" : "transparent",
                         color: isSelected
-                          ? 'primary.contrastText'
-                          : 'text.primary',
-                        transition: 'all 0.2s',
-                        cursor: 'pointer',
-                        '&:hover': {
-                          borderColor: 'primary.main',
-                          bgcolor: isSelected ? 'primary.main' : 'action.hover',
+                          ? "primary.contrastText"
+                          : "text.primary",
+                        transition: "all 0.2s",
+                        cursor: "pointer",
+                        "&:hover": {
+                          borderColor: "primary.main",
+                          bgcolor: isSelected ? "primary.main" : "action.hover",
                         },
                       }}
                     >
@@ -123,13 +123,13 @@ export function AppearanceSection() {
                 onChange={handleLanguageChange}
               >
                 <MenuItem value="en">English (US)</MenuItem>
-                <MenuItem value="am">Amharic (አማርኛ)</MenuItem>
+                <MenuItem value="fa">فارسی</MenuItem>
               </Select>
             </FormControl>
             <Typography
               variant="caption"
               color="text.secondary"
-              sx={{ mt: 1, display: 'block' }}
+              sx={{ mt: 1, display: "block" }}
             >
               Select your preferred language for the interface.
             </Typography>
