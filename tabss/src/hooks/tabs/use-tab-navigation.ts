@@ -1,5 +1,5 @@
-import type { WorkspaceLayout } from '@/types/tabs';
-import { useNavigate } from '@tanstack/react-router';
+import type { WorkspaceLayout } from "@/types/tabs";
+import { useNavigate } from "@tanstack/react-router";
 
 export function useTabNavigation(
   layout: WorkspaceLayout,
@@ -18,28 +18,22 @@ export function useTabNavigation(
       const tab = panel?.tabs.find((t) => t.id === tabId);
 
       if (tab) {
-        let path = '/';
+        let path = "/organizations";
         switch (tab.pageId) {
-          case 'dashboard':
-            path = '/';
+          case "tables":
+            path = "/tables";
             break;
-          case 'inventory':
-            path = '/inventory';
+          case "settings":
+            path = "/settings";
             break;
-          case 'sales':
-            path = '/sales';
+          case "members":
+            path = "/members";
             break;
-          case 'calendar':
-            path = '/calendar';
-            break;
-          case 'shops':
-            path = '/shops';
-            break;
-          case 'settings':
-            path = '/settings';
+          case "organizations":
+            path = "/organizations";
             break;
           default:
-            path = '/';
+            path = "/organizations";
         }
         navigate({ to: path });
       }

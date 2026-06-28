@@ -129,6 +129,7 @@ Rails.application.routes.draw do
   get "reusable-tabs-demo/sidebar/:sidebar_type", to: "reusable_tabs_demo#sidebar_content", as: :reusable_tabs_demo_sidebar
   get "reusable-tabs-demo/content/:content_type/:content_id", to: "reusable_tabs_demo#tab_content", as: :reusable_tabs_demo_content
 
+  get "app", to: "home#index", constraints: ->(req) { req.format.html? }
   get "app/*path", to: "home#index", constraints: ->(req) { req.format.html? }
   # Defines the root path route ("/")
   root "home#index"

@@ -13,14 +13,9 @@ import { Route as DashboardRouteImport } from './routes/_dashboard'
 import { Route as AuthRouteImport } from './routes/_auth'
 import { Route as DashboardIndexRouteImport } from './routes/_dashboard.index'
 import { Route as DashboardTablesRouteImport } from './routes/_dashboard.tables'
-import { Route as DashboardShopsRouteImport } from './routes/_dashboard.shops'
 import { Route as DashboardSettingsRouteImport } from './routes/_dashboard.settings'
-import { Route as DashboardSalesRouteImport } from './routes/_dashboard.sales'
 import { Route as DashboardOrganizationsRouteImport } from './routes/_dashboard.organizations'
 import { Route as DashboardMembersRouteImport } from './routes/_dashboard.members'
-import { Route as DashboardInventoryRouteImport } from './routes/_dashboard.inventory'
-import { Route as DashboardChatRouteImport } from './routes/_dashboard.chat'
-import { Route as DashboardCalendarRouteImport } from './routes/_dashboard.calendar'
 import { Route as AuthRegisterRouteImport } from './routes/_auth.register'
 import { Route as AuthLoginRouteImport } from './routes/_auth.login'
 
@@ -42,19 +37,9 @@ const DashboardTablesRoute = DashboardTablesRouteImport.update({
   path: '/tables',
   getParentRoute: () => DashboardRoute,
 } as any)
-const DashboardShopsRoute = DashboardShopsRouteImport.update({
-  id: '/shops',
-  path: '/shops',
-  getParentRoute: () => DashboardRoute,
-} as any)
 const DashboardSettingsRoute = DashboardSettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
-  getParentRoute: () => DashboardRoute,
-} as any)
-const DashboardSalesRoute = DashboardSalesRouteImport.update({
-  id: '/sales',
-  path: '/sales',
   getParentRoute: () => DashboardRoute,
 } as any)
 const DashboardOrganizationsRoute = DashboardOrganizationsRouteImport.update({
@@ -65,21 +50,6 @@ const DashboardOrganizationsRoute = DashboardOrganizationsRouteImport.update({
 const DashboardMembersRoute = DashboardMembersRouteImport.update({
   id: '/members',
   path: '/members',
-  getParentRoute: () => DashboardRoute,
-} as any)
-const DashboardInventoryRoute = DashboardInventoryRouteImport.update({
-  id: '/inventory',
-  path: '/inventory',
-  getParentRoute: () => DashboardRoute,
-} as any)
-const DashboardChatRoute = DashboardChatRouteImport.update({
-  id: '/chat',
-  path: '/chat',
-  getParentRoute: () => DashboardRoute,
-} as any)
-const DashboardCalendarRoute = DashboardCalendarRouteImport.update({
-  id: '/calendar',
-  path: '/calendar',
   getParentRoute: () => DashboardRoute,
 } as any)
 const AuthRegisterRoute = AuthRegisterRouteImport.update({
@@ -97,28 +67,18 @@ export interface FileRoutesByFullPath {
   '/': typeof DashboardIndexRoute
   '/login': typeof AuthLoginRoute
   '/register': typeof AuthRegisterRoute
-  '/calendar': typeof DashboardCalendarRoute
-  '/chat': typeof DashboardChatRoute
-  '/inventory': typeof DashboardInventoryRoute
   '/members': typeof DashboardMembersRoute
   '/organizations': typeof DashboardOrganizationsRoute
-  '/sales': typeof DashboardSalesRoute
   '/settings': typeof DashboardSettingsRoute
-  '/shops': typeof DashboardShopsRoute
   '/tables': typeof DashboardTablesRoute
 }
 export interface FileRoutesByTo {
   '/': typeof DashboardIndexRoute
   '/login': typeof AuthLoginRoute
   '/register': typeof AuthRegisterRoute
-  '/calendar': typeof DashboardCalendarRoute
-  '/chat': typeof DashboardChatRoute
-  '/inventory': typeof DashboardInventoryRoute
   '/members': typeof DashboardMembersRoute
   '/organizations': typeof DashboardOrganizationsRoute
-  '/sales': typeof DashboardSalesRoute
   '/settings': typeof DashboardSettingsRoute
-  '/shops': typeof DashboardShopsRoute
   '/tables': typeof DashboardTablesRoute
 }
 export interface FileRoutesById {
@@ -127,14 +87,9 @@ export interface FileRoutesById {
   '/_dashboard': typeof DashboardRouteWithChildren
   '/_auth/login': typeof AuthLoginRoute
   '/_auth/register': typeof AuthRegisterRoute
-  '/_dashboard/calendar': typeof DashboardCalendarRoute
-  '/_dashboard/chat': typeof DashboardChatRoute
-  '/_dashboard/inventory': typeof DashboardInventoryRoute
   '/_dashboard/members': typeof DashboardMembersRoute
   '/_dashboard/organizations': typeof DashboardOrganizationsRoute
-  '/_dashboard/sales': typeof DashboardSalesRoute
   '/_dashboard/settings': typeof DashboardSettingsRoute
-  '/_dashboard/shops': typeof DashboardShopsRoute
   '/_dashboard/tables': typeof DashboardTablesRoute
   '/_dashboard/': typeof DashboardIndexRoute
 }
@@ -144,28 +99,18 @@ export interface FileRouteTypes {
     | '/'
     | '/login'
     | '/register'
-    | '/calendar'
-    | '/chat'
-    | '/inventory'
     | '/members'
     | '/organizations'
-    | '/sales'
     | '/settings'
-    | '/shops'
     | '/tables'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/login'
     | '/register'
-    | '/calendar'
-    | '/chat'
-    | '/inventory'
     | '/members'
     | '/organizations'
-    | '/sales'
     | '/settings'
-    | '/shops'
     | '/tables'
   id:
     | '__root__'
@@ -173,14 +118,9 @@ export interface FileRouteTypes {
     | '/_dashboard'
     | '/_auth/login'
     | '/_auth/register'
-    | '/_dashboard/calendar'
-    | '/_dashboard/chat'
-    | '/_dashboard/inventory'
     | '/_dashboard/members'
     | '/_dashboard/organizations'
-    | '/_dashboard/sales'
     | '/_dashboard/settings'
-    | '/_dashboard/shops'
     | '/_dashboard/tables'
     | '/_dashboard/'
   fileRoutesById: FileRoutesById
@@ -220,25 +160,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardTablesRouteImport
       parentRoute: typeof DashboardRoute
     }
-    '/_dashboard/shops': {
-      id: '/_dashboard/shops'
-      path: '/shops'
-      fullPath: '/shops'
-      preLoaderRoute: typeof DashboardShopsRouteImport
-      parentRoute: typeof DashboardRoute
-    }
     '/_dashboard/settings': {
       id: '/_dashboard/settings'
       path: '/settings'
       fullPath: '/settings'
       preLoaderRoute: typeof DashboardSettingsRouteImport
-      parentRoute: typeof DashboardRoute
-    }
-    '/_dashboard/sales': {
-      id: '/_dashboard/sales'
-      path: '/sales'
-      fullPath: '/sales'
-      preLoaderRoute: typeof DashboardSalesRouteImport
       parentRoute: typeof DashboardRoute
     }
     '/_dashboard/organizations': {
@@ -253,27 +179,6 @@ declare module '@tanstack/react-router' {
       path: '/members'
       fullPath: '/members'
       preLoaderRoute: typeof DashboardMembersRouteImport
-      parentRoute: typeof DashboardRoute
-    }
-    '/_dashboard/inventory': {
-      id: '/_dashboard/inventory'
-      path: '/inventory'
-      fullPath: '/inventory'
-      preLoaderRoute: typeof DashboardInventoryRouteImport
-      parentRoute: typeof DashboardRoute
-    }
-    '/_dashboard/chat': {
-      id: '/_dashboard/chat'
-      path: '/chat'
-      fullPath: '/chat'
-      preLoaderRoute: typeof DashboardChatRouteImport
-      parentRoute: typeof DashboardRoute
-    }
-    '/_dashboard/calendar': {
-      id: '/_dashboard/calendar'
-      path: '/calendar'
-      fullPath: '/calendar'
-      preLoaderRoute: typeof DashboardCalendarRouteImport
       parentRoute: typeof DashboardRoute
     }
     '/_auth/register': {
@@ -306,27 +211,17 @@ const AuthRouteChildren: AuthRouteChildren = {
 const AuthRouteWithChildren = AuthRoute._addFileChildren(AuthRouteChildren)
 
 interface DashboardRouteChildren {
-  DashboardCalendarRoute: typeof DashboardCalendarRoute
-  DashboardChatRoute: typeof DashboardChatRoute
-  DashboardInventoryRoute: typeof DashboardInventoryRoute
   DashboardMembersRoute: typeof DashboardMembersRoute
   DashboardOrganizationsRoute: typeof DashboardOrganizationsRoute
-  DashboardSalesRoute: typeof DashboardSalesRoute
   DashboardSettingsRoute: typeof DashboardSettingsRoute
-  DashboardShopsRoute: typeof DashboardShopsRoute
   DashboardTablesRoute: typeof DashboardTablesRoute
   DashboardIndexRoute: typeof DashboardIndexRoute
 }
 
 const DashboardRouteChildren: DashboardRouteChildren = {
-  DashboardCalendarRoute: DashboardCalendarRoute,
-  DashboardChatRoute: DashboardChatRoute,
-  DashboardInventoryRoute: DashboardInventoryRoute,
   DashboardMembersRoute: DashboardMembersRoute,
   DashboardOrganizationsRoute: DashboardOrganizationsRoute,
-  DashboardSalesRoute: DashboardSalesRoute,
   DashboardSettingsRoute: DashboardSettingsRoute,
-  DashboardShopsRoute: DashboardShopsRoute,
   DashboardTablesRoute: DashboardTablesRoute,
   DashboardIndexRoute: DashboardIndexRoute,
 }

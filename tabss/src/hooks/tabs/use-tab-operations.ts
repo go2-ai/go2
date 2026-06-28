@@ -1,5 +1,5 @@
-import type { PanelConfig, Tab, WorkspaceLayout } from '@/types/tabs';
-import { useCallback } from 'react';
+import type { PanelConfig, Tab, WorkspaceLayout } from "@/types/tabs";
+import { useCallback } from "react";
 
 function createTab(pageId: string, title: string): Tab {
   return { id: `${pageId}-${Date.now()}`, pageId, title };
@@ -46,7 +46,7 @@ export function useTabOperations(
         const sameTitleTabs = allTabs.filter((t) => t.pageId === pageId);
 
         // Extract numbers from existing titles
-        const baseTitle = title.replace(/\s*\(\d+\)$/, ''); // Remove any existing (N)
+        const baseTitle = title.replace(/\s*\(\d+\)$/, ""); // Remove any existing (N)
         const existingNumbers = sameTitleTabs
           .map((t) => {
             const match = t.title.match(/^.*\((\d+)\)$/);
@@ -84,7 +84,7 @@ export function useTabOperations(
         const newTabs = panel.tabs.filter((t) => t.id !== tabId);
         const newActiveId =
           panel.activeTabId === tabId
-            ? newTabs[newTabs.length - 1]?.id || ''
+            ? newTabs[newTabs.length - 1]?.id || ""
             : panel.activeTabId;
 
         if (newTabs.length === 0 && prev.panels.length > 1) {
@@ -113,7 +113,7 @@ export function useTabOperations(
     (
       tabId: string,
       panelId: string,
-      direction: 'horizontal' | 'vertical' = 'horizontal',
+      direction: "horizontal" | "vertical" = "horizontal",
     ) => {
       setLayout((prev) => {
         const panel = prev.panels.find((p) => p.id === panelId);
@@ -140,28 +140,28 @@ export function useTabOperations(
   );
 
   const resetLayout = useCallback(() => {
-    const defaultTab = createTab('dashboard', 'Dashboard');
+    const defaultTab = createTab("organizations", "Organizations");
     setLayout({
       panels: [
         {
-          id: 'panel-1',
+          id: "panel-1",
           tabs: [defaultTab],
           activeTabId: defaultTab.id,
         },
       ],
-      direction: 'horizontal',
+      direction: "horizontal",
       sizes: [100],
     });
   }, [setLayout]);
 
   const shareLayout = useCallback((layout: WorkspaceLayout) => {
-    if (typeof window === 'undefined') return '';
+    if (typeof window === "undefined") return "";
     const tabSummary = layout.panels
       .flatMap((p) => p.tabs.map((t) => t.pageId))
-      .join(',');
+      .join(",");
     const url = new URL(window.location.href);
-    url.searchParams.set('tabs', tabSummary);
-    url.searchParams.set('active', layout.panels[0]?.activeTabId || '');
+    url.searchParams.set("tabs", tabSummary);
+    url.searchParams.set("active", layout.panels[0]?.activeTabId || "");
     return url.toString();
   }, []);
 

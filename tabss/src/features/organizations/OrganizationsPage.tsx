@@ -1,4 +1,4 @@
-import { Add } from '@mui/icons-material';
+import { Add } from "@mui/icons-material";
 import {
   Alert,
   Box,
@@ -12,8 +12,9 @@ import {
   TableCell,
   TextField,
   Typography,
-} from '@mui/material';
-import { useState } from 'react';
+} from "@mui/material";
+import { useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import {
   Table,
   TableBody,
@@ -24,20 +25,38 @@ import {
   TableRoot,
   TableRow,
   TableSortHeader,
-} from '@/components/ui/DataTable';
-import { useCreateTrialOrganizationMutation, useGetMyOrganizationsQuery } from './organizationsApi';
-import type { Organization } from './types';
+} from "@/components/ui/DataTable";
+import {
+  useCreateTrialOrganizationMutation,
+  useGetMyOrganizationsQuery,
+} from "./organizationsApi";
+import { setCurrentOrganization } from "./organizationsSlice";
+import type { RootState } from "@/store";
+import type { Organization } from "./types";
 
 export function OrganizationsPage() {
-  const { data: organizations, isLoading, isError } = useGetMyOrganizationsQuery();
-  const [createOrg, { isLoading: isCreating }] = useCreateTrialOrganizationMutation();
+  const dispatch = useDispatch();
+  const currentOrganization = useSelector(
+    (state: RootState) => state.organizations.currentOrganization,
+  );
+  const {
+    data: organizations,
+    isLoading,
+    isError,
+  } = useGetMyOrganizationsQuery();
+  const [createOrg, { isLoading: isCreating }] =
+    useCreateTrialOrganizationMutation();
   const [modalOpen, setModalOpen] = useState(false);
-  const [orgName, setOrgName] = useState('');
-  const [nameError, setNameError] = useState('');
+  const [orgName, setOrgName] = useState("");
+  const [nameError, setNameError] = useState("");
+
+  const handleSelectOrg = (org: Organization) => {
+    dispatch(setCurrentOrganization(org));
+  };
 
   const handleOpen = () => {
-    setOrgName('');
-    setNameError('');
+    setOrgName("");
+    setNameError("");
     setModalOpen(true);
   };
 
@@ -45,21 +64,34 @@ export function OrganizationsPage() {
 
   const handleCreate = async () => {
     if (!orgName.trim()) {
-      setNameError('Organization name is required.');
+      setNameError("Organization name is required.");
       return;
     }
     try {
       await createOrg({ name: orgName.trim() }).unwrap();
       handleClose();
     } catch {
-      setNameError('Failed to create organization. Please try again.');
+      setNameError("Failed to create organization. Please try again.");
     }
   };
 
   return (
-    <Box sx={{ p: { xs: 2, md: 4 }, display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
+    <Box
+      sx={{
+        p: { xs: 2, md: 4 },
+        display: "flex",
+        flexDirection: "column",
+        height: "100%",
+        overflow: "hidden",
+      }}
+    >
       {/* Page header */}
-      <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 4 }}>
+      <Stack
+        direction="row"
+        alignItems="center"
+        justifyContent="space-between"
+        sx={{ mb: 4 }}
+      >
         <Box>
           <Typography variant="h5" fontWeight={700}>
             Organizations
@@ -68,7 +100,12 @@ export function OrganizationsPage() {
             View and manage your organizations.
           </Typography>
         </Box>
-        <Button variant="contained" startIcon={<Add />} sx={{ borderRadius: 2 }} onClick={handleOpen}>
+        <Button
+          variant="contained"
+          startIcon={<Add />}
+          sx={{ borderRadius: 2 }}
+          onClick={handleOpen}
+        >
           New Organization
         </Button>
       </Stack>
@@ -87,34 +124,45 @@ export function OrganizationsPage() {
         defaultRowsPerPage={10}
       >
         {() => (
-          <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+          <Box
+            sx={{
+              flex: 1,
+              display: "flex",
+              flexDirection: "column",
+              minHeight: 0,
+            }}
+          >
             {/* Toolbar */}
             <Box
               sx={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
                 px: 3,
                 py: 1.5,
-                bgcolor: 'background.paper',
-                border: '1px solid',
-                borderColor: 'divider',
+                bgcolor: "background.paper",
+                border: "1px solid",
+                borderColor: "divider",
                 borderBottom: 0,
                 borderTopLeftRadius: 8,
                 borderTopRightRadius: 8,
               }}
             >
               <Typography variant="body2" color="text.secondary">
-                {(organizations ?? []).length} organization{(organizations ?? []).length !== 1 ? 's' : ''} total
+                {(organizations ?? []).length} organization
+                {(organizations ?? []).length !== 1 ? "s" : ""} total
               </Typography>
-              <TableGlobalSearch sx={{ minWidth: 240 }} placeholder="Search organizations…" />
+              <TableGlobalSearch
+                sx={{ minWidth: 240 }}
+                placeholder="Search organizations…"
+              />
             </Box>
 
             {/* Table */}
             <TableContainer
               sx={{
                 flex: 1,
-                overflow: 'auto',
+                overflow: "auto",
                 borderTopLeftRadius: 0,
                 borderTopRightRadius: 0,
                 borderBottomLeftRadius: 0,
@@ -135,8 +183,12 @@ export function OrganizationsPage() {
                     if (isLoading) {
                       return Array.from({ length: 5 }).map((_, i) => (
                         <TableRow key={i}>
-                          <TableCell><Skeleton width={40} /></TableCell>
-                          <TableCell><Skeleton width={220} /></TableCell>
+                          <TableCell>
+                            <Skeleton width={40} />
+                          </TableCell>
+                          <TableCell>
+                            <Skeleton width={220} />
+                          </TableCell>
                           <TableCell />
                         </TableRow>
                       ));
@@ -146,19 +198,36 @@ export function OrganizationsPage() {
                       return (
                         <TableRow>
                           <TableCell colSpan={3} align="center" sx={{ py: 6 }}>
-                            <Typography color="text.secondary">No organizations found.</Typography>
+                            <Typography color="text.secondary">
+                              No organizations found.
+                            </Typography>
                           </TableCell>
                         </TableRow>
                       );
                     }
 
                     return rows.map((org) => (
-                      <TableRow key={org.id} hover>
-                        <TableCell sx={{ width: 80, color: 'text.secondary', fontFamily: 'monospace', fontSize: 13 }}>
+                      <TableRow
+                        key={org.id}
+                        hover
+                        selected={currentOrganization?.id === org.id}
+                        onClick={() => handleSelectOrg(org)}
+                        sx={{ cursor: "pointer" }}
+                      >
+                        <TableCell
+                          sx={{
+                            width: 80,
+                            color: "text.secondary",
+                            fontFamily: "monospace",
+                            fontSize: 13,
+                          }}
+                        >
                           {org.id}
                         </TableCell>
                         <TableCell>
-                          <Typography variant="body2" fontWeight={500}>{org.name}</Typography>
+                          <Typography variant="body2" fontWeight={500}>
+                            {org.name}
+                          </Typography>
                         </TableCell>
                         <TableCell align="right" sx={{ width: 60 }} />
                       </TableRow>
@@ -171,12 +240,12 @@ export function OrganizationsPage() {
             {/* Pagination */}
             <Box
               sx={{
-                border: '1px solid',
-                borderColor: 'divider',
+                border: "1px solid",
+                borderColor: "divider",
                 borderTop: 0,
                 borderBottomLeftRadius: 8,
                 borderBottomRightRadius: 8,
-                bgcolor: 'background.paper',
+                bgcolor: "background.paper",
               }}
             >
               <TablePagination />
@@ -193,17 +262,28 @@ export function OrganizationsPage() {
             fullWidth
             label="Organization name"
             value={orgName}
-            onChange={(e) => { setOrgName(e.target.value); setNameError(''); }}
-            onKeyDown={(e) => { if (e.key === 'Enter') handleCreate(); }}
+            onChange={(e) => {
+              setOrgName(e.target.value);
+              setNameError("");
+            }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") handleCreate();
+            }}
             error={!!nameError}
             helperText={nameError}
             sx={{ mt: 1 }}
           />
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 2 }}>
-          <Button onClick={handleClose} disabled={isCreating}>Cancel</Button>
-          <Button variant="contained" onClick={handleCreate} disabled={isCreating}>
-            {isCreating ? 'Creating…' : 'Create'}
+          <Button onClick={handleClose} disabled={isCreating}>
+            Cancel
+          </Button>
+          <Button
+            variant="contained"
+            onClick={handleCreate}
+            disabled={isCreating}
+          >
+            {isCreating ? "Creating…" : "Create"}
           </Button>
         </DialogActions>
       </Dialog>

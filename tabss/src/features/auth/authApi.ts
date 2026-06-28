@@ -5,6 +5,9 @@ export const authApi = createApi({
   reducerPath: 'authApi',
   baseQuery: baseQueryWithCsrf,
   endpoints: (builder) => ({
+    getCurrentUser: builder.query<{ id: number; email: string }, void>({
+      query: () => '/api/me',
+    }),
     signUp: builder.mutation({
       query: (userData) => ({
         url: '/users',
@@ -28,4 +31,4 @@ export const authApi = createApi({
   }),
 });
 
-export const { useSignUpMutation, useConfirmEmailMutation, useSignInMutation } = authApi;
+export const { useGetCurrentUserQuery, useSignUpMutation, useConfirmEmailMutation, useSignInMutation } = authApi;

@@ -3,10 +3,11 @@ import { ThemeProvider } from "@mui/material/styles";
 import { RouterProvider, createRouter } from "@tanstack/react-router";
 import { StrictMode } from "react";
 import ReactDOM from "react-dom/client";
+import { PersistGate } from "redux-persist/integration/react";
 import { Provider } from "react-redux";
-import "./i18n";
-import { store } from "./store";
+import { store, persistor } from "./store";
 import theme from "./theme";
+import "./i18n";
 
 // Import the generated route tree
 import { routeTree } from "./routeTree.gen";
@@ -30,10 +31,12 @@ if (!rootElement.innerHTML) {
   root.render(
     <StrictMode>
       <Provider store={store}>
-        <ThemeProvider theme={theme}>
-          <CssBaseline />
-          <RouterProvider router={router} />
-        </ThemeProvider>
+        <PersistGate loading={null} persistor={persistor}>
+          <ThemeProvider theme={theme}>
+            <CssBaseline />
+            <RouterProvider router={router} />
+          </ThemeProvider>
+        </PersistGate>
       </Provider>
     </StrictMode>,
   );

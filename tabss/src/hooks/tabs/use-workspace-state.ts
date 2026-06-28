@@ -1,5 +1,5 @@
-import type { Tab, WorkspaceLayout } from '@/types/tabs';
-import { useState } from 'react';
+import type { Tab, WorkspaceLayout } from "@/types/tabs";
+import { useState } from "react";
 
 function createTab(pageId: string, title: string): Tab {
   return { id: `${pageId}-${Date.now()}`, pageId, title };
@@ -7,16 +7,16 @@ function createTab(pageId: string, title: string): Tab {
 
 export function useWorkspaceState() {
   const [layout, setLayout] = useState<WorkspaceLayout>(() => {
-    const defaultTab = createTab('dashboard', 'Dashboard');
+    const defaultTab = createTab("organizations", "Organizations");
     return {
       panels: [
         {
-          id: 'panel-1',
+          id: "panel-1",
           tabs: [defaultTab],
           activeTabId: defaultTab.id,
         },
       ],
-      direction: 'horizontal',
+      direction: "horizontal",
       sizes: [100],
     };
   });

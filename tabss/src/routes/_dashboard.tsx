@@ -1,44 +1,19 @@
-import { RouteSynchronizer } from '@/components/tabs/RouteSynchronizer';
-import { Sidebar } from '@/components/tabs/Sidebar';
-import { TabWorkspace } from '@/components/tabs/TabWorkspace';
-import { TabProvider } from '@/hooks/tabs/use-tab-manager';
-import { createFileRoute } from '@tanstack/react-router';
+import { DashboardLayout } from "@/components/layout/DashboardLayout";
+import { createFileRoute, redirect } from "@tanstack/react-router";
+import { store } from "@/store";
+import { validateSession } from "@/features/auth/authSlice";
 
-export const Route = createFileRoute('/_dashboard')({
+export const Route = createFileRoute("/_dashboard")({
+  beforeLoad: async () => {
+    const { isAuthenticated } = store.getState().auth;
+    if (!isAuthenticated) {
+      throw redirect({ to: "/login" });
+    }
+
+    const result = await store.dispatch(validateSession());
+    if (validateSession.rejected.match(result)) {
+      throw redirect({ to: "/login" });
+    }
+  },
   component: DashboardLayout,
 });
-
-function DashboardLayout() {
-  return (
-    <TabProvider>
-      <RouteSynchronizer />
-      <div
-        style={{
-          display: 'flex',
-          height: '100vh',
-          width: '100vw',
-          overflow: 'hidden',
-          backgroundColor: 'var(--mui-palette-background-default)', // Using MUI var or theme value?
-          // Using theme values if possible, or consistent generic styles.
-          // Note: Using inline styles to match what we saw in tabs/ layout, but adapted.
-          // Tabs used CSS vars --md-sys-color-background.
-          // We should use MUI system or verify ThemeProvider handles it.
-          // Let's use generic styles or MUI Box maybe for consistency with ThemeRegistry?
-          // But Sidebar and TabWorkspace expect strict flex layout.
-        }}
-      >
-        <Sidebar />
-        <main
-          style={{
-            flex: 1,
-            height: '100%',
-            overflow: 'hidden',
-            position: 'relative',
-          }}
-        >
-          <TabWorkspace />
-        </main>
-      </div>
-    </TabProvider>
-  );
-}
