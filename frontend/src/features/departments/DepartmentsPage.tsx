@@ -32,8 +32,8 @@ export const DepartmentsPage = () => {
   };
 
   return (
-    <Container maxWidth="xl" sx={{ height: 'calc(100% - 170px)', display: 'flex', flexDirection: 'column' }}>
-      <Box sx={{ mb: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+    <Container maxWidth="xl" sx={{ height: 'calc(100% - 130px)', display: 'flex', flexDirection: 'column' }}>
+      <Box sx={{ my: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <Box>
           <Typography variant="h4" component="h1" gutterBottom>
             {tDepartments('departments')}
