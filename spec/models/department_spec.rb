@@ -60,17 +60,11 @@ RSpec.describe Department, type: :model do
   describe "#members" do
     let(:org) { create(:organization, name: { en: "Members Org #{SecureRandom.uuid}" }) }
     let(:department) { create(:department, organization: org) }
-    let(:role) { create(:role, department: department, organization: org) }
     let(:member1) { create(:member, organization: org) }
     let(:member2) { create(:member, organization: org) }
-
-    before do
-      create(:role_assignment, role: role, member: member1)
-      create(:role_assignment, role: role, member: member2)
-    end
+    let!(:role) { create(:role, department: department, organization: org, member: member2) }
 
     it "returns members assigned to roles in this department" do
-      expect(department.members).to include(member1)
       expect(department.members).to include(member2)
     end
   end
@@ -78,13 +72,9 @@ RSpec.describe Department, type: :model do
   describe "#member_in_department?" do
     let(:org) { create(:organization, name: { en: "Member In Dept Org #{SecureRandom.uuid}" }) }
     let(:department) { create(:department, organization: org) }
-    let(:role) { create(:role, department: department, organization: org) }
     let(:member) { create(:member, organization: org) }
     let(:other_member) { create(:member, organization: org) }
-
-    before do
-      create(:role_assignment, role: role, member: member)
-    end
+    let!(:role) { create(:role, department: department, organization: org, member:) }
 
     it "returns true if member is assigned to a role in this department" do
       expect(department.member_in_department?(member)).to be true

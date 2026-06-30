@@ -201,7 +201,6 @@ RSpec.describe 'Users::Sessions API', type: :request do
 
         run_test! do |response|
           data = JSON.parse(response.body)
-          puts data
           expect(data["id"]).to eq(member_1.id)
           expect(data["org_admin"]).to eq(true)
         end

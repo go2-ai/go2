@@ -1,4 +1,5 @@
 class Role < ApplicationRecord
+  include TranslationHelper
   # Will enable PaperTrail later
   has_paper_trail
 
@@ -14,15 +15,13 @@ class Role < ApplicationRecord
   # Associations
   belongs_to :organization, optional: false
   belongs_to :department, optional: true
+  belongs_to :member, optional: true
   belongs_to :parent, class_name: "Role", optional: true
   has_many :children, class_name: "Role", foreign_key: "parent_id"
   has_many :permissions, as: :grantee
-  has_many :role_assignments
-  # has_one :member, -> { active }, class_name: 'Member', through: :role_assignments
 
   # Validations
-  validate :name_has_at_least_one_translation
-  validate :name_translations_are_unique
+  validates_non_empty_translation :name, locales: ->(role) { [ role.organization&.locale ] }
   validate :no_circular_references
 
   # Scopes
@@ -54,41 +53,6 @@ class Role < ApplicationRecord
     chain.uniq
   end
 
-  def member
-    role_assignments.active.first&.member
-  end
-
-  def assign_member(member)
-    return false if member.nil? || member.organization_id != organization_id
-
-    # Close previous assignment if exists
-    role_assignments.active.each do |assignment|
-      assignment.update(finish_date: Time.current)
-    end
-
-    # Create new assignment
-    role_assignments.create(
-      member: member,
-      start_date: Time.current
-    )
-
-    true
-  end
-
-  def unassign_member
-    role_assignments.active.each do |assignment|
-      assignment.update(finish_date: Time.current)
-    end
-  end
-
-  def activate
-    update(active: true)
-  end
-
-  def deactivate
-    update(active: false)
-  end
-
   private
 
   def initialize_name
@@ -98,18 +62,6 @@ class Role < ApplicationRecord
   def name_has_at_least_one_translation
     return if Mobility.available_locales.any? { |loc| name(locale: loc).present? }
     errors.add(:name, "must contain at least one translation")
-  end
-
-  def name_translations_are_unique
-    name_translations = read_attribute(:name) || {}
-    name_translations.each do |locale, name_value|
-      next if name_value.blank?
-      Mobility.with_locale(locale) do
-        if organization.roles.where.not(id: id).where("name ->> ? = ?", locale.to_s, name_value).exists?
-          errors.add(:name, "must be unique within the organization for locale #{locale}")
-        end
-      end
-    end
   end
 
   def no_circular_references

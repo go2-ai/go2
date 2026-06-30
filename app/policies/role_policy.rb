@@ -3,14 +3,6 @@ class RolePolicy < ApplicationPolicy
     is_org_admin?
   end
 
-  def new?
-    is_org_admin?
-  end
-
-  def edit?
-    is_org_admin?
-  end
-
   def create?
     is_org_admin?
   end
@@ -31,14 +23,6 @@ class RolePolicy < ApplicationPolicy
     is_org_admin?
   end
 
-  def assign_member?
-    is_org_admin?
-  end
-
-  def unassign_member?
-    is_org_admin?
-  end
-
   def export?
     is_org_admin?
   end
@@ -46,6 +30,6 @@ class RolePolicy < ApplicationPolicy
   private
 
   def is_org_admin?
-    record.has_permission?("Organization.admin")
+    record.has_permission?(Permission::ORG_ADMIN)
   end
 end

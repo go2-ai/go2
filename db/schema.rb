@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_06_10_200718) do
+ActiveRecord::Schema[8.0].define(version: 2026_06_29_200719) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -349,29 +349,18 @@ ActiveRecord::Schema[8.0].define(version: 2026_06_10_200718) do
     t.index ["organization_id"], name: "index_permissions_on_organization_id"
   end
 
-  create_table "role_assignments", force: :cascade do |t|
-    t.bigint "role_id", null: false
-    t.bigint "member_id", null: false
-    t.datetime "start_date"
-    t.datetime "finish_date"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["member_id", "role_id"], name: "index_role_assignments_on_member_id_and_role_id"
-    t.index ["member_id"], name: "index_role_assignments_on_member_id"
-    t.index ["role_id", "member_id"], name: "index_role_assignments_on_role_id_and_member_id"
-    t.index ["role_id"], name: "index_role_assignments_on_role_id"
-  end
-
   create_table "roles", force: :cascade do |t|
-    t.jsonb "name", null: false
-    t.jsonb "description"
+    t.jsonb "name", default: {}, null: false
+    t.jsonb "description", default: {}
     t.integer "parent_id"
     t.bigint "organization_id", null: false
     t.bigint "department_id"
     t.boolean "active", default: true
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "member_id"
     t.index ["department_id"], name: "index_roles_on_department_id"
+    t.index ["member_id"], name: "index_roles_on_member_id"
     t.index ["name"], name: "index_roles_on_name", using: :gin
     t.index ["organization_id"], name: "index_roles_on_organization_id"
     t.index ["parent_id"], name: "index_roles_on_parent_id"
@@ -502,9 +491,8 @@ ActiveRecord::Schema[8.0].define(version: 2026_06_10_200718) do
   add_foreign_key "messages", "messages", column: "reply_to_id"
   add_foreign_key "organizations", "currencies", column: "main_currency_id"
   add_foreign_key "permissions", "organizations"
-  add_foreign_key "role_assignments", "members"
-  add_foreign_key "role_assignments", "roles"
   add_foreign_key "roles", "departments"
+  add_foreign_key "roles", "members"
   add_foreign_key "roles", "organizations"
   add_foreign_key "tasks", "organizations"
   add_foreign_key "tasks", "users"

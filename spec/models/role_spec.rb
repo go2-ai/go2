@@ -24,26 +24,12 @@ RSpec.describe Role, type: :model do
     it "is not valid with a name does not containing at least one translation" do
       role = build(:role, name: {}, organization: organization)
       expect(role).not_to be_valid
-      expect(role.errors[:name]).to include("must contain at least one translation")
+      expect(role.errors[:name].join("")).to include("must contain at least one")
     end
 
     it "is valid with a name containing at least one translation" do
       role = build(:role, organization: organization, name: { en: "Manager" })
       expect(role).to be_valid
-    end
-
-    it "validates uniqueness of name within organization scope" do
-      test_role_name = "Test Role Name #{SecureRandom.uuid}"
-      create(:role, organization: organization, name: test_role_name)
-
-      duplicate_role = build(:role, organization: organization, name: test_role_name)
-      expect(duplicate_role).not_to be_valid
-      expect(duplicate_role.errors[:name]).to include(/must be unique/)
-
-      # Different organization should allow same name
-      other_org = create(:organization, name: { en: "Other Org #{SecureRandom.uuid}" })
-      role_diff_org = build(:role, organization: other_org, name: test_role_name)
-      expect(role_diff_org).to be_valid
     end
 
     it "prevents circular references" do
@@ -62,7 +48,6 @@ RSpec.describe Role, type: :model do
     it { should belong_to(:parent).class_name('Role').optional(true) }
     it { should have_many(:children).class_name('Role').with_foreign_key('parent_id') }
     it { should have_many(:permissions).as(:grantee) }
-    it { should have_many(:role_assignments) }
   end
 
   describe "PaperTrail" do
@@ -139,120 +124,16 @@ RSpec.describe Role, type: :model do
 
   describe "#member" do
     let(:organization) { create(:organization, name: { en: "Member Org #{SecureRandom.uuid}" }) }
-    let(:role) { create(:role, organization: organization) }
-    let(:member) { create(:member, organization: organization) }
+    let(:member) { create(:member, organization:) }
+    let!(:role) { create(:role, organization:) }
 
     it "returns nil when no member is assigned" do
       expect(role.member).to be_nil
     end
 
     it "returns the assigned member when there is an active assignment" do
-      create(:role_assignment, role: role, member: member)
+      role.update(member:)
       expect(role.member).to eq(member)
-    end
-
-    it "returns only the active assignment" do
-      inactive_member = create(:member, organization: organization)
-      create(:role_assignment, role: role, member: inactive_member, finish_date: Time.current)
-      create(:role_assignment, role: role, member: member)
-
-      expect(role.member).to eq(member)
-    end
-  end
-
-  describe "#assign_member" do
-    let(:organization) { create(:organization, name: { en: "Assign Member Org #{SecureRandom.uuid}" }) }
-    let(:role) { create(:role, organization: organization) }
-    let(:member) { create(:member, organization: organization) }
-    let(:other_member) { create(:member, organization: organization) }
-    let(:diff_org_member) { create(:member, organization: create(:organization)) }
-
-    it "assigns a member to the role" do
-      expect {
-        result = role.assign_member(member)
-        expect(result).to be true
-      }.to change { RoleAssignment.count }.by(1)
-
-      assignment = RoleAssignment.last
-      expect(assignment.member).to eq(member)
-      expect(assignment.role).to eq(role)
-      expect(assignment.start_date).to be_present
-      expect(assignment.finish_date).to be_nil
-    end
-
-    it "closes previous assignment and creates a new one" do
-      role.assign_member(member)
-
-      expect {
-        role.assign_member(other_member)
-      }.to change { RoleAssignment.count }.by(1)
-        .and change { RoleAssignment.active.count }.by(0)
-
-      # Verify previous assignment was closed
-      first_assignment = RoleAssignment.where(member: member, role: role).first
-      expect(first_assignment.finish_date).not_to be_nil
-
-      # Verify new assignment is active
-      expect(role.member).to eq(other_member)
-    end
-
-    it "returns false for nil member" do
-      expect(role.assign_member(nil)).to be false
-    end
-
-    it "returns false for member from different organization" do
-      expect(role.assign_member(diff_org_member)).to be false
-    end
-  end
-
-  describe "#unassign_member" do
-    let(:organization) { create(:organization, name: { en: "Unassign Member Org #{SecureRandom.uuid}" }) }
-    let(:role) { create(:role, organization: organization) }
-    let(:member) { create(:member, organization: organization) }
-
-    before do
-      role.assign_member(member)
-    end
-
-    it "closes the current active assignment" do
-      expect {
-        role.unassign_member
-      }.not_to change { RoleAssignment.count }
-
-      assignment = RoleAssignment.last
-      expect(assignment.finish_date).to be_present
-      expect(role.member).to be_nil
-    end
-
-    it "does nothing if no member is assigned" do
-      role.unassign_member # Close the assignment first
-
-      expect {
-        role.unassign_member
-      }.not_to change { RoleAssignment.where(role: role).pluck(:finish_date) }
-    end
-  end
-
-  describe "#activate and #deactivate" do
-    let(:organization) { create(:organization, name: { en: "Active Org #{SecureRandom.uuid}" }) }
-    let(:role) { create(:role, :inactive, organization: organization) }
-
-    it "activates an inactive role" do
-      expect {
-        role.activate
-      }.to change { role.active }.from(false).to(true)
-
-      expect(Role.active).to include(role)
-    end
-
-    it "deactivates an active role" do
-      role.activate
-
-      expect {
-        role.deactivate
-      }.to change { role.active }.from(true).to(false)
-
-      expect(Role.active).not_to include(role)
     end
   end
 

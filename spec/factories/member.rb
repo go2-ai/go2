@@ -12,7 +12,7 @@ FactoryBot.define do
       elsif name_value.is_a?(Hash)
         member.write_attribute(:name, name_value)
       else
-        member.name = { "en" => "Test Member" }
+        member.name_en = "Test Member"
       end
     end
 

@@ -51,9 +51,7 @@ RSpec.describe Member, type: :model do
   describe "associations" do
     it { should belong_to(:organization).optional(false) }
     it { should belong_to(:user).optional(true) }
-    it { should have_many(:roles).through(:role_assignments) }
-    it { should have_many(:inactive_role_assignments) }
-    it { should have_many(:inactive_roles).through(:inactive_role_assignments).source(:role) }
+    it { should have_many(:roles) }
     it { should have_and_belong_to_many(:groups) }
     it { should have_many(:departments).through(:roles) }
     it { should have_many(:direct_permissions).class_name('Permission').as(:grantee) }
@@ -82,9 +80,9 @@ RSpec.describe Member, type: :model do
   end
 
   describe "#all_permissions" do
-    let(:member) { create(:member, organization: organization) }
-    let(:role) { create(:role, organization: organization) }
-    let(:group) { create(:group, organization: organization) }
+    let(:member) { create(:member, organization:) }
+    let(:role) { create(:role, organization:, member:) }
+    let(:group) { create(:group, organization:) }
     let(:department) { create(:department, organization: organization) }
 
     let(:role_permission) { create(:permission, grantee: role, code: "members.invite") }
@@ -93,8 +91,6 @@ RSpec.describe Member, type: :model do
     let(:direct_permission) { create(:permission, grantee: member, code: "members.invite") }
 
     before do
-      # Setup relationships
-      create(:role_assignment, role: role, member: member)
       group.add_member(member)
       role.update(department: department)
 

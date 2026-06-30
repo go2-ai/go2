@@ -17,14 +17,11 @@ class Department < ApplicationRecord
   validates_non_empty_translation :name, locales: ->(dept) { [ dept.organization&.locale ] }
 
   def members
-    Member.joins(:roles).where(roles: { department_id: id }).distinct
+    Member.where(id: roles.pluck(&:member_id))
   end
 
   def member_in_department?(member)
-    # Find if any role associated with this department is assigned to the member
-    roles.joins(:role_assignments)
-         .where(role_assignments: { member_id: member.id })
-         .exists?
+    roles.where(member_id: member.id).exists?
   end
 
   def add_role(role)

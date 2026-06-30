@@ -10,10 +10,7 @@ class Member < ApplicationRecord
   # Associations
   belongs_to :organization
   belongs_to :user, optional: true
-  has_many :role_assignments, -> { active }
-  has_many :roles, through: :role_assignments, source: :role
-  has_many :inactive_role_assignments, -> { inactive }, class_name: "RoleAssignment"
-  has_many :inactive_roles, through: :inactive_role_assignments, source: :role
+  has_many :roles
   has_and_belongs_to_many :groups
   has_many :departments, through: :roles
   has_many :direct_permissions, as: :grantee, class_name: "Permission"

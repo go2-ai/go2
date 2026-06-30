@@ -1067,6 +1067,272 @@ paths:
                   example: true
               required:
               - is_trial
+  "/organizations/{organization_id}/roles":
+    parameters:
+    - name: organization_id
+      in: path
+      description: Organization ID
+      required: true
+      schema:
+        type: integer
+    get:
+      summary: Get all organization roles
+      tags:
+      - Roles
+      responses:
+        '200':
+          description: Loaded successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                      example: 1
+                    name:
+                      type: string
+                      example: Engineering Manager
+                    description:
+                      type:
+                      - string
+                      - nil
+                      example: Can edit content
+                    active:
+                      type: boolean
+                      example: true
+                    department:
+                      type:
+                      - object
+                      - 'null'
+                      example:
+                        id: 1
+                        name: Finance
+                        abbreviation: FIN
+                    parent_id:
+                      type:
+                      - integer
+                      - 'null'
+                      example:
+                    member:
+                      type:
+                      - object
+                      - 'null'
+                      example:
+                        id: 1
+                        name: John Doe
+    post:
+      summary: Creating a new role
+      tags:
+      - Roles
+      parameters: []
+      responses:
+        '200':
+          description: Creates the new role successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    example: 1
+                  name:
+                    type: string
+                    example: Engineering Manager
+                  description:
+                    type:
+                    - string
+                    - nil
+                    example: Can edit content
+                  active:
+                    type: boolean
+                    example: true
+                  department:
+                    type:
+                    - object
+                    - 'null'
+                    example:
+                      id: 1
+                      name: Finance
+                      abbreviation: FIN
+                  parent_id:
+                    type:
+                    - integer
+                    - 'null'
+                    example:
+                  member:
+                    type:
+                    - object
+                    - 'null'
+                    example:
+                      id: 1
+                      name: John Doe
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name_en:
+                  type: string
+                  example: Jr. Accountant
+                name_fa:
+                  type: string
+                  example: کارآموز حسابداری
+                description_en:
+                  type: string
+                  example: Part time contractor
+                description_fa:
+                  type: string
+                  example: نیروی قراردادی پاره وقت
+                parent_id:
+                  type: integer
+                  example: 1
+                department_id:
+                  type: integer
+                  example: 1
+                member_id:
+                  type: integer
+                  example: 1
+  "/organizations/{organization_id}/roles/{id}":
+    parameters:
+    - name: organization_id
+      in: path
+      description: Organization ID
+      required: true
+      schema:
+        type: integer
+    - name: id
+      in: path
+      description: Role ID
+      required: true
+      schema:
+        type: integer
+    get:
+      summary: Get the role
+      tags:
+      - Roles
+      responses:
+        '200':
+          description: Loaded successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    example: 1
+                  name:
+                    type: string
+                    example: Engineering Manager
+                  description:
+                    type:
+                    - string
+                    - nil
+                    example: Can edit content
+                  active:
+                    type: boolean
+                    example: true
+                  department:
+                    type:
+                    - object
+                    - 'null'
+                    example:
+                      id: 1
+                      name: Finance
+                      abbreviation: FIN
+                  parent_id:
+                    type:
+                    - integer
+                    - 'null'
+                    example:
+                  member:
+                    type:
+                    - object
+                    - 'null'
+                    example:
+                      id: 1
+                      name: John Doe
+    patch:
+      summary: Updates the role
+      tags:
+      - Roles
+      parameters: []
+      responses:
+        '200':
+          description: Updates the role successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    example: 1
+                  name:
+                    type: string
+                    example: Engineering Manager
+                  description:
+                    type:
+                    - string
+                    - nil
+                    example: Can edit content
+                  active:
+                    type: boolean
+                    example: true
+                  department:
+                    type:
+                    - object
+                    - 'null'
+                    example:
+                      id: 1
+                      name: Finance
+                      abbreviation: FIN
+                  parent_id:
+                    type:
+                    - integer
+                    - 'null'
+                    example:
+                  member:
+                    type:
+                    - object
+                    - 'null'
+                    example:
+                      id: 1
+                      name: John Doe
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name_en:
+                  type: string
+                  example: Updated Name
+                description_en:
+                  type:
+                  - string
+                  - nil
+                  example: Updated description
+                member_id:
+                  type:
+                  - string
+                  - nil
+                  example: '1'
+                active:
+                  type: boolean
+                  example: false
+    delete:
+      summary: Deletes the role
+      tags:
+      - Roles
+      responses:
+        '200':
+          description: Deletes the role successfully
   "/users/confirmation":
     get:
       summary: Confirm user email
