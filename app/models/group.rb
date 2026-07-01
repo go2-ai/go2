@@ -1,58 +1,28 @@
 class Group < ApplicationRecord
-  # Enable PaperTrail for versioning
+  include TranslationHelper
+
   has_paper_trail
 
-  # Will enable Mobility for translations later
   extend Mobility
-  translates :name, backend: :jsonb, fallbacks: true
-  translates :description, backend: :jsonb, fallbacks: true
+  translates :name
+  translates :description
 
-  # Ensure name is always initialized as a hash
-  after_initialize :initialize_name
-  before_validation :initialize_name
-
-  # Associations
   belongs_to :organization, optional: false
   has_and_belongs_to_many :members
   has_many :permissions, as: :grantee
 
-  # Validations
-  validate :name_has_at_least_one_translation
-  validate :name_translations_are_unique
+  before_save :sync_member_id_cache
 
-  # Methods
-  def add_member(member)
-    members << member unless members.include?(member)
-  end
-
-  def remove_member(member)
-    members.delete(member) if members.include?(member)
-  end
-
-  def member_in_group?(member)
-    members.include?(member)
-  end
+  validates_non_empty_translation :name, locales: ->(group) { [ group.organization&.locale ] }
+  validates_uniqueness_of_translated :name, scope: :organization_id
 
   private
 
-  def initialize_name
-    write_attribute(:name, {}) if read_attribute(:name).nil?
+  def sync_member_id_cache
+    self.member_id_cache = member_ids.sort if member_ids_changed_in_memory?
   end
 
-  def name_has_at_least_one_translation
-    return if Mobility.available_locales.any? { |loc| name(locale: loc).present? }
-    errors.add(:name, "must contain at least one translation")
-  end
-
-  def name_translations_are_unique
-    name_translations = read_attribute(:name) || {}
-    name_translations.each do |locale, name_value|
-      next if name_value.blank?
-      Mobility.with_locale(locale) do
-        if organization.groups.where.not(id: id).where("name ->> ? = ?", locale.to_s, name_value).exists?
-          errors.add(:name, "must be unique within the organization for locale #{locale}")
-        end
-      end
-    end
+  def member_ids_changed_in_memory?
+    member_id_cache.sort != member_ids.sort
   end
 end

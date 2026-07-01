@@ -76,14 +76,9 @@ Rails.application.routes.draw do
       collection do
         get :export
       end
-      member do
-        patch :activate
-        patch :deactivate
-        get :assignments
-        patch :assign_member
-        patch :unassign_member
-      end
     end
+
+    resources :groups
 
     resources :conversations do
       member do
@@ -101,7 +96,7 @@ Rails.application.routes.draw do
     resources :messages
   end
 
-  resources :users, only: [:show]
+  resources :users, only: [ :show ]
 
   namespace :admin do
     resources :organizations do

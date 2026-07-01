@@ -5,12 +5,8 @@ class Role < ApplicationRecord
 
   # Will enable Mobility for translations later
   extend Mobility
-  translates :name, backend: :jsonb, fallbacks: true
-  translates :description, backend: :jsonb, fallbacks: true
-
-  # Ensure name is always initialized as a hash
-  after_initialize :initialize_name
-  before_validation :initialize_name
+  translates :name
+  translates :description
 
   # Associations
   belongs_to :organization, optional: false
@@ -54,15 +50,6 @@ class Role < ApplicationRecord
   end
 
   private
-
-  def initialize_name
-    write_attribute(:name, {}) if read_attribute(:name).nil?
-  end
-
-  def name_has_at_least_one_translation
-    return if Mobility.available_locales.any? { |loc| name(locale: loc).present? }
-    errors.add(:name, "must contain at least one translation")
-  end
 
   def no_circular_references
     return unless parent_id_changed? && parent_id.present?

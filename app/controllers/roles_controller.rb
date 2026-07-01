@@ -42,7 +42,7 @@ class RolesController < ApplicationController
 
   def export
     authorize current_member
-    @roles = current_organization.roles.includes([ :department, :parent]).order(:name)
+    @roles = current_organization.roles.includes([ :department, :parent ]).order(:name)
     respond_to do |format|
       format.xlsx do
         response.headers["Content-Disposition"] = "attachment; filename=roles_#{current_organization.name.parameterize}_#{Date.current}.xlsx"

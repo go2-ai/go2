@@ -119,24 +119,4 @@ RSpec.describe Group, type: :model do
       }.not_to change { group.members.count }
     end
   end
-
-  describe "#member_in_group?" do
-    # Create a new organization for this test group to avoid uniqueness conflicts
-    let(:org) { create(:organization, name: { en: "Member In Group Org #{SecureRandom.uuid}" }) }
-    let(:group) { create(:group, organization: org) }
-    let(:member) { create(:member, organization: org) }
-    let(:other_member) { create(:member, organization: org) }
-
-    before do
-      group.add_member(member)
-    end
-
-    it "returns true if member is in group" do
-      expect(group.member_in_group?(member)).to be true
-    end
-
-    it "returns false if member is not in group" do
-      expect(group.member_in_group?(other_member)).to be false
-    end
-  end
 end

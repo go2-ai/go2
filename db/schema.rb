@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_06_29_200719) do
+ActiveRecord::Schema[8.0].define(version: 2026_07_01_075155) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -168,20 +168,19 @@ ActiveRecord::Schema[8.0].define(version: 2026_06_29_200719) do
   end
 
   create_table "groups", force: :cascade do |t|
-    t.jsonb "name", null: false
-    t.jsonb "description"
+    t.jsonb "name", default: {}, null: false
+    t.jsonb "description", default: {}
     t.bigint "organization_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.jsonb "member_id_cache", default: [], null: false
     t.index ["name"], name: "index_groups_on_name", using: :gin
     t.index ["organization_id"], name: "index_groups_on_organization_id"
   end
 
-  create_table "groups_members", id: false, force: :cascade do |t|
+  create_table "groups_members", force: :cascade do |t|
     t.bigint "group_id", null: false
     t.bigint "member_id", null: false
-    t.index ["group_id", "member_id"], name: "index_groups_members_on_group_id_and_member_id"
-    t.index ["member_id", "group_id"], name: "index_groups_members_on_member_id_and_group_id"
   end
 
   create_table "journal_entries", force: :cascade do |t|
@@ -451,6 +450,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_06_29_200719) do
     t.string "item_type", null: false
     t.string "event", null: false
     t.text "object"
+    t.jsonb "object_changes"
     t.index ["item_type", "item_id"], name: "index_versions_on_item_type_and_item_id"
   end
 

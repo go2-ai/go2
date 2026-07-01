@@ -203,6 +203,222 @@ paths:
       responses:
         '200':
           description: Deletes the department successfully
+  "/organizations/{organization_id}/groups":
+    parameters:
+    - name: organization_id
+      in: path
+      description: Organization ID
+      required: true
+      schema:
+        type: integer
+    get:
+      summary: Get all organization groups
+      tags:
+      - Groups
+      responses:
+        '200':
+          description: Loaded successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                      example: 1
+                    name:
+                      type: string
+                      example: Musicians
+                    description:
+                      type:
+                      - string
+                      - nil
+                      example: Group for musicians
+                    members:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          id:
+                            type: integer
+                            example: 1
+                          name:
+                            type: string
+                            example: John Doe
+    post:
+      summary: Creating a new group
+      tags:
+      - Groups
+      parameters: []
+      responses:
+        '200':
+          description: Creates the new group successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    example: 1
+                  name:
+                    type: string
+                    example: Musicians
+                  description:
+                    type:
+                    - string
+                    - nil
+                    example: Group for musicians
+                  members:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                          example: 1
+                        name:
+                          type: string
+                          example: John Doe
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name_en:
+                  type: string
+                  example: Engineering
+                name_fa:
+                  type: string
+                  example: مهندسی
+                description_en:
+                  type: string
+                  example: Engineering team
+                description_fa:
+                  type: string
+                  example: تیم مهندسی
+                member_ids:
+                  type: array
+                  items:
+                    type: integer
+                  example:
+                  - 1
+                  - 2
+                  - 3
+  "/organizations/{organization_id}/groups/{id}":
+    parameters:
+    - name: organization_id
+      in: path
+      description: Organization ID
+      required: true
+      schema:
+        type: integer
+    - name: id
+      in: path
+      description: Group ID
+      required: true
+      schema:
+        type: integer
+    get:
+      summary: Get the group
+      tags:
+      - Groups
+      responses:
+        '200':
+          description: Loaded successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    example: 1
+                  name:
+                    type: string
+                    example: Musicians
+                  description:
+                    type:
+                    - string
+                    - nil
+                    example: Group for musicians
+                  members:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                          example: 1
+                        name:
+                          type: string
+                          example: John Doe
+    patch:
+      summary: Updates the group
+      tags:
+      - Groups
+      parameters: []
+      responses:
+        '200':
+          description: Updates the group successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    example: 1
+                  name:
+                    type: string
+                    example: Musicians
+                  description:
+                    type:
+                    - string
+                    - nil
+                    example: Group for musicians
+                  members:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                          example: 1
+                        name:
+                          type: string
+                          example: John Doe
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name_en:
+                  type: string
+                  example: Updated Name
+                description_en:
+                  type:
+                  - string
+                  - nil
+                  example: Updated description
+                member_ids:
+                  type: array
+                  items:
+                    type: integer
+                  example:
+                  - 1
+                  - 2
+    delete:
+      summary: Deletes the group
+      tags:
+      - Groups
+      responses:
+        '200':
+          description: Deletes the group successfully
   "/organizations/{organization_id}/members":
     parameters:
     - name: organization_id
