@@ -41,6 +41,9 @@ class Organization < ApplicationRecord
   has_many :centers, through: :center_types
   has_many :journal_entries, dependent: :destroy
   has_many :journal_entry_items, through: :journal_entries
+  has_many :subscriptions, class_name: "G2::Subscription", dependent: :destroy
+  has_many :invoices, class_name: "G2::Invoice", dependent: :destroy
+  has_many :usage_records
 
   # Validations
   validate :no_circular_references
@@ -60,14 +63,12 @@ class Organization < ApplicationRecord
     chain
   end
 
-  TRIAL_DAYS = 15
-
   def trial_end_date
-    created_at + TRIAL_DAYS.days
+    created_at + G2::TRIAL_PERIOD
   end
 
   def trial_active?
-    trial_end_date > Date.current
+    is_trial? && Time.current < trial_end_date
   end
 
   def effective_currencies
@@ -80,6 +81,18 @@ class Organization < ApplicationRecord
 
   def available_locales
     active_locales | [ locale ]
+  end
+
+  def self_and_descendant_ids
+    sql = <<~SQL
+      WITH RECURSIVE descendants AS (
+        SELECT id FROM organizations WHERE id = ?
+        UNION ALL
+        SELECT o.id FROM organizations o INNER JOIN descendants d ON o.parent_id = d.id
+      )
+      SELECT id FROM descendants
+    SQL
+    Organization.find_by_sql([sql, id]).map(&:id)
   end
 
   # private

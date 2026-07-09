@@ -93,10 +93,26 @@ Rails.application.routes.draw do
       end
     end
 
+    namespace :g2 do
+      resources :subscriptions, only: [:create] do
+        member do
+          post :renew
+          post :cancel
+        end
+      end
+      resources :invoices, only: [:show] do
+        resources :payments, only: [:create]
+      end
+    end
+
     resources :messages
   end
 
   resources :users, only: [ :show ]
+
+  namespace :webhooks do
+    post "now_payments", to: "now_payments#create"
+  end
 
   namespace :admin do
     resources :organizations do
