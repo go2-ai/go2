@@ -87,6 +87,34 @@ RSpec.describe Organization, type: :model do
       expect(grandparent.ancestors).to eq([ grandparent ])
     end
   end
+  
+  describe "#admins" do
+    let(:org) { create(:organization, is_tenant: true) }
+
+    it "returns users who have the org admin permission" do
+      admin_user = create(:user)
+      regular_user = create(:user)
+
+      admin_member = create(:member, organization: org, user: admin_user)
+      regular_member = create(:member, organization: org, user: regular_user)
+
+      create(:permission, code: Permission::ORG_ADMIN, organization: org, grantee: admin_member)
+
+      expect(org.admins).to include(admin_user)
+      expect(org.admins).not_to include(regular_user)
+    end
+
+    it "returns empty when no one has org admin permission" do
+      expect(org.admins).to be_empty
+    end
+
+    it "does not include nil users (unclaimed invitations)" do
+      member = create(:member, organization: org, user: nil)
+      create(:permission, code: Permission::ORG_ADMIN, organization: org, grantee: member)
+
+      expect(org.admins).to be_empty
+    end
+  end
 
   describe "translations" do
     it "supports name translations" do

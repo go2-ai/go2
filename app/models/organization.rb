@@ -95,6 +95,10 @@ class Organization < ApplicationRecord
     Organization.find_by_sql([sql, id]).map(&:id)
   end
 
+  def admins
+    members.select(&:org_admin?).map(&:user).compact.uniq
+  end
+
   # private
 
   def archive_children
