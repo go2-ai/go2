@@ -1,0 +1,16 @@
+<h1>Your trial ends in <%= @days_left %> <%= 'day'.pluralize(@days_left) %></h1>
+
+<p>Hi <%= @admin.email %>,</p>
+
+<p>
+  Your free trial for <strong><%= @organization.name %></strong>
+  will end on <%= @organization.trial_end_date.to_date.strftime("%B %d, %Y") %>.
+</p>
+
+<p>
+  To keep access to all features, please choose a plan before the trial ends.
+</p>
+
+<p>
+  <a href="<%= ENV.fetch('FRONTEND_URL') %>/billing">Manage Billing</a>
+</p>

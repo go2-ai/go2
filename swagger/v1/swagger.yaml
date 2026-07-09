@@ -203,6 +203,304 @@ paths:
       responses:
         '200':
           description: Deletes the department successfully
+  "/organizations/{organization_id}/g2/invoices/{id}":
+    get:
+      summary: Fetch an invoice, its line items, and its payment attempts
+      tags:
+      - Invoices
+      parameters:
+      - name: organization_id
+        in: path
+        required: true
+        schema:
+          type: integer
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+      responses:
+        '200':
+          description: invoice found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  invoice_number:
+                    type: string
+                  total:
+                    type: number
+                  status:
+                    type: string
+                    example: pending
+                  due_at:
+                    type: string
+                    format: date-time
+                  paid_at:
+                    type: string
+                    format: date-time
+                    nullable: true
+                  items:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        module:
+                          type: string
+                        plan:
+                          type: string
+                        quantity:
+                          type: integer
+                        unit_price:
+                          type: number
+                        amount:
+                          type: number
+                        period_start:
+                          type: string
+                          format: date-time
+                        period_end:
+                          type: string
+                          format: date-time
+                  payments:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        provider:
+                          type: string
+                          example: nowpayments
+                        status:
+                          type: string
+                          example: waiting
+                        invoice_url:
+                          type: string
+                          nullable: true
+                          description: NOWPayments hosted checkout link
+        '404':
+          description: invoice not found
+  "/organizations/{organization_id}/g2/invoices/{invoice_id}/payments":
+    post:
+      summary: Start (or retry) a crypto payment attempt for an invoice
+      tags:
+      - Payments
+      description: Creates a payment attempt via NOWPayments and returns a hosted
+        checkout URL. Safe to call again if a previous attempt expired or failed -
+        each call creates a new payment row against the same invoice, no duplicate
+        billing.
+      parameters:
+      - name: organization_id
+        in: path
+        required: true
+        schema:
+          type: integer
+      - name: invoice_id
+        in: path
+        required: true
+        schema:
+          type: integer
+      responses:
+        '201':
+          description: checkout URL created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  status:
+                    type: string
+                    example: waiting
+                  invoice_url:
+                    type: string
+                    description: Redirect the customer here to complete payment
+        '502':
+          description: NOWPayments API error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+  "/organizations/{organization_id}/g2/subscriptions":
+    post:
+      summary: Subscribe an organization to a module
+      tags:
+      - Subscriptions
+      parameters:
+      - name: organization_id
+        in: path
+        required: true
+        schema:
+          type: integer
+      responses:
+        '201':
+          description: subscription created (pending until paid)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  subscription:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                      module:
+                        type: string
+                      plan:
+                        type: string
+                      status:
+                        type: string
+                        example: pending
+                      starts_at:
+                        type: string
+                        format: date-time
+                      ends_at:
+                        type: string
+                        format: date-time
+                  invoice:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                      invoice_number:
+                        type: string
+                      total:
+                        type: number
+                        example: 25.0
+                      status:
+                        type: string
+                        example: pending
+                      due_at:
+                        type: string
+                        format: date-time
+        '422':
+          description: invalid module/plan, or an active subscription to this module
+            already exists
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                module_key:
+                  type: string
+                  example: accounting
+                  description: One of G2::Modules::ALL
+                plan:
+                  type: string
+                  example: level_1
+                  description: One of G2::Plans::ALL
+                billing_period:
+                  type: string
+                  enum:
+                  - monthly
+                  - annual
+              required:
+              - module_key
+              - plan
+              - billing_period
+  "/organizations/{organization_id}/g2/subscriptions/{id}/renew":
+    post:
+      summary: Charge for the next billing period
+      tags:
+      - Subscriptions
+      description: Creates a renewal invoice (including any overage from the period
+        ending). The subscription's end date only extends once this invoice is paid.
+      parameters:
+      - name: organization_id
+        in: path
+        required: true
+        schema:
+          type: integer
+      - name: id
+        in: path
+        required: true
+        description: Subscription id
+        schema:
+          type: integer
+      responses:
+        '201':
+          description: renewal invoice created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  invoice:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                      invoice_number:
+                        type: string
+                      total:
+                        type: number
+                      status:
+                        type: string
+                      due_at:
+                        type: string
+                        format: date-time
+        '404':
+          description: subscription not found
+  "/organizations/{organization_id}/g2/subscriptions/{id}/cancel":
+    post:
+      summary: Cancel a subscription
+      tags:
+      - Subscriptions
+      description: Stops auto-renewal immediately. Access continues until the subscription's
+        ends_at - already-paid-for time is never revoked early.
+      parameters:
+      - name: organization_id
+        in: path
+        required: true
+        schema:
+          type: integer
+      - name: id
+        in: path
+        required: true
+        description: Subscription id
+        schema:
+          type: integer
+      responses:
+        '200':
+          description: subscription cancelled
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  module:
+                    type: string
+                  plan:
+                    type: string
+                  status:
+                    type: string
+                    example: cancelled
+                  starts_at:
+                    type: string
+                    format: date-time
+                  ends_at:
+                    type: string
+                    format: date-time
+        '404':
+          description: subscription not found
   "/organizations/{organization_id}/groups":
     parameters:
     - name: organization_id
