@@ -91,7 +91,7 @@ RSpec.describe Member, type: :model do
     let(:direct_permission) { create(:permission, grantee: member, code: "members.invite") }
 
     before do
-      group.add_member(member)
+      group.members << member
       role.update(department: department)
 
       # Create permissions
@@ -144,7 +144,7 @@ RSpec.describe Member, type: :model do
 
   describe "#localized_status" do
     before { organization.update(locale: 'fa') }
-    let(:member) { create(:member, organization:) }
+    let(:member) { create(:member, organization:, name: 'نام فارسی') }
     it "Translates status" do
       I18n.with_locale(:fa) do
         expect(member.localized_status).to eq("دعوت نشده")
