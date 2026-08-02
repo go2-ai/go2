@@ -37,11 +37,14 @@ export function RouteSynchronizer() {
     } else if (pathname.includes('/departments')) {
       pageId = 'departments';
       title = 'Departments';
+    } else if (pathname.endsWith(`/roles`)) {
+      pageId = 'roles';
+      title = 'Roles';
     } else if (pathname.endsWith(`/organizations/${organizationId}`)) {
       pageId = 'dashboard';
       title = 'Dashboard';
-    }
-
+    } 
+    
     if (pageId) {
       // Find the most recently created tab with this pageId
       // Tabs have IDs like "members-1234567890" with timestamp

@@ -4,7 +4,7 @@ class RolesController < ApplicationController
   before_action :set_role, only: %i[show update destroy]
 
   def index
-    roles = current_organization.roles
+    roles = current_organization.roles.includes(:department).includes(member: :user).order(:id)
     render json: RoleBlueprint.render(roles), status: :ok
   end
 

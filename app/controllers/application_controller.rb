@@ -181,10 +181,6 @@ class ApplicationController < ActionController::Base
     current_user&.locale || I18n.default_locale
   end
 
-  def switch_locale(&action)
-    I18n.with_locale(current_locale, &action)
-  end
-
   def t_params(attribute)
     current_organization.available_locales.map { |locale| "#{attribute}_#{locale}".to_sym }
   end

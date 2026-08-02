@@ -1,18 +1,15 @@
 {
   "fa": {
-    "abbreviation": "حروف اختصار",
     "addDepartment": "افزودن واحد",
     "deleteDepartmentMessage": "آیا مطمئنید که می خواهید واحد شازمانی \"{{name}}\" را حذف کنید؟",
     "deleteDepartmentTitle": "حذف واحد سازمانی",
-    "deleteSuccess": "واحد سازمانی با موفقیت حذف شد.",
     "departments": "واحد های سازمانی",
     "editDepartment": "ویرایش واحد",
     "failedToLoadDepartments": "بارگذاری واحدها ناموفق بود. لطفا دوباره تلاش کنید.",
     "loadingDepartments": "در حال بارگذاری واحدها ...",
-    "max5chars": "حداکثر 5 کاراکتر",
     "manageDepartments": "مدیریت واحد های سازمان",
+    "max5chars": "حداکثر 5 کاراکتر",
     "noDepartmentsFound": "هیچ واحدی یافت نشد.",
-    "searchDepartments": "جست و جوی واحدها ...",
-    "tryAgain": "دوباره تلاش کنید"
+    "searchDepartments": "جست و جوی واحدها ..."
   }
 }

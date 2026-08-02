@@ -13,8 +13,8 @@ class Role < ApplicationRecord
   belongs_to :department, optional: true
   belongs_to :member, optional: true
   belongs_to :parent, class_name: "Role", optional: true
-  has_many :children, class_name: "Role", foreign_key: "parent_id"
-  has_many :permissions, as: :grantee
+  has_many :children, class_name: "Role", foreign_key: "parent_id", dependent: :nullify
+  has_many :permissions, as: :grantee, dependent: :destroy
 
   # Validations
   validates_non_empty_translation :name, locales: ->(role) { [ role.organization&.locale ] }

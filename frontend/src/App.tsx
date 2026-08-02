@@ -9,24 +9,30 @@ import { AppLayout } from './features/app/AppLayout';
 import { Dashboard } from './features/app/Dashboard';
 import { MembersPage } from './features/members/MembersPage';
 import { DepartmentsPage } from './features/departments/DepartmentsPage';
-
+import { RolesPage } from './features/roles/RolesPage';
 
 function App() {
   return (
     <AppProviders>
       <Router>
         <Routes>
+          {/* Auth routes - outside the main layout */}
           <Route path="app/signup" element={<SignUp />} />
           <Route path="app/signin" element={<SignIn />} />
           <Route path="app/confirmation" element={<EmailConfirmation />} />
           <Route path="app/organization-resolver" element={<OrganizationResolver />} />
           <Route path="app/onboarding" element={<Onboarding />} />
+          
+          {/* Main app layout with nested routes */}
           <Route path="app/organizations" element={<AppLayout />}>
             <Route path=":organizationId" element={<Dashboard />} />
-            <Route path="/app/organizations/:organizationId/members" element={<MembersPage />} />
-            <Route path="/app/organizations/:organizationId/departments" element={<DepartmentsPage />} />
+            <Route path=":organizationId/members" element={<MembersPage />} />
+            <Route path=":organizationId/departments" element={<DepartmentsPage />} />
+            <Route path=":organizationId/roles" element={<RolesPage />} />
           </Route>
-          <Route path="app/" element={<Navigate to="/signup" />} />
+          
+          <Route path="app/" element={<Navigate to="/app/signin" replace />} />
+          <Route path="/" element={<Navigate to="/app/signin" replace />} />
         </Routes>
       </Router>
     </AppProviders>

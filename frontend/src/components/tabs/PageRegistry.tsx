@@ -3,12 +3,14 @@
 import { Dashboard } from '../../features/app/Dashboard';
 import { MembersPage } from '../../features/members/MembersPage';
 import { DepartmentsPage } from '../../features/departments/DepartmentsPage';
+import { RolesPage } from '../../features/roles/RolesPage';
 import { Box, Typography } from '@mui/material';
 
 export const PAGE_REGISTRY: Record<string, React.ComponentType> = {
   dashboard: Dashboard,
   members: MembersPage,
   departments: DepartmentsPage,
+  roles: RolesPage,
 };
 
 export function PageContent({ pageId }: { pageId: string }) {

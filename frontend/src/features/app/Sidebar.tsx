@@ -16,6 +16,7 @@ import {
   Dashboard,
   People,
   Business,
+  Assignment,
 } from '@mui/icons-material';
 
 const drawerWidth = 280;
@@ -50,6 +51,12 @@ export function Sidebar() {
       title: 'Departments',
       icon: <Business />,
       path: '/departments',
+    },
+    {
+      pageId: 'roles',  // Add this
+      title: 'Roles',
+      icon: <Assignment />,
+      path: '/roles',
     },
   ];
 
