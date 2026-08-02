@@ -4,6 +4,7 @@ import { Dashboard } from '../../features/app/Dashboard';
 import { MembersPage } from '../../features/members/MembersPage';
 import { DepartmentsPage } from '../../features/departments/DepartmentsPage';
 import { RolesPage } from '../../features/roles/RolesPage';
+import { GroupsPage } from '../../features/groups/GroupsPage';
 import { Box, Typography } from '@mui/material';
 
 export const PAGE_REGISTRY: Record<string, React.ComponentType> = {
@@ -11,6 +12,7 @@ export const PAGE_REGISTRY: Record<string, React.ComponentType> = {
   members: MembersPage,
   departments: DepartmentsPage,
   roles: RolesPage,
+  groups: GroupsPage,
 };
 
 export function PageContent({ pageId }: { pageId: string }) {

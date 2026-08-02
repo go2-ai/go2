@@ -17,6 +17,7 @@ import {
   People,
   Business,
   Assignment,
+  Group
 } from '@mui/icons-material';
 
 const drawerWidth = 280;
@@ -57,6 +58,12 @@ export function Sidebar() {
       title: 'Roles',
       icon: <Assignment />,
       path: '/roles',
+    },
+    {
+      pageId: 'groups',
+      title: 'Groups',
+      icon: <Group />,
+      path: '/groups',
     },
   ];
 

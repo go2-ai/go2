@@ -1,0 +1,18 @@
+{
+  "en": {
+    "addGroup": "Add Group",
+    "deleteGroupMessage": "Are you sure you want to delete group \"{{name}}\"?",
+    "deleteGroupTitle": "Delete Group",
+    "deselectAll": "Deselect All",
+    "editGroup": "Edit Group",
+    "failedToLoadGroups": "Failed to load groups. Please try again.",
+    "groups": "Groups",
+    "loadingGroups": "Loading groups...",
+    "manageGroups": "Manage groups and their members",
+    "memberCountPlural": "{{count}} members",
+    "memberCountSingular": "1 member",
+    "noGroupsFound": "No groups found.",
+    "searchGroups": "Search groups...",
+    "selectAll": "Select All"
+  }
+}

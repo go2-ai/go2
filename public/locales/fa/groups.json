@@ -1,0 +1,18 @@
+{
+  "fa": {
+    "addGroup": "افزودن گروه",
+    "deleteGroupMessage": "آیا مطمئنید که می‌خواهید گروه \"{{name}}\" را حذف کنید؟",
+    "deleteGroupTitle": "حذف گروه",
+    "deselectAll": "لغو انتخاب همه",
+    "editGroup": "ویرایش گروه",
+    "failedToLoadGroups": "بارگذاری گروه‌ها ناموفق بود. لطفاً دوباره تلاش کنید.",
+    "groups": "گروه‌ها",
+    "loadingGroups": "در حال بارگذاری گروه‌ها...",
+    "manageGroups": "مدیریت گروه‌ها و اعضای آنها",
+    "memberCountPlural": "{{count}} عضو",
+    "memberCountSingular": "۱ عضو",
+    "noGroupsFound": "هیچ گروهی یافت نشد.",
+    "searchGroups": "جستجوی گروه‌ها...",
+    "selectAll": "انتخاب همه"
+  }
+}
