@@ -9,6 +9,7 @@ import {
   Box,
   CircularProgress,
   Autocomplete,
+  Typography,
 } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import {
@@ -28,8 +29,6 @@ import {
 } from '../../../utils/translationHelper';
 import { useGetDepartmentsQuery } from '../../departments/departmentsApi';
 import { useGetMembersQuery } from '../../members/membersApi';
-import type { Department } from '../../departments/types';
-import type { Member } from '../../members/types';
 
 interface RoleModalProps {
   open: boolean;
@@ -284,7 +283,10 @@ export const RoleModal = ({
           {/* Searchable Member dropdown */}
           <Autocomplete
             options={members || []}
-            getOptionLabel={(option) => `${option.name} (${option.email})`}
+            getOptionLabel={(option) => {
+              // Return just the name for the input field value
+              return option.name || '';
+            }}
             value={selectedMember}
             onChange={(_, newValue) => {
               setFormData((prev) => ({
@@ -293,6 +295,25 @@ export const RoleModal = ({
               }));
             }}
             isOptionEqualToValue={(option, value) => option.id === value?.id}
+            renderOption={(props, option) => {
+              const { key, ...optionProps } = props;
+              const hasEmail = option.email && option.email.trim() !== '';
+              return (
+                <li key={key} {...optionProps}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                    <Typography component="span">{option.name}</Typography>
+                    {hasEmail && (
+                      <Typography
+                        component="span"
+                        sx={{ opacity: 0.5, fontSize: '0.875rem' }}
+                      >
+                        {option.email}
+                      </Typography>
+                    )}
+                  </Box>
+                </li>
+              );
+            }}
             renderInput={(params) => (
               <TextField
                 {...params}
