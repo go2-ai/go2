@@ -80,6 +80,8 @@ Rails.application.routes.draw do
 
     resources :groups
 
+    resources :versions, only: [ :index ]
+
     resources :conversations do
       member do
         post :reply

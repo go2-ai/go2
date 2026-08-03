@@ -15,7 +15,7 @@ import { useWorkspaceState } from './useWorkspaceState';
 interface TabContextType {
   layout: WorkspaceLayout;
   setLayout: React.Dispatch<React.SetStateAction<WorkspaceLayout>>;
-  openTab: (pageId: string, title: string) => void;
+  openTab: (pageId: string, title: string, path: string) => void;
   closeTab: (tabId: string, panelId: string) => void;
   splitTab: (
     tabId: string,
@@ -36,6 +36,7 @@ interface TabContextType {
   handleDragEnd: (event: DragEndEvent) => void;
   setActiveTab: (panelId: string, tabId: string) => void;
   setActiveTabByPageId: (tabId: string, panelId: string) => void;
+  updateTabTitle: (pageId: string, title: string) => void;
 }
 
 const TabContext = createContext<TabContextType | null>(null);
@@ -49,7 +50,7 @@ export function TabProvider({ children, organizationId }: TabProviderProps) {
   const { layout, setLayout } = useWorkspaceState();
   useTabPersistence(organizationId, layout, setLayout);
 
-  const { openTab, closeTab, splitTab, duplicateTab, resetLayout } =
+  const { openTab, closeTab, splitTab, duplicateTab, resetLayout, updateTabTitle } =
     useTabOperations(setLayout);
 
   const {
@@ -92,7 +93,8 @@ export function TabProvider({ children, organizationId }: TabProviderProps) {
     handleDragOver,
     handleDragEnd,
     setActiveTab,
-    setActiveTabByPageId, // NEW
+    setActiveTabByPageId,
+    updateTabTitle 
   };
 
   return <TabContext.Provider value={value}>{children}</TabContext.Provider>;

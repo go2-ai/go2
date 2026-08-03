@@ -40,6 +40,12 @@ export function RouteSynchronizer() {
     } else if (pathname.endsWith(`/roles`)) {
       pageId = 'roles';
       title = 'Roles';
+    } else if (pathname.endsWith(`/groups`)) {
+      pageId = 'groups';
+      title = 'Groups';
+    } else if (pathname.endsWith(`/record-history`)) {
+      pageId = 'record-history';
+      title = 'History';
     } else if (pathname.endsWith(`/organizations/${organizationId}`)) {
       pageId = 'dashboard';
       title = 'Dashboard';

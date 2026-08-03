@@ -5,6 +5,8 @@ import { MembersPage } from '../../features/members/MembersPage';
 import { DepartmentsPage } from '../../features/departments/DepartmentsPage';
 import { RolesPage } from '../../features/roles/RolesPage';
 import { GroupsPage } from '../../features/groups/GroupsPage';
+import { RecordHistoryPage } from '../../features/versions/RecordHistoryPage';
+import { TabIdContext } from './TabIdContext';
 import { Box, Typography } from '@mui/material';
 
 export const PAGE_REGISTRY: Record<string, React.ComponentType> = {
@@ -13,9 +15,10 @@ export const PAGE_REGISTRY: Record<string, React.ComponentType> = {
   departments: DepartmentsPage,
   roles: RolesPage,
   groups: GroupsPage,
+  'record-history': RecordHistoryPage, 
 };
 
-export function PageContent({ pageId }: { pageId: string }) {
+export function PageContent({ pageId, tabId }: { pageId: string; tabId?: string }) {
   const Component = PAGE_REGISTRY[pageId];
 
   if (!Component) {
@@ -28,7 +31,9 @@ export function PageContent({ pageId }: { pageId: string }) {
 
   return (
     <Box sx={{ height: '100%', width: '100%', overflow: 'auto', bgcolor: 'background.default' }}>
-      <Component />
+      <TabIdContext.Provider value={tabId ?? null}>
+        <Component />
+      </TabIdContext.Provider>
     </Box>
   );
 }

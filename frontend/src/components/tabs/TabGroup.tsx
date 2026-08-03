@@ -14,6 +14,7 @@ import { PageContent } from './PageRegistry';
 import { SortableTab } from './SortableTab';
 import { TabContextMenu } from './TabContextMenu';
 import { TabContainerContextMenu } from './TabContainerContextMenu';
+import { getTabPath } from './tabPaths';
 
 interface TabGroupProps {
   panelId: string;
@@ -38,9 +39,6 @@ export function TabGroup({
   onCloseTab,
   onSplitRight,
   onSplitDown,
-  onDuplicateTab,
-  onCopyLink,
-  onClosePanel,
 }: TabGroupProps) {
   const navigate = useNavigate();
   const { organizationId } = useParams<{ organizationId: string }>();
@@ -56,24 +54,9 @@ export function TabGroup({
 
   const handleTabChange = (tabId: string) => {
     onActiveTabChange(tabId);
-
     const tab = tabs.find((t) => t.id === tabId);
     if (tab && organizationId) {
-      let path = '';
-      switch (tab.pageId) {
-        case 'dashboard':
-          path = `/app/organizations/${organizationId}`;
-          break;
-        case 'members':
-          path = `/app/organizations/${organizationId}/members`;
-          break;
-        case 'departments':
-          path = `/app/organizations/${organizationId}/departments`;
-          break;
-        default:
-          path = `/app/organizations/${organizationId}`;
-      }
-      navigate(path);
+      navigate(getTabPath(tab, organizationId));
     }
   };
 
@@ -111,15 +94,29 @@ export function TabGroup({
     if (pinned.length > 0) onActiveTabChange(pinned[0].id);
   };
 
-  const handleTogglePin = (id: string) => {
-    onTabsChange(
-      tabs.map((t) => (t.id === id ? { ...t, pinned: !t.pinned } : t)),
-    );
-  };
 
-  // Handle close from SortableTab
   const handleCloseTab = (tabId: string) => {
-    onCloseTab(tabId, panelId);
+    const tab = tabs.find((t) => t.id === tabId);
+    if (tab?.pinned) return;
+
+    const wasActive = activeTabId === tabId;
+    const remaining = tabs.filter((t) => t.id !== tabId);
+
+    onCloseTab(tabId, panelId); // updates layout state as before
+
+    // If the closed tab was active, mirror useTabOperations' own choice of
+    // next active tab (it picks the *last* remaining tab) and navigate there.
+    if (wasActive && organizationId) {
+      const nextActive = remaining[remaining.length - 1];
+      if (nextActive) {
+        navigate(getTabPath(nextActive, organizationId));
+      } else {
+        // Panel is now empty. If it was the only panel, fall back to dashboard.
+        // If there were other panels, this panel gets removed by useTabOperations
+        // and focus should really shift elsewhere — see note below.
+        navigate(`/app/organizations/${organizationId}`);
+      }
+    }
   };
 
   if (tabs.length === 0) {
@@ -235,7 +232,7 @@ export function TabGroup({
                 left: 0,
               }}
             >
-              <PageContent pageId={tab.pageId} />
+              <PageContent pageId={tab.pageId} tabId={tab.id} />
             </Box>
           ))}
         </Box>

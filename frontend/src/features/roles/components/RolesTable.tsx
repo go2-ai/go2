@@ -1,3 +1,4 @@
+// frontend/src/features/roles/components/RolesTable.tsx
 import { useState, useMemo, useEffect } from 'react';
 import {
   Paper,
@@ -25,6 +26,8 @@ import type { Role } from '../rolesApi';
 import { useDeleteRoleMutation, useUpdateRoleMutation } from '../rolesApi';
 import { useConfirm } from '../../../contexts/confirmContext';
 import { useToast } from '../../../contexts/ToastContext';
+import { useNavigate } from 'react-router-dom';
+import { useTabManager } from '../../../components/tabs/useTabManager';
 
 interface RolesTableProps {
   roles?: Role[];
@@ -55,6 +58,7 @@ export const RolesTable = ({
 }: RolesTableProps) => {
   const { t } = useTranslation('shared');
   const { t: tRoles } = useTranslation('roles');
+  const navigate = useNavigate();
 
   const [globalSearch, setGlobalSearch] = useState('');
   const [expandedNodes, setExpandedNodes] = useState<Set<number>>(new Set());
@@ -65,6 +69,7 @@ export const RolesTable = ({
   const [updateRole] = useUpdateRoleMutation();
   const confirm = useConfirm();
   const { showSuccess, showError } = useToast();
+  const { openTab } = useTabManager();
 
   // Auto-expand all nodes when roles change (default expanded)
   useEffect(() => {
@@ -128,6 +133,23 @@ export const RolesTable = ({
     setMenuAnchorEl(null);
   };
 
+  const handleHistory = () => {
+    if (!selectedRoleForMenu) return;
+    const path = `/app/organizations/${organizationId}/record-history?type=Role&id=${selectedRoleForMenu.id}`;
+    const roleName = selectedRoleForMenu.name;
+
+    setMenuAnchorEl(null);
+    setSelectedRoleForMenu(null);
+
+    // Let MUI finish closing the Menu / returning focus before we navigate,
+    // otherwise the route change can race MUI's focus-restoration and leave
+    // focus trapped inside an aria-hidden Modal root.
+    setTimeout(() => {
+      openTab('record-history', `History: ${roleName}`, path);
+      navigate(path);
+    }, 0);
+  };
+
   const handleMenuOpen = (e: React.MouseEvent<HTMLElement>, role: Role) => {
     e.stopPropagation();
     setMenuAnchorEl(e.currentTarget);
@@ -152,7 +174,7 @@ export const RolesTable = ({
     });
   };
 
-  // ✅ Build tree structure with search applied - RECURSIVE APPROACH
+  // Build tree structure with search applied - RECURSIVE APPROACH
   const treeData = useMemo(() => {
     if (!roles) return [];
 
@@ -168,14 +190,14 @@ export const RolesTable = ({
       });
     });
 
-    // ✅ Recursive function to build tree from a parent node
+    // Recursive function to build tree from a parent node
     const buildTree = (parentId: number | null, level: number): RoleTreeNode[] => {
       const result: RoleTreeNode[] = [];
 
       // Find all roles with this parent_id
       const children = roles.filter((role) => role.parent_id === parentId);
 
-      // Sort children by name for consistent ordering
+      // Sort children by ID for consistent ordering
       children.sort((a, b) => a.id - b.id);
 
       for (const child of children) {
@@ -229,8 +251,6 @@ export const RolesTable = ({
 
       const visibleIds = new Set([...matchingIds, ...ancestorIds]);
 
-
-
       // Mark visibility recursively
       const markVisibility = (nodes: RoleTreeNode[]): RoleTreeNode[] => {
         return nodes.filter((node) => {
@@ -242,8 +262,6 @@ export const RolesTable = ({
           return node.isVisible;
         });
       };
-
-
 
       return markVisibility(roots);
     }
@@ -510,10 +528,13 @@ export const RolesTable = ({
         <MenuItem onClick={handleToggleActive}>
           {selectedRoleForMenu?.active ? tRoles('deactivate') : tRoles('activate')}
         </MenuItem>
+        <MenuItem onClick={handleHistory}>
+          {t('changeLog')}
+        </MenuItem>
         <MenuItem onClick={handleDelete} sx={{ color: 'error.main' }}>
           {t('commonActions.delete')}
         </MenuItem>
       </Menu>
     </Paper>
   );
-};
+}

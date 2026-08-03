@@ -11,6 +11,7 @@ import { MembersPage } from './features/members/MembersPage';
 import { DepartmentsPage } from './features/departments/DepartmentsPage';
 import { RolesPage } from './features/roles/RolesPage';
 import { GroupsPage } from './features/groups/GroupsPage';
+import { RecordHistoryPage } from './features/versions/RecordHistoryPage';
 
 function App() {
   return (
@@ -31,6 +32,7 @@ function App() {
             <Route path=":organizationId/departments" element={<DepartmentsPage />} />
             <Route path=":organizationId/roles" element={<RolesPage />} />
             <Route path=":organizationId/groups" element={<GroupsPage />} />
+            <Route path=":organizationId/record-history" element={<RecordHistoryPage />} />
           </Route>
           
           <Route path="app/" element={<Navigate to="/app/signin" replace />} />

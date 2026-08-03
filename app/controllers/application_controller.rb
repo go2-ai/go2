@@ -5,20 +5,16 @@ class ApplicationController < ActionController::Base
   include Pundit::Authorization
 
   rescue_from Pundit::NotAuthorizedError, with: :user_not_authorized
-
-  # before_action :set_current_attributes
-  # before_action :configure_permitted_parameters, if: :devise_controller?
-  # before_action :store_user_location!, if: :storable_location?
-  # before_action :set_locale
-  # before_action :translate_flash_messages
-  # before_action :authenticate_user!
-  # before_action :check_onboarding
-  # before_action :handle_organization_redirect
-  # around_action :switch_locale
-
+  before_action :set_paper_trail_whodunnit
   helper_method :current_locale
 
   around_action :switch_locale
+
+  def authorize(record, query = nil)
+    return true if current_user&.is_go3_admin?
+
+    super(record, query)
+  end
 
   protected
 
@@ -63,8 +59,20 @@ class ApplicationController < ActionController::Base
   private
 
   def user_not_authorized
-    flash[:alert] = "You are not authorized to perform this action."
-    redirect_to(request.referrer || root_path)
+    respond_to do |format|
+      format.html do
+        flash[:danger] = "You are not authorized to perform this action!"
+        redirect_to(request.referrer || root_path)
+      end
+      format.any(:xml, :json) do
+        render request.format.to_sym => { errors: ["You are not authorized to perform this action!"] },
+               :status               => :forbidden
+      end
+      format.pdf do
+        flash[:danger] = "You are not authorized to perform this action!"
+        redirect_to(request.referrer || root_path)
+      end
+    end
   end
 
   def set_current_attributes

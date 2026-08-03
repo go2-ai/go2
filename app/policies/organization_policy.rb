@@ -1,6 +1,6 @@
 class OrganizationPolicy < ApplicationPolicy
   def index?
-    user.is_go3_admin?
+    false # only GO3 admins
   end
 
   def show?
@@ -8,9 +8,6 @@ class OrganizationPolicy < ApplicationPolicy
   end
 
   def create?
-    # GO3_Admins can always create organizations
-    return true if user.is_go3_admin?
-
     # Normal users can create if they have trial flag
     return true if record.is_trial
 
@@ -19,7 +16,7 @@ class OrganizationPolicy < ApplicationPolicy
   end
 
   def update?
-    user.is_go3_admin? || user.has_permission?("Organization.admin", record)
+    user.has_permission?("Organization.admin", record)
   end
 
   def permitted_attributes
@@ -47,7 +44,8 @@ class OrganizationPolicy < ApplicationPolicy
   end
 
   def administrate?
-    user.member(record).has_permission?(Permission::ORG_ADMIN)
+    member = user.member(record)
+    member&.has_permission?(Permission::ORG_ADMIN) || false
   end
 
   class Scope < Scope

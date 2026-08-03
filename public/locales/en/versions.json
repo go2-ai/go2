@@ -1,0 +1,13 @@
+{
+  "en": {
+    "created": "Created",
+    "updated": "Updated",
+    "deleted": "Deleted",
+    "history": "History",
+    "historyDescription": "Change log of {{type}} \"{{name}}\"",
+    "noVersionsFound": "No changes recorded yet.",
+    "failedToLoad": "Failed to load version history.",
+    "tryAgain": "Try again",
+    "deletedData": "Deleted data"
+  }
+}

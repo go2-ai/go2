@@ -3,6 +3,7 @@ export interface Tab {
   pageId: string;
   title: string;
   pinned?: boolean;
+  path?: string; // NEW: full path (incl. query) this tab should navigate to
 }
 
 export interface PanelConfig {

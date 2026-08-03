@@ -5,6 +5,7 @@ import { membersApi } from '../features/members/membersApi';
 import { departmentsApi } from '../features/departments/departmentsApi';
 import { rolesApi } from '../features/roles/rolesApi';
 import { groupsApi } from '../features/groups/groupsApi';
+import { versionsApi } from '../features/versions/versionsApi';
 import organizationsReducer from '../features/organizations/organizationsSlice';
 import authReducer from '../features/auth/authSlice';
 
@@ -17,6 +18,7 @@ export const store = configureStore({
     [departmentsApi.reducerPath]: departmentsApi.reducer,
     [rolesApi.reducerPath]: rolesApi.reducer,
     [groupsApi.reducerPath]: groupsApi.reducer,
+    [versionsApi.reducerPath]: versionsApi.reducer,
     organizations: organizationsReducer,
     auth: authReducer,
   },
@@ -27,7 +29,8 @@ export const store = configureStore({
       membersApi.middleware,
       departmentsApi.middleware,
       rolesApi.middleware,
-      groupsApi.middleware
+      groupsApi.middleware,
+      versionsApi.middleware
     ),
 });
 

@@ -237,6 +237,8 @@ class User < ApplicationRecord
     [ first_name, last_name ].compact.join(" ")
   end
 
+  alias_method :name, :full_name
+
   def active_for_authentication?
     super && active?
   end

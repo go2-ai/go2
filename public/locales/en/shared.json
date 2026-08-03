@@ -26,6 +26,8 @@
     "locale": "Locale",
     "name": "Name",
     "password": "Password",
+    "role": "Role",
+    "changeLog": "Change Log",
     "signIn": "Sign in",
     "signUp": "Sign up",
     "status": "Status",

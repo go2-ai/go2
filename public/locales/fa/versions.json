@@ -1,0 +1,14 @@
+{
+  "fa": {
+    "created": "ایجاد شده",
+    "updated": "به‌روزرسانی شده",
+    "deleted": "حذف شده",
+    "history": "تاریخچه",
+    "historyDescription": "تاریخچه تغییرات برای {{name}}",
+    "recordInfo": "رکورد: {{type}} #{{id}}",
+    "noVersionsFound": "هنوز تغییری ثبت نشده است.",
+    "failedToLoad": "بارگذاری تاریخچه ناموفق بود.",
+    "tryAgain": "دوباره تلاش کنید",
+    "deletedData": "داده‌های حذف شده"
+  }
+}

@@ -3,14 +3,14 @@
 import { useCallback } from 'react';
 import type { PanelConfig, Tab, WorkspaceLayout } from './types';
 
-function createTab(pageId: string, title: string): Tab {
-  return { id: `${pageId}-${Date.now()}`, pageId, title };
+function createTab(pageId: string, title: string, path?: string): Tab {
+  return { id: `${pageId}-${Date.now()}`, pageId, title, path };
 }
 
 export function useTabOperations(
   setLayout: React.Dispatch<React.SetStateAction<WorkspaceLayout>>,
 ) {
-  const openTab = useCallback((pageId: string, title: string) => {
+  const openTab = useCallback((pageId: string, title: string, path?: string) => {
     setLayout((prev) => {
       // Always create a new tab - no deduplication
       // Find existing tabs of the same page to determine numbering
@@ -34,7 +34,7 @@ export function useTabOperations(
         newTitle = `${title} (${nextNumber})`;
       }
 
-      const newTab = createTab(pageId, newTitle);
+      const newTab = createTab(pageId, newTitle, path);
       
       return {
         ...prev,
@@ -45,6 +45,16 @@ export function useTabOperations(
         ),
       };
     });
+  }, [setLayout]);
+
+  const updateTabTitle = useCallback((tabId: string, title: string) => {
+    setLayout((prev) => ({
+      ...prev,
+      panels: prev.panels.map((p) => ({
+        ...p,
+        tabs: p.tabs.map((t) => (t.id === tabId ? { ...t, title } : t)),
+      })),
+    }));
   }, [setLayout]);
 
   const closeTab = useCallback((tabId: string, panelId: string) => {
@@ -144,5 +154,5 @@ export function useTabOperations(
     });
   }, [setLayout]);
 
-  return { openTab, closeTab, splitTab, duplicateTab, resetLayout };
+  return { openTab, closeTab, splitTab, duplicateTab, resetLayout, updateTabTitle };
 }
