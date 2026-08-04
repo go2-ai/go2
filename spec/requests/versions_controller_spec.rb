@@ -38,10 +38,8 @@ RSpec.describe 'Versions API', type: :request do
   let(:user) { create(:user) }
   let(:department) { create(:department, organization:) }
 
-  # Shared context for admin setup
   shared_context 'with org admin user' do
     before do |example|
-      # ✅ Run this before each example
       member = create(:member, organization:, user:)
       create(:permission, code: Permission::ORG_ADMIN, grantee: member, organization:)
       sign_in user
@@ -159,62 +157,6 @@ RSpec.describe 'Versions API', type: :request do
     end
   end
 
-  path '/organizations/{organization_id}/versions/{id}' do
-    parameter name: :organization_id, in: :path, type: :integer, description: 'Organization ID', required: true
-    parameter name: :id, in: :path, type: :integer, description: 'Version ID', required: true
-
-    get 'Get a specific version' do
-      tags 'Versions'
-      produces 'application/json'
-
-      response '200', 'Returns the version' do
-        include_context 'with org admin user'
-
-        schema version_schema
-
-        let(:organization_id) { organization.id }
-        let(:id) do
-          department.update!(name: 'Updated Department')
-          PaperTrail::Version.last.id
-        end
-
-        run_test! do |response|
-          data = JSON.parse(response.body)
-          expect(data['id']).to eq(id)
-          expect(data['item_type']).to eq('Department')
-          expect(data['user_display']).to eq(user.full_name)
-        end
-      end
-
-      response '404', 'Version not found' do
-        include_context 'with org admin user'
-
-        let(:organization_id) { organization.id }
-        let(:id) { 99999 }
-
-        run_test! do |response|
-          expect(response).to have_http_status(:not_found)
-        end
-      end
-
-      response '403', 'Not authorized' do
-        let(:organization_id) { organization.id }
-        let(:id) { 1 }  # Any ID will do since we expect 403 before finding the record
-        let(:unauthorized_user) { create(:user) }
-
-        before do
-          create(:member, organization:, user: unauthorized_user)
-          sign_in unauthorized_user
-        end
-
-        run_test! do |response|
-          expect(response).to have_http_status(:forbidden)
-        end
-      end
-    end
-  end
-
-  # Additional authorization tests
   describe 'Authorization' do
     let(:organization_id) { organization.id }
 

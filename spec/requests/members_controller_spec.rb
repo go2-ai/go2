@@ -1,238 +1,258 @@
-# spec/requests/versions_controller_spec.rb
 require 'swagger_helper'
 
-RSpec.describe 'Versions API', type: :request do
-  # Swagger attribute definitions
-  version_schema = {
-    type: :object,
-    properties: {
-      id: { type: :integer, example: 1 },
-      event: { type: :string, enum: %w[create update destroy], example: 'update' },
-      created_at: { type: :string, format: 'date-time', example: '2024-01-15T10:30:00Z' },
-      item_type: { type: :string, example: 'Department' },
-      item_id: { type: :integer, example: 1 },
-      whodunnit: { type: :string, example: '1' },
-      user_display: { type: :string, example: 'John Doe' },
-      record_display_name: { type: :string, example: 'Engineering' },
-      user_avatar: { type: %i[string null], example: nil },
-      user_initial: { type: :string, example: 'JD' },
-      changes: {
-        type: :array,
-        items: {
-          type: :object,
-          properties: {
-            field: { type: :string, example: 'name' },
-            from: { type: %i[string null], example: 'Old Name' },
-            to: { type: %i[string null], example: 'New Name' },
-            field_label: { type: :string, example: 'Name' }
-          }
-        }
-      }
-    }
+RSpec.describe 'Users::Sessions API', type: :request do
+  member_attributes = {
+    id: { type: :integer, example: 1 },
+    email: { type: :string, example: 'john.doe@example.com' },
+    name: { type: :string, example: 'John Doe' },
+    user_id: { type: %i[ integer nil ], example: 3 },
+    organization_id: { type: :integer, example: 1 },
+    created_at: { type: :string, example: '2026-02-20 10:52:46.787878000 +0000' },
+    updated_at: { type: :string, example: '2026-02-20 10:52:46.787878000 +0000' },
+    invited_at: { type: %i[string nil], example: '2026-02-20 10:52:46.787878000 +0000' },
+    invitation_key: { type: %i[string nil], example: '0AB1CD2EF3' },
+    joined_at: { type: %i[string nil], example: '2026-02-20 10:52:46.787878000 +0000' },
+    archived_number: { type: %i[integer nil], example: 1 },
+    archived_at: { type: %i[string nil], example: '2026-02-20 10:52:46.787878000 +0000' },
+    initial: { type: %i[string nil], example: 'JD' },
+    color: { type: %i[string nil], example: '#ff5512' },
+    translations: { type: :object, example: { name: { en: 'John Doe', fa: 'جان دو' } } }
   }
 
-  let(:organization) { create(:organization) }
+  let(:organization) { create(:organization, active_locales: [ 'fa' ]) }
+  let!(:member_1) { create(:member, organization:) }
+  let(:member_2) { create(:member, organization:) }
   let(:user) { create(:user) }
-  let(:member) { create(:member, organization:, user:) }
-  let(:department) { create(:department, organization:) }
+  let(:current_member) { create(:member, organization:, user:) }
 
   before do
-    create(:permission, code: Permission::ORG_ADMIN, grantee: member, organization:)
-    sign_in user
-    PaperTrail.enabled = true
+    create(:permission, code: Permission::ORG_ADMIN, grantee: current_member, organization:)
+    sign_in(user)
   end
 
-  after do
-    PaperTrail.enabled = false
-  end
-
-  path '/organizations/{organization_id}/versions' do
+  path '/organizations/{organization_id}/members' do
     parameter name: :organization_id, in: :path, type: :integer, description: 'Organization ID', required: true
 
-    get 'Get versions for a specific record or deleted records' do
-      tags 'Versions'
+    get 'Get all organization members' do
+      tags 'Members'
       produces 'application/json'
 
-      parameter name: :record_type, in: :query, type: :string, required: false, description: 'Record type (e.g., Department, Member)'
-      parameter name: :record_id, in: :query, type: :integer, required: false, description: 'Record ID'
-      parameter name: :deleted, in: :query, type: :boolean, required: false, description: 'Set to true to get deleted records'
-      parameter name: :model_type, in: :query, type: :string, required: false, description: 'Filter deleted records by model type'
-      parameter name: :limit, in: :query, type: :integer, required: false, description: 'Number of records to return', example: 50
-
-      response '200', 'Returns versions for a specific record' do
-        schema type: :array, items: version_schema
-
+      response '200', 'Loaded successfully' do
+        schema type: :array, items: { type: :object, properties: member_attributes }
         let(:organization_id) { organization.id }
-        let(:record_type) { 'Department' }
-        let(:record_id) { department.id }
-
-        before do
-          PaperTrail.request.whodunnit = user.id
-          department.update!(name: 'Updated Department')
-        end
+        before { member_2 }
 
         run_test! do |response|
           data = JSON.parse(response.body)
-          expect(data).to be_an(Array)
-          expect(data.first['item_type']).to eq('Department')
-          expect(data.first['item_id']).to eq(department.id)
-          expect(data.first['user_display']).to eq(user.full_name)
-        end
-      end
-
-      response '200', 'Returns deleted records' do
-        schema type: :array, items: version_schema
-
-        let(:organization_id) { organization.id }
-        let(:deleted) { 'true' }
-
-        before do
-          PaperTrail.request.whodunnit = user.id
-          department.destroy
-        end
-
-        run_test! do |response|
-          data = JSON.parse(response.body)
-          expect(data).to be_an(Array)
-          expect(data.first['event']).to eq('destroy')
-        end
-      end
-
-      response '200', 'Returns deleted records filtered by model type' do
-        schema type: :array, items: version_schema
-
-        let(:organization_id) { organization.id }
-        let(:deleted) { 'true' }
-        let(:model_type) { 'Department' }
-
-        before do
-          PaperTrail.request.whodunnit = user.id
-          department.destroy
-        end
-
-        run_test! do |response|
-          data = JSON.parse(response.body)
-          expect(data).to be_an(Array)
-          expect(data.first['item_type']).to eq('Department')
-        end
-      end
-
-      response '400', 'Invalid request - missing parameters' do
-        let(:organization_id) { organization.id }
-
-        run_test! do |response|
-          data = JSON.parse(response.body)
-          expect(data['error']).to include('Invalid request')
-          expect(response).to have_http_status(:bad_request)
-        end
-      end
-
-      response '403', 'Not authorized' do
-        let(:organization_id) { organization.id }
-        let(:record_type) { 'Department' }
-        let(:record_id) { department.id }
-        let(:unauthorized_user) { create(:user) }
-
-        before do
-          sign_in unauthorized_user
-        end
-
-        run_test! do |response|
-          expect(response).to have_http_status(:forbidden)
+          expect(data.map { |m| m["id"] }).to contain_exactly(member_1.id, member_2.id, current_member.id)
         end
       end
     end
   end
 
-  path '/organizations/{organization_id}/versions/{id}' do
+  path '/organizations/{organization_id}/members/{id}' do
     parameter name: :organization_id, in: :path, type: :integer, description: 'Organization ID', required: true
-    parameter name: :id, in: :path, type: :integer, description: 'Version ID', required: true
+    parameter name: :id, in: :path, type: :integer, description: 'Member ID', required: true
 
-    get 'Get a specific version' do
-      tags 'Versions'
+    get 'Get the members' do
+      tags 'Members'
       produces 'application/json'
 
-      response '200', 'Returns the version' do
-        schema version_schema
-
+      response '200', 'Loaded successfully' do
+        schema type: :object, properties: member_attributes
         let(:organization_id) { organization.id }
-        let(:id) do
-          PaperTrail.request.whodunnit = user.id
-          department.update!(name: 'Updated Department')
-          PaperTrail::Version.last.id
-        end
+        let(:id) { member_1.id }
 
         run_test! do |response|
           data = JSON.parse(response.body)
-          expect(data['id']).to eq(id)
-          expect(data['item_type']).to eq('Department')
-          expect(data['user_display']).to eq(user.full_name)
-        end
-      end
-
-      response '404', 'Version not found' do
-        let(:organization_id) { organization.id }
-        let(:id) { 99999 }
-
-        run_test! do |response|
-          expect(response).to have_http_status(:not_found)
-        end
-      end
-
-      response '403', 'Not authorized' do
-        let(:organization_id) { organization.id }
-        let(:id) do
-          PaperTrail.request.whodunnit = user.id
-          department.update!(name: 'Updated Department')
-          PaperTrail::Version.last.id
-        end
-        let(:unauthorized_user) { create(:user) }
-
-        before do
-          sign_in unauthorized_user
-        end
-
-        run_test! do |response|
-          expect(response).to have_http_status(:forbidden)
+          expect(data["id"]).to eq(member_1.id)
         end
       end
     end
   end
 
-  # Additional authorization tests
-  describe 'Authorization' do
-    let(:organization_id) { organization.id }
+  path '/organizations/{organization_id}/members' do
+    parameter name: :organization_id, in: :path, type: :integer, description: 'Organization ID', required: true
+    parameter name: :params, in: :body, schema: { type: :object, properties: {
+        email: { type: :string, example: 'john.doe@example.com' },
+        name_en: { type: :string, example: 'John Doe' },
+        name_fa: { type: :string, example: 'جان ذو' },
+        color: { type: :string, example: '#ff5512' },
+        initial: { type: :string, example: 'JD' },
+        invite: { type: :boolean, example: true, description: 'If true, sends an invitation email including an invitation link' }
+      }
+    }
 
-    context 'with GO3 admin user' do
-      let(:admin_user) { create(:user, role: User::GO3_ADMIN) }
+    post 'Creating a new member' do
+      tags 'Members'
+      consumes 'application/json'
+      produces 'application/json'
 
-      before do
-        sign_in admin_user
-        PaperTrail.request.whodunnit = admin_user.id
-        department.update!(name: 'Updated Department')
-      end
+      response '200', 'Creates the new member successfully' do
+        schema type: :object, properties: member_attributes
+        let(:organization_id) { organization.id }
+        let(:params) { {
+          name_en: 'John Doe',
+          name_fa: 'جان دو',
+          email: 'john.doe@example.com',
+          color: '#ff5512',
+          initial: 'JD',
+          invite: true
+        } }
 
-      it 'allows access to versions' do
-        get organization_versions_path(organization_id: organization.id,
-                                       record_type: 'Department',
-                                       record_id: department.id)
-        expect(response).to have_http_status(:ok)
+        run_test! do |response|
+          data = JSON.parse(response.body)
+          expect(data["id"]).to be > 0
+        end
       end
     end
+  end
 
-    context 'with regular user without org admin permissions' do
-      let(:regular_user) { create(:user) }
-      let!(:regular_member) { create(:member, organization:, user: regular_user) }
+  path '/organizations/{organization_id}/members/{id}' do
+    parameter name: :organization_id, in: :path, type: :integer, description: 'Organization ID', required: true
+    parameter name: :id, in: :path, type: :integer, description: 'Member ID', required: true
+    parameter name: :params, in: :body, schema: { type: :object, properties: {
+        email: { type: :string, example: 'john.doe@example.com' },
+        name_en: { type: :string, example: 'Updated Name' },
+        color: { type: :string, example: '#ff5512' },
+        initial: { type: :string, example: 'JD' },
+        invite: { type: :boolean, example: true, description: 'If true, sends an invitation email including an invitation link' }
+      }
+    }
 
-      before do
-        sign_in regular_user
+    patch 'Updates the members' do
+      tags 'Members'
+      consumes 'application/json'
+      produces 'application/json'
+
+      response '200', 'Updates the member successfully' do
+        schema type: :object, properties: member_attributes.merge({ name_en: { type: :string, example: 'Updated Name' } })
+        let(:organization_id) { organization.id }
+        let(:id) { member_1.id }
+        let(:params) { { name_en: 'Updated Name' } }
+
+        run_test! do |response|
+          data = JSON.parse(response.body)
+          expect(data["id"]).to eq(member_1.id)
+          expect(data["name"]).to eq("Updated Name")
+        end
       end
+    end
+  end
 
-      it 'prevents access to versions' do
-        get organization_versions_path(organization_id: organization.id,
-                                       record_type: 'Department',
-                                       record_id: department.id)
-        expect(response).to have_http_status(:forbidden)
+  path '/organizations/{organization_id}/members/{id}/archive' do
+    parameter name: :organization_id, in: :path, type: :integer, description: 'Organization ID', required: true
+    parameter name: :id, in: :path, type: :integer, description: 'Member ID', required: true
+
+    patch 'Archives the members' do
+      tags 'Members'
+      produces 'application/json'
+
+      response '200', 'Archives the member successfully' do
+        schema type: :object, properties: member_attributes
+        let(:organization_id) { organization.id }
+        let(:id) { member_1.id }
+
+        run_test! do |response|
+          data = JSON.parse(response.body)
+          expect(data["id"]).to eq(member_1.id)
+          expect(data["status"]).to eq("archived")
+        end
+      end
+    end
+  end
+
+  path '/organizations/{organization_id}/members/{id}/unarchive' do
+    parameter name: :organization_id, in: :path, type: :integer, description: 'Organization ID', required: true
+    parameter name: :id, in: :path, type: :integer, description: 'Member ID', required: true
+
+    patch 'Unarchives the members' do
+      tags 'Members'
+      produces 'application/json'
+
+      response '200', 'Unarchives the member successfully' do
+        schema type: :object, properties: member_attributes
+        let(:organization_id) { organization.id }
+        let(:id) { member_1.id }
+        before { member_1.archive! }
+
+        run_test! do |response|
+          data = JSON.parse(response.body)
+          expect(data["id"]).to eq(member_1.id)
+          expect(data["archive_number"]).to be_nil
+        end
+      end
+    end
+  end
+
+  path '/organizations/{organization_id}/members/{id}/set_as_admin' do
+    parameter name: :organization_id, in: :path, type: :integer, description: 'Organization ID', required: true
+    parameter name: :id, in: :path, type: :integer, description: 'Member ID', required: true
+
+    patch 'Grants org admin permission to the members' do
+      tags 'Members'
+      produces 'application/json'
+
+      response '200', 'Grants org admin permission to the member' do
+        schema type: :object, properties: member_attributes
+
+        let(:organization_id) { organization.id }
+        let(:id) { member_1.id }
+
+        run_test! do |response|
+          data = JSON.parse(response.body)
+          expect(data["id"]).to eq(member_1.id)
+          expect(data["org_admin"]).to eq(true)
+        end
+      end
+    end
+  end
+
+  path '/organizations/{organization_id}/members/{id}/revoke_admin' do
+    parameter name: :organization_id, in: :path, type: :integer, description: 'Organization ID', required: true
+    parameter name: :id, in: :path, type: :integer, description: 'Member ID', required: true
+
+    patch 'Revokes org admin permission from the members' do
+      tags 'Members'
+      produces 'application/json'
+
+      response '200', 'Revokes org admin permission from the member' do
+        schema type: :object, properties: member_attributes
+
+        let(:organization_id) { organization.id }
+        let(:id) { member_1.id }
+        before { create(:permission, code: Permission::ORG_ADMIN, grantee: member_1, organization:) }
+
+        run_test! do |response|
+          data = JSON.parse(response.body)
+          expect(data["id"]).to eq(member_1.id)
+          expect(data["org_admin"]).to eq(false)
+        end
+      end
+    end
+  end
+
+  path '/organizations/{organization_id}/members/{id}/send_invitation' do
+    parameter name: :organization_id, in: :path, type: :integer, description: 'Organization ID', required: true
+    parameter name: :id, in: :path, type: :integer, description: 'Member ID', required: true
+
+    post 'Sends invitation to the members' do
+      tags 'Members'
+      produces 'application/json'
+
+      response '200', 'Sends invitation to the members' do
+        schema type: :object, properties: member_attributes
+
+        let(:organization_id) { organization.id }
+        let(:id) { member_1.id }
+
+        before { member_1.update(invited_at: nil, invitation_key: nil) }
+
+        run_test! do |response|
+          data = JSON.parse(response.body)
+          expect(data["id"]).to eq(member_1.id)
+          expect(data["status"]).to eq("invited")
+        end
       end
     end
   end

@@ -11,15 +11,4 @@ class Permission < ApplicationRecord
   validates :grantee_id, uniqueness: { scope: [ :grantee_type, :code ] }
 
   ORG_ADMIN = "Organization.admin".freeze
-
-  def permitted_users
-    users = []
-    organization.users.includes(:members).each do |user|
-      member = user.members.where(organization_id: organization.id).first
-      next unless member
-      users << user if member.all_permissions.include?(self)
-    end
-
-    users
-  end
 end

@@ -419,7 +419,7 @@ paths:
       responses:
         '200':
           description: Deletes the group successfully
-  "/organizations/{organization_id}/versions":
+  "/organizations/{organization_id}/members":
     parameters:
     - name: organization_id
       in: path
@@ -427,45 +427,38 @@ paths:
       required: true
       schema:
         type: integer
+    - name: params
+      in: body
+      schema:
+        type: object
+        properties:
+          email:
+            type: string
+            example: john.doe@example.com
+          name_en:
+            type: string
+            example: John Doe
+          name_fa:
+            type: string
+            example: جان ذو
+          color:
+            type: string
+            example: "#ff5512"
+          initial:
+            type: string
+            example: JD
+          invite:
+            type: boolean
+            example: true
+            description: If true, sends an invitation email including an invitation
+              link
     get:
-      summary: Get versions for a specific record or deleted records
+      summary: Get all organization members
       tags:
-      - Versions
-      parameters:
-      - name: record_type
-        in: query
-        required: false
-        description: Record type (e.g., Department, Member)
-        schema:
-          type: string
-      - name: record_id
-        in: query
-        required: false
-        description: Record ID
-        schema:
-          type: integer
-      - name: deleted
-        in: query
-        required: false
-        description: Set to true to get deleted records
-        schema:
-          type: boolean
-      - name: model_type
-        in: query
-        required: false
-        description: Filter deleted records by model type
-        schema:
-          type: string
-      - name: limit
-        in: query
-        required: false
-        description: Number of records to return
-        example: 50
-        schema:
-          type: integer
+      - Members
       responses:
         '200':
-          description: Returns deleted records filtered by model type
+          description: Loaded successfully
           content:
             application/json:
               schema:
@@ -476,75 +469,144 @@ paths:
                     id:
                       type: integer
                       example: 1
-                    event:
+                    email:
                       type: string
-                      enum:
-                      - create
-                      - update
-                      - destroy
-                      example: update
-                    created_at:
-                      type: string
-                      format: date-time
-                      example: 2026-08-02 20:00:06 UTC
-                    item_type:
-                      type: string
-                      example: Department
-                    item_id:
-                      type: integer
-                      example: 1
-                    whodunnit:
-                      type: string
-                      example: '1'
-                    user_display:
+                      example: john.doe@example.com
+                    name:
                       type: string
                       example: John Doe
-                    record_display_name:
+                    user_id:
+                      type:
+                      - integer
+                      - nil
+                      example: 3
+                    organization_id:
+                      type: integer
+                      example: 1
+                    created_at:
                       type: string
-                      example: Engineering
-                    user_avatar:
+                      example: '2026-02-20 10:52:46.787878000 +0000'
+                    updated_at:
+                      type: string
+                      example: '2026-02-20 10:52:46.787878000 +0000'
+                    invited_at:
                       type:
                       - string
-                      - 'null'
-                      example:
-                    user_initial:
-                      type: string
-                      example: JD
-                    changes:
-                      type: array
-                      items:
-                        type: object
-                        properties:
-                          field:
-                            type: string
-                            example: name
-                          from:
-                            type:
-                            - string
-                            - object
-                            - integer
-                            - 'null'
-                            example: Old Name
-                          to:
-                            type:
-                            - string
-                            - object
-                            - integer
-                            - 'null'
-                            example: New Name
-                          field_label:
-                            type: string
-                            example: Name
-                    object_data:
+                      - nil
+                      example: '2026-02-20 10:52:46.787878000 +0000'
+                    invitation_key:
                       type:
-                      - object
-                      - 'null'
+                      - string
+                      - nil
+                      example: 0AB1CD2EF3
+                    joined_at:
+                      type:
+                      - string
+                      - nil
+                      example: '2026-02-20 10:52:46.787878000 +0000'
+                    archived_number:
+                      type:
+                      - integer
+                      - nil
+                      example: 1
+                    archived_at:
+                      type:
+                      - string
+                      - nil
+                      example: '2026-02-20 10:52:46.787878000 +0000'
+                    initial:
+                      type:
+                      - string
+                      - nil
+                      example: JD
+                    color:
+                      type:
+                      - string
+                      - nil
+                      example: "#ff5512"
+                    translations:
+                      type: object
                       example:
-        '400':
-          description: Invalid request - missing parameters
-        '403':
-          description: Not authorized
-  "/organizations/{organization_id}/versions/{id}":
+                        name:
+                          en: John Doe
+                          fa: جان دو
+    post:
+      summary: Creating a new member
+      tags:
+      - Members
+      responses:
+        '200':
+          description: Creates the new member successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    example: 1
+                  email:
+                    type: string
+                    example: john.doe@example.com
+                  name:
+                    type: string
+                    example: John Doe
+                  user_id:
+                    type:
+                    - integer
+                    - nil
+                    example: 3
+                  organization_id:
+                    type: integer
+                    example: 1
+                  created_at:
+                    type: string
+                    example: '2026-02-20 10:52:46.787878000 +0000'
+                  updated_at:
+                    type: string
+                    example: '2026-02-20 10:52:46.787878000 +0000'
+                  invited_at:
+                    type:
+                    - string
+                    - nil
+                    example: '2026-02-20 10:52:46.787878000 +0000'
+                  invitation_key:
+                    type:
+                    - string
+                    - nil
+                    example: 0AB1CD2EF3
+                  joined_at:
+                    type:
+                    - string
+                    - nil
+                    example: '2026-02-20 10:52:46.787878000 +0000'
+                  archived_number:
+                    type:
+                    - integer
+                    - nil
+                    example: 1
+                  archived_at:
+                    type:
+                    - string
+                    - nil
+                    example: '2026-02-20 10:52:46.787878000 +0000'
+                  initial:
+                    type:
+                    - string
+                    - nil
+                    example: JD
+                  color:
+                    type:
+                    - string
+                    - nil
+                    example: "#ff5512"
+                  translations:
+                    type: object
+                    example:
+                      name:
+                        en: John Doe
+                        fa: جان دو
+  "/organizations/{organization_id}/members/{id}":
     parameters:
     - name: organization_id
       in: path
@@ -554,17 +616,39 @@ paths:
         type: integer
     - name: id
       in: path
-      description: Version ID
+      description: Member ID
       required: true
       schema:
         type: integer
+    - name: params
+      in: body
+      schema:
+        type: object
+        properties:
+          email:
+            type: string
+            example: john.doe@example.com
+          name_en:
+            type: string
+            example: Updated Name
+          color:
+            type: string
+            example: "#ff5512"
+          initial:
+            type: string
+            example: JD
+          invite:
+            type: boolean
+            example: true
+            description: If true, sends an invitation email including an invitation
+              link
     get:
-      summary: Get a specific version
+      summary: Get the members
       tags:
-      - Versions
+      - Members
       responses:
         '200':
-          description: Returns the version
+          description: Loaded successfully
           content:
             application/json:
               schema:
@@ -573,74 +657,596 @@ paths:
                   id:
                     type: integer
                     example: 1
-                  event:
+                  email:
                     type: string
-                    enum:
-                    - create
-                    - update
-                    - destroy
-                    example: update
-                  created_at:
-                    type: string
-                    format: date-time
-                    example: 2026-08-02 20:00:06 UTC
-                  item_type:
-                    type: string
-                    example: Department
-                  item_id:
-                    type: integer
-                    example: 1
-                  whodunnit:
-                    type: string
-                    example: '1'
-                  user_display:
+                    example: john.doe@example.com
+                  name:
                     type: string
                     example: John Doe
-                  record_display_name:
+                  user_id:
+                    type:
+                    - integer
+                    - nil
+                    example: 3
+                  organization_id:
+                    type: integer
+                    example: 1
+                  created_at:
                     type: string
-                    example: Engineering
-                  user_avatar:
+                    example: '2026-02-20 10:52:46.787878000 +0000'
+                  updated_at:
+                    type: string
+                    example: '2026-02-20 10:52:46.787878000 +0000'
+                  invited_at:
                     type:
                     - string
-                    - 'null'
-                    example:
-                  user_initial:
-                    type: string
-                    example: JD
-                  changes:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        field:
-                          type: string
-                          example: name
-                        from:
-                          type:
-                          - string
-                          - object
-                          - integer
-                          - 'null'
-                          example: Old Name
-                        to:
-                          type:
-                          - string
-                          - object
-                          - integer
-                          - 'null'
-                          example: New Name
-                        field_label:
-                          type: string
-                          example: Name
-                  object_data:
+                    - nil
+                    example: '2026-02-20 10:52:46.787878000 +0000'
+                  invitation_key:
                     type:
-                    - object
-                    - 'null'
+                    - string
+                    - nil
+                    example: 0AB1CD2EF3
+                  joined_at:
+                    type:
+                    - string
+                    - nil
+                    example: '2026-02-20 10:52:46.787878000 +0000'
+                  archived_number:
+                    type:
+                    - integer
+                    - nil
+                    example: 1
+                  archived_at:
+                    type:
+                    - string
+                    - nil
+                    example: '2026-02-20 10:52:46.787878000 +0000'
+                  initial:
+                    type:
+                    - string
+                    - nil
+                    example: JD
+                  color:
+                    type:
+                    - string
+                    - nil
+                    example: "#ff5512"
+                  translations:
+                    type: object
                     example:
-        '404':
-          description: Version not found
-        '403':
-          description: Not authorized
+                      name:
+                        en: John Doe
+                        fa: جان دو
+    patch:
+      summary: Updates the members
+      tags:
+      - Members
+      responses:
+        '200':
+          description: Updates the member successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    example: 1
+                  email:
+                    type: string
+                    example: john.doe@example.com
+                  name:
+                    type: string
+                    example: John Doe
+                  user_id:
+                    type:
+                    - integer
+                    - nil
+                    example: 3
+                  organization_id:
+                    type: integer
+                    example: 1
+                  created_at:
+                    type: string
+                    example: '2026-02-20 10:52:46.787878000 +0000'
+                  updated_at:
+                    type: string
+                    example: '2026-02-20 10:52:46.787878000 +0000'
+                  invited_at:
+                    type:
+                    - string
+                    - nil
+                    example: '2026-02-20 10:52:46.787878000 +0000'
+                  invitation_key:
+                    type:
+                    - string
+                    - nil
+                    example: 0AB1CD2EF3
+                  joined_at:
+                    type:
+                    - string
+                    - nil
+                    example: '2026-02-20 10:52:46.787878000 +0000'
+                  archived_number:
+                    type:
+                    - integer
+                    - nil
+                    example: 1
+                  archived_at:
+                    type:
+                    - string
+                    - nil
+                    example: '2026-02-20 10:52:46.787878000 +0000'
+                  initial:
+                    type:
+                    - string
+                    - nil
+                    example: JD
+                  color:
+                    type:
+                    - string
+                    - nil
+                    example: "#ff5512"
+                  translations:
+                    type: object
+                    example:
+                      name:
+                        en: John Doe
+                        fa: جان دو
+                  name_en:
+                    type: string
+                    example: Updated Name
+  "/organizations/{organization_id}/members/{id}/archive":
+    parameters:
+    - name: organization_id
+      in: path
+      description: Organization ID
+      required: true
+      schema:
+        type: integer
+    - name: id
+      in: path
+      description: Member ID
+      required: true
+      schema:
+        type: integer
+    patch:
+      summary: Archives the members
+      tags:
+      - Members
+      responses:
+        '200':
+          description: Archives the member successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    example: 1
+                  email:
+                    type: string
+                    example: john.doe@example.com
+                  name:
+                    type: string
+                    example: John Doe
+                  user_id:
+                    type:
+                    - integer
+                    - nil
+                    example: 3
+                  organization_id:
+                    type: integer
+                    example: 1
+                  created_at:
+                    type: string
+                    example: '2026-02-20 10:52:46.787878000 +0000'
+                  updated_at:
+                    type: string
+                    example: '2026-02-20 10:52:46.787878000 +0000'
+                  invited_at:
+                    type:
+                    - string
+                    - nil
+                    example: '2026-02-20 10:52:46.787878000 +0000'
+                  invitation_key:
+                    type:
+                    - string
+                    - nil
+                    example: 0AB1CD2EF3
+                  joined_at:
+                    type:
+                    - string
+                    - nil
+                    example: '2026-02-20 10:52:46.787878000 +0000'
+                  archived_number:
+                    type:
+                    - integer
+                    - nil
+                    example: 1
+                  archived_at:
+                    type:
+                    - string
+                    - nil
+                    example: '2026-02-20 10:52:46.787878000 +0000'
+                  initial:
+                    type:
+                    - string
+                    - nil
+                    example: JD
+                  color:
+                    type:
+                    - string
+                    - nil
+                    example: "#ff5512"
+                  translations:
+                    type: object
+                    example:
+                      name:
+                        en: John Doe
+                        fa: جان دو
+  "/organizations/{organization_id}/members/{id}/unarchive":
+    parameters:
+    - name: organization_id
+      in: path
+      description: Organization ID
+      required: true
+      schema:
+        type: integer
+    - name: id
+      in: path
+      description: Member ID
+      required: true
+      schema:
+        type: integer
+    patch:
+      summary: Unarchives the members
+      tags:
+      - Members
+      responses:
+        '200':
+          description: Unarchives the member successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    example: 1
+                  email:
+                    type: string
+                    example: john.doe@example.com
+                  name:
+                    type: string
+                    example: John Doe
+                  user_id:
+                    type:
+                    - integer
+                    - nil
+                    example: 3
+                  organization_id:
+                    type: integer
+                    example: 1
+                  created_at:
+                    type: string
+                    example: '2026-02-20 10:52:46.787878000 +0000'
+                  updated_at:
+                    type: string
+                    example: '2026-02-20 10:52:46.787878000 +0000'
+                  invited_at:
+                    type:
+                    - string
+                    - nil
+                    example: '2026-02-20 10:52:46.787878000 +0000'
+                  invitation_key:
+                    type:
+                    - string
+                    - nil
+                    example: 0AB1CD2EF3
+                  joined_at:
+                    type:
+                    - string
+                    - nil
+                    example: '2026-02-20 10:52:46.787878000 +0000'
+                  archived_number:
+                    type:
+                    - integer
+                    - nil
+                    example: 1
+                  archived_at:
+                    type:
+                    - string
+                    - nil
+                    example: '2026-02-20 10:52:46.787878000 +0000'
+                  initial:
+                    type:
+                    - string
+                    - nil
+                    example: JD
+                  color:
+                    type:
+                    - string
+                    - nil
+                    example: "#ff5512"
+                  translations:
+                    type: object
+                    example:
+                      name:
+                        en: John Doe
+                        fa: جان دو
+  "/organizations/{organization_id}/members/{id}/set_as_admin":
+    parameters:
+    - name: organization_id
+      in: path
+      description: Organization ID
+      required: true
+      schema:
+        type: integer
+    - name: id
+      in: path
+      description: Member ID
+      required: true
+      schema:
+        type: integer
+    patch:
+      summary: Grants org admin permission to the members
+      tags:
+      - Members
+      responses:
+        '200':
+          description: Grants org admin permission to the member
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    example: 1
+                  email:
+                    type: string
+                    example: john.doe@example.com
+                  name:
+                    type: string
+                    example: John Doe
+                  user_id:
+                    type:
+                    - integer
+                    - nil
+                    example: 3
+                  organization_id:
+                    type: integer
+                    example: 1
+                  created_at:
+                    type: string
+                    example: '2026-02-20 10:52:46.787878000 +0000'
+                  updated_at:
+                    type: string
+                    example: '2026-02-20 10:52:46.787878000 +0000'
+                  invited_at:
+                    type:
+                    - string
+                    - nil
+                    example: '2026-02-20 10:52:46.787878000 +0000'
+                  invitation_key:
+                    type:
+                    - string
+                    - nil
+                    example: 0AB1CD2EF3
+                  joined_at:
+                    type:
+                    - string
+                    - nil
+                    example: '2026-02-20 10:52:46.787878000 +0000'
+                  archived_number:
+                    type:
+                    - integer
+                    - nil
+                    example: 1
+                  archived_at:
+                    type:
+                    - string
+                    - nil
+                    example: '2026-02-20 10:52:46.787878000 +0000'
+                  initial:
+                    type:
+                    - string
+                    - nil
+                    example: JD
+                  color:
+                    type:
+                    - string
+                    - nil
+                    example: "#ff5512"
+                  translations:
+                    type: object
+                    example:
+                      name:
+                        en: John Doe
+                        fa: جان دو
+  "/organizations/{organization_id}/members/{id}/revoke_admin":
+    parameters:
+    - name: organization_id
+      in: path
+      description: Organization ID
+      required: true
+      schema:
+        type: integer
+    - name: id
+      in: path
+      description: Member ID
+      required: true
+      schema:
+        type: integer
+    patch:
+      summary: Revokes org admin permission from the members
+      tags:
+      - Members
+      responses:
+        '200':
+          description: Revokes org admin permission from the member
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    example: 1
+                  email:
+                    type: string
+                    example: john.doe@example.com
+                  name:
+                    type: string
+                    example: John Doe
+                  user_id:
+                    type:
+                    - integer
+                    - nil
+                    example: 3
+                  organization_id:
+                    type: integer
+                    example: 1
+                  created_at:
+                    type: string
+                    example: '2026-02-20 10:52:46.787878000 +0000'
+                  updated_at:
+                    type: string
+                    example: '2026-02-20 10:52:46.787878000 +0000'
+                  invited_at:
+                    type:
+                    - string
+                    - nil
+                    example: '2026-02-20 10:52:46.787878000 +0000'
+                  invitation_key:
+                    type:
+                    - string
+                    - nil
+                    example: 0AB1CD2EF3
+                  joined_at:
+                    type:
+                    - string
+                    - nil
+                    example: '2026-02-20 10:52:46.787878000 +0000'
+                  archived_number:
+                    type:
+                    - integer
+                    - nil
+                    example: 1
+                  archived_at:
+                    type:
+                    - string
+                    - nil
+                    example: '2026-02-20 10:52:46.787878000 +0000'
+                  initial:
+                    type:
+                    - string
+                    - nil
+                    example: JD
+                  color:
+                    type:
+                    - string
+                    - nil
+                    example: "#ff5512"
+                  translations:
+                    type: object
+                    example:
+                      name:
+                        en: John Doe
+                        fa: جان دو
+  "/organizations/{organization_id}/members/{id}/send_invitation":
+    parameters:
+    - name: organization_id
+      in: path
+      description: Organization ID
+      required: true
+      schema:
+        type: integer
+    - name: id
+      in: path
+      description: Member ID
+      required: true
+      schema:
+        type: integer
+    post:
+      summary: Sends invitation to the members
+      tags:
+      - Members
+      responses:
+        '200':
+          description: Sends invitation to the members
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    example: 1
+                  email:
+                    type: string
+                    example: john.doe@example.com
+                  name:
+                    type: string
+                    example: John Doe
+                  user_id:
+                    type:
+                    - integer
+                    - nil
+                    example: 3
+                  organization_id:
+                    type: integer
+                    example: 1
+                  created_at:
+                    type: string
+                    example: '2026-02-20 10:52:46.787878000 +0000'
+                  updated_at:
+                    type: string
+                    example: '2026-02-20 10:52:46.787878000 +0000'
+                  invited_at:
+                    type:
+                    - string
+                    - nil
+                    example: '2026-02-20 10:52:46.787878000 +0000'
+                  invitation_key:
+                    type:
+                    - string
+                    - nil
+                    example: 0AB1CD2EF3
+                  joined_at:
+                    type:
+                    - string
+                    - nil
+                    example: '2026-02-20 10:52:46.787878000 +0000'
+                  archived_number:
+                    type:
+                    - integer
+                    - nil
+                    example: 1
+                  archived_at:
+                    type:
+                    - string
+                    - nil
+                    example: '2026-02-20 10:52:46.787878000 +0000'
+                  initial:
+                    type:
+                    - string
+                    - nil
+                    example: JD
+                  color:
+                    type:
+                    - string
+                    - nil
+                    example: "#ff5512"
+                  translations:
+                    type: object
+                    example:
+                      name:
+                        en: John Doe
+                        fa: جان دو
   "/organizations":
     post:
       summary: Create an organization
@@ -1092,3 +1698,127 @@ paths:
                     email:
                       type: string
                       example: john.doe@example.com
+  "/organizations/{organization_id}/versions":
+    parameters:
+    - name: organization_id
+      in: path
+      description: Organization ID
+      required: true
+      schema:
+        type: integer
+    get:
+      summary: Get versions for a specific record or deleted records
+      tags:
+      - Versions
+      parameters:
+      - name: record_type
+        in: query
+        required: false
+        description: Record type (e.g., Department, Member)
+        schema:
+          type: string
+      - name: record_id
+        in: query
+        required: false
+        description: Record ID
+        schema:
+          type: integer
+      - name: deleted
+        in: query
+        required: false
+        description: Set to true to get deleted records
+        schema:
+          type: boolean
+      - name: model_type
+        in: query
+        required: false
+        description: Filter deleted records by model type
+        schema:
+          type: string
+      - name: limit
+        in: query
+        required: false
+        description: Number of records to return
+        example: 50
+        schema:
+          type: integer
+      responses:
+        '200':
+          description: Returns deleted records filtered by model type
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                      example: 1
+                    event:
+                      type: string
+                      enum:
+                      - create
+                      - update
+                      - destroy
+                      example: update
+                    created_at:
+                      type: string
+                      example: 2026-08-02 20:00:06 UTC
+                    item_type:
+                      type: string
+                      example: Department
+                    item_id:
+                      type: integer
+                      example: 1
+                    whodunnit:
+                      type: string
+                      example: '1'
+                    user_display:
+                      type: string
+                      example: John Doe
+                    record_display_name:
+                      type: string
+                      example: Engineering
+                    user_avatar:
+                      type:
+                      - string
+                      - 'null'
+                      example:
+                    user_initial:
+                      type: string
+                      example: JD
+                    object_data:
+                      type:
+                      - object
+                      - 'null'
+                      example:
+                    changes:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          field:
+                            type: string
+                            example: name
+                          from:
+                            type:
+                            - string
+                            - object
+                            - integer
+                            - 'null'
+                            example: Old Name
+                          to:
+                            type:
+                            - string
+                            - object
+                            - integer
+                            - 'null'
+                            example: New Name
+                          field_label:
+                            type: string
+                            example: Name
+        '400':
+          description: Invalid request - missing parameters
+        '403':
+          description: Not authorized
