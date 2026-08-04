@@ -18,6 +18,5 @@ export interface Version {
   changes: VersionChange[];
   user_avatar?: string;
   user_initial?: string;
-  user_color?: string;
   object_data?: any;
 }

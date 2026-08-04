@@ -510,9 +510,6 @@ paths:
                     user_initial:
                       type: string
                       example: JD
-                    user_color:
-                      type: string
-                      example: "#4F46E5"
                     changes:
                       type: array
                       items:
@@ -610,9 +607,6 @@ paths:
                   user_initial:
                     type: string
                     example: JD
-                  user_color:
-                    type: string
-                    example: "#4F46E5"
                   changes:
                     type: array
                     items:

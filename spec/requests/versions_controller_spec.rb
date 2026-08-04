@@ -17,7 +17,6 @@ RSpec.describe 'Versions API', type: :request do
       record_display_name: { type: :string, example: 'Engineering' },
       user_avatar: { type: %i[string null], example: nil },
       user_initial: { type: :string, example: 'JD' },
-      user_color: { type: :string, example: '#4F46E5' },
       object_data: { type: %i[object null], example: nil },
       changes: {
         type: :array,
