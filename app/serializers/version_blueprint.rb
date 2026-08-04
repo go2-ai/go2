@@ -29,15 +29,6 @@ class VersionBlueprint < Blueprinter::Base
       end
     end
 
-    field :user_color do |version|
-      if version.whodunnit.present?
-        colors = [ "#4F46E5", "#0EA5E9", "#10B981", "#F59E0B", "#EF4444", "#8B5CF6", "#EC4899" ]
-        colors[version.whodunnit.to_i % colors.length]
-      else
-        "#6B7280"
-      end
-    end
-
     field :object_data do |version|
       if version.event == "destroy" && version.object.present?
         begin
