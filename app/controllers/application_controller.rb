@@ -65,7 +65,7 @@ class ApplicationController < ActionController::Base
         redirect_to(request.referrer || root_path)
       end
       format.any(:xml, :json) do
-        render request.format.to_sym => { errors: ["You are not authorized to perform this action!"] },
+        render request.format.to_sym => { errors: [ "You are not authorized to perform this action!" ] },
                :status               => :forbidden
       end
       format.pdf do

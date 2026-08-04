@@ -8,6 +8,7 @@
     "noVersionsFound": "No changes recorded yet.",
     "failedToLoad": "Failed to load version history.",
     "tryAgain": "Try again",
-    "deletedData": "Deleted data"
+    "deletedData": "Deleted data",
+    "historyTabTitle": "History ({{name}})"
   }
 }

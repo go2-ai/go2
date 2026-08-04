@@ -1,23 +1,30 @@
+// frontend/src/features/departments/components/DepartmentsTable.tsx
 import { useState, useMemo } from 'react';
-import { 
-  Paper, 
-  Box, 
-  TextField, 
-  InputAdornment, 
+import {
+  Paper,
+  Box,
+  TextField,
+  InputAdornment,
   Typography,
+  IconButton,
   CircularProgress,
   Alert,
   Button,
+  Menu,
+  MenuItem,
 } from '@mui/material';
 import { DataGrid } from '@mui/x-data-grid';
-import type { GridColDef } from '@mui/x-data-grid';
+import type { GridColDef, GridRenderCellParams } from '@mui/x-data-grid';
 import { useTranslation } from 'react-i18next';
+import SearchIcon from '@mui/icons-material/Search';
+import DeleteIcon from '@mui/icons-material/Delete';
+import MoreVertIcon from '@mui/icons-material/MoreVert';
 import type { Department } from '../types';
 import { useDeleteDepartmentMutation } from '../departmentsApi';
 import { useConfirm } from '../../../contexts/confirmContext';
 import { useToast } from '../../../contexts/ToastContext';
-
-import SearchIcon from '@mui/icons-material/Search';
+import { useNavigate, useParams } from 'react-router-dom';
+import { useTabManager } from '../../../components/tabs/useTabManager';
 
 interface DepartmentsTableProps {
   departments?: Department[];
@@ -28,46 +35,82 @@ interface DepartmentsTableProps {
   onRetry?: () => void;
 }
 
-export const DepartmentsTable = ({ 
+export const DepartmentsTable = ({
   departments,
   organizationId,
   onRowClick,
   isLoading,
   error,
-  onRetry
+  onRetry,
 }: DepartmentsTableProps) => {
   const { t } = useTranslation('shared');
   const { t: tDepartments } = useTranslation('departments');
-  
-  const [globalSearch, setGlobalSearch] = useState('');
-  const [deleteDepartment, { isLoading: isDeleting }] = useDeleteDepartmentMutation();
-  const confirm = useConfirm();
-  const { showSuccess } = useToast();
+  const navigate = useNavigate();
+  const { organizationId: orgIdParam } = useParams<{ organizationId: string }>();
+  const { openTab } = useTabManager();
 
-  const handleDelete = async (e: React.MouseEvent, department: Department) => {
-    e.stopPropagation();
+  const [globalSearch, setGlobalSearch] = useState('');
+  const [menuAnchorEl, setMenuAnchorEl] = useState<null | HTMLElement>(null);
+  const [selectedDepartmentForMenu, setSelectedDepartmentForMenu] = useState<Department | null>(null);
+
+  const [deleteDepartment] = useDeleteDepartmentMutation();
+  const confirm = useConfirm();
+  const { showSuccess, showError } = useToast();
+
+  const handleDelete = async () => {
+    if (!selectedDepartmentForMenu) return;
 
     const confirmed = await confirm({
       title: tDepartments('deleteDepartmentTitle'),
-      message: tDepartments('deleteDepartmentMessage', { name: department.name }),
+      message: tDepartments('deleteDepartmentMessage', { name: selectedDepartmentForMenu.name }),
       confirmText: t('commonActions.delete'),
       confirmColor: 'error',
     });
-    if (!confirmed) return;
+    if (!confirmed) {
+      setMenuAnchorEl(null);
+      return;
+    }
 
     try {
-      await deleteDepartment({ organizationId, departmentId: department.id }).unwrap();
+      await deleteDepartment({ organizationId, departmentId: selectedDepartmentForMenu.id }).unwrap();
       showSuccess(tDepartments('deleteSuccess'));
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to delete department:', error);
+      showError(error?.data?.errors?.[0] || tDepartments('deleteFailed'));
     }
+    setMenuAnchorEl(null);
+  };
+
+  const handleHistory = () => {
+    if (!selectedDepartmentForMenu) return;
+    const path = `/app/organizations/${orgIdParam}/record-history?type=Department&id=${selectedDepartmentForMenu.id}`;
+    const departmentName = selectedDepartmentForMenu.name;
+
+    setMenuAnchorEl(null);
+    setSelectedDepartmentForMenu(null);
+
+    setTimeout(() => {
+      openTab('record-history', `History: ${departmentName}`, path);
+      navigate(path);
+    }, 0);
+  };
+
+  const handleMenuOpen = (e: React.MouseEvent<HTMLElement>, department: Department) => {
+    e.stopPropagation();
+    setMenuAnchorEl(e.currentTarget);
+    setSelectedDepartmentForMenu(department);
+  };
+
+  const handleMenuClose = () => {
+    setMenuAnchorEl(null);
+    setSelectedDepartmentForMenu(null);
   };
 
   const filteredRows = useMemo(() => {
     if (!globalSearch.trim() || !departments) return departments || [];
-    
+
     const searchTerm = globalSearch.toLowerCase();
-    return departments.filter(department => 
+    return departments.filter((department) =>
       (department.name || '').toLowerCase().includes(searchTerm) ||
       (department.description || '').toLowerCase().includes(searchTerm) ||
       (department.abbreviation || '').toLowerCase().includes(searchTerm)
@@ -79,35 +122,81 @@ export const DepartmentsTable = ({
       field: 'name',
       headerName: t('name'),
       width: 250,
+      disableColumnMenu: true,
+      renderCell: (params: GridRenderCellParams<Department>) => (
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            height: '100%',
+          }}
+        >
+          <Typography variant="body2" fontWeight={500}>
+            {params.row.name}
+          </Typography>
+        </Box>
+      ),
     },
     {
       field: 'abbreviation',
       headerName: t('abbreviation'),
       width: 150,
+      disableColumnMenu: true,
+      renderCell: (params: GridRenderCellParams<Department>) => (
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            height: '100%',
+          }}
+        >
+          <Typography variant="body2">
+            {params.row.abbreviation || '—'}
+          </Typography>
+        </Box>
+      ),
     },
     {
       field: 'description',
       headerName: t('description'),
       width: 400,
+      disableColumnMenu: true,
+      renderCell: (params: GridRenderCellParams<Department>) => (
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            height: '100%',
+          }}
+        >
+          <Typography variant="body2">
+            {params.row.description || '—'}
+          </Typography>
+        </Box>
+      ),
     },
     {
       field: 'actions',
-      headerName: '',
+      headerName: t('actions'),
       width: 80,
       sortable: false,
       filterable: false,
       disableColumnMenu: true,
-      renderCell: (params) => (
-        <Button
-          aria-label={tDepartments('deleteDepartment')}
-          size="small"
-          disabled={isDeleting}
-          onClick={(e) => handleDelete(e, params.row)}
-          color="warning"
-          variant="outlined"
+      renderCell: (params: GridRenderCellParams<Department>) => (
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            height: '100%',
+          }}
         >
-          { t('commonActions.delete') }
-        </Button>
+          <IconButton
+            size="small"
+            onClick={(e) => handleMenuOpen(e, params.row)}
+          >
+            <MoreVertIcon fontSize="small" />
+          </IconButton>
+        </Box>
       ),
     },
   ];
@@ -121,12 +210,11 @@ export const DepartmentsTable = ({
     );
   }
 
-  // Error state
   if (error) {
     return (
       <Paper sx={{ p: 3 }}>
-        <Alert 
-          severity="error" 
+        <Alert
+          severity="error"
           action={
             onRetry && (
               <Button color="inherit" size="small" onClick={onRetry}>
@@ -141,7 +229,6 @@ export const DepartmentsTable = ({
     );
   }
 
-  // No data state
   if (!departments || departments.length === 0) {
     return (
       <Paper sx={{ p: 4, textAlign: 'center' }}>
@@ -152,7 +239,6 @@ export const DepartmentsTable = ({
     );
   }
 
-  // Success state - render the table
   return (
     <Paper sx={{ p: 2, height: '100%', display: 'flex', flexDirection: 'column' }}>
       <Box sx={{ mb: 2 }}>
@@ -172,7 +258,7 @@ export const DepartmentsTable = ({
           size="small"
         />
       </Box>
-      
+
       <DataGrid
         rows={filteredRows}
         columns={columns}
@@ -186,9 +272,24 @@ export const DepartmentsTable = ({
           '& .MuiDataGrid-cell:focus': { outline: 'none' },
           '& .MuiDataGrid-row:hover': { cursor: 'pointer' },
           '& .MuiDataGrid-columnHeaderTitle': { fontWeight: 'bold' },
-          '& .MuiDataGrid-cell': {paddingInlineEnd: 0}
+          '& .MuiDataGrid-cell': { paddingInlineEnd: 0 },
         }}
       />
+
+      <Menu
+        anchorEl={menuAnchorEl}
+        open={Boolean(menuAnchorEl)}
+        onClose={handleMenuClose}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+        transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+      >
+        <MenuItem onClick={handleHistory}>
+          {t('changeLog')}
+        </MenuItem>
+        <MenuItem onClick={handleDelete} sx={{ color: 'error.main' }}>
+          {t('commonActions.delete')}
+        </MenuItem>
+      </Menu>
     </Paper>
   );
 };

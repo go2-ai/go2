@@ -9,7 +9,7 @@ import {
   Alert,
   Button,
   Tooltip,
-} from '@mui/material'; // ✅ Added Tooltip
+} from '@mui/material';
 import {
   Timeline,
   TimelineItem,
@@ -26,6 +26,7 @@ import {
 } from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
 import { formatDistanceToNow, format } from 'date-fns';
+import { getDateFnsLocale } from '../../../utils/dateFnsLocale';
 import type { Version, VersionChange } from '../types';
 
 interface VersionTimelineProps {
@@ -44,7 +45,8 @@ export const VersionTimeline: React.FC<VersionTimelineProps> = ({
   error,
   onRetry,
 }) => {
-  const { t } = useTranslation('versions');
+  const { t, i18n } = useTranslation('versions');
+  const dateFnsLocale = getDateFnsLocale(i18n.language);
 
   const getEventIcon = (event: string) => {
     switch (event) {
@@ -85,10 +87,13 @@ export const VersionTimeline: React.FC<VersionTimelineProps> = ({
     }
   };
 
-  // ✅ Format relative time
+  // ✅ Format relative time with user locale
   const formatRelativeTime = (dateString: string) => {
     try {
-      return formatDistanceToNow(new Date(dateString), { addSuffix: true });
+      return formatDistanceToNow(new Date(dateString), {
+        addSuffix: true,
+        locale: dateFnsLocale,
+      });
     } catch {
       return dateString;
     }
@@ -98,7 +103,6 @@ export const VersionTimeline: React.FC<VersionTimelineProps> = ({
   const formatAbsoluteTime = (dateString: string) => {
     try {
       const date = new Date(dateString);
-      // Get timezone offset in hours
       const offset = -date.getTimezoneOffset() / 60;
       const sign = offset >= 0 ? '+' : '';
       const timezone = `UTC${sign}${offset}`;
@@ -107,10 +111,11 @@ export const VersionTimeline: React.FC<VersionTimelineProps> = ({
       return dateString;
     }
   };
+
   // ✅ Helper to format value for display
   const formatValue = (value: any): string => {
     if (value === null || value === undefined) {
-      return ' '; // Empty space for null/undefined
+      return ' ';
     }
     if (typeof value === 'object') {
       return JSON.stringify(value);
@@ -156,8 +161,8 @@ export const VersionTimeline: React.FC<VersionTimelineProps> = ({
     );
   }
 
-  // ✅ Filter out excluded fields from changes
   const filterChanges = (changes: VersionChange[]): VersionChange[] => {
+    if (JSON.stringify(changes) === '{}') return [];
     return changes.filter(change => !EXCLUDED_FIELDS.includes(change.field));
   };
 
@@ -172,7 +177,6 @@ export const VersionTimeline: React.FC<VersionTimelineProps> = ({
           return (
             <TimelineItem key={version.id}>
               <TimelineOppositeContent color="text.secondary" sx={{ flex: 0.2 }}>
-                {/* ✅ Tooltip with absolute time */}
                 <Tooltip title={absoluteTime} arrow placement="top">
                   <Typography 
                     variant="body2" 
@@ -206,7 +210,6 @@ export const VersionTimeline: React.FC<VersionTimelineProps> = ({
                     />
                   </Box>
 
-                  {/* Show changes for both create and update events */}
                   {filteredChanges.length > 0 && (
                     <Box sx={{ mt: 1 }}>
                       {filteredChanges.map((change: VersionChange) => {
@@ -229,12 +232,10 @@ export const VersionTimeline: React.FC<VersionTimelineProps> = ({
                               {change.field_label}:
                             </Typography>
                             {version.event === 'create' ? (
-                              // For create events, show "→ value" without "from"
                               <Typography variant="body2" sx={{ color: 'success.main' }}>
                                 {toValue}
                               </Typography>
                             ) : (
-                              // For update events, show old → new
                               <>
                                 <Typography
                                   variant="body2"

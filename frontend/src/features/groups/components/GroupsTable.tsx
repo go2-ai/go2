@@ -23,6 +23,8 @@ import type { Group } from '../groupsApi';
 import { useDeleteGroupMutation } from '../groupsApi';
 import { useConfirm } from '../../../contexts/confirmContext';
 import { useToast } from '../../../contexts/ToastContext';
+import { useNavigate, useParams } from 'react-router-dom';
+import { useTabManager } from '../../../components/tabs/useTabManager';
 
 interface GroupsTableProps {
   groups?: Group[];
@@ -33,7 +35,7 @@ interface GroupsTableProps {
   onRetry?: () => void;
 }
 
-// ✅ Extend Group with computed member_count for sorting
+// Extend Group with computed member_count for sorting
 interface GroupWithMemberCount extends Group {
   member_count: number;
 }
@@ -48,6 +50,9 @@ export const GroupsTable = ({
 }: GroupsTableProps) => {
   const { t } = useTranslation('shared');
   const { t: tGroups } = useTranslation('groups');
+  const navigate = useNavigate();
+  const { organizationId: orgIdParam } = useParams<{ organizationId: string }>();
+  const { openTab } = useTabManager();
 
   const [globalSearch, setGlobalSearch] = useState('');
   const [menuAnchorEl, setMenuAnchorEl] = useState<null | HTMLElement>(null);
@@ -57,7 +62,7 @@ export const GroupsTable = ({
   const confirm = useConfirm();
   const { showSuccess, showError } = useToast();
 
-  // ✅ Add member_count to each group for sorting
+  // Add member_count to each group for sorting
   const groupsWithCount = useMemo(() => {
     if (!groups) return [];
     return groups.map((group) => ({
@@ -88,6 +93,20 @@ export const GroupsTable = ({
       showError(error?.data?.errors?.[0] || tGroups('deleteFailed'));
     }
     setMenuAnchorEl(null);
+  };
+
+  const handleHistory = () => {
+    if (!selectedGroupForMenu) return;
+    const path = `/app/organizations/${orgIdParam}/record-history?type=Group&id=${selectedGroupForMenu.id}`;
+    const groupName = selectedGroupForMenu.name;
+
+    setMenuAnchorEl(null);
+    setSelectedGroupForMenu(null);
+
+    setTimeout(() => {
+      openTab('record-history', `History: ${groupName}`, path);
+      navigate(path);
+    }, 0);
   };
 
   const handleMenuOpen = (e: React.MouseEvent<HTMLElement>, group: Group) => {
@@ -151,7 +170,7 @@ export const GroupsTable = ({
       ),
     },
     {
-      field: 'member_count', // ✅ Use this field for sorting
+      field: 'member_count',
       headerName: tGroups('members'),
       width: 120,
       disableColumnMenu: true,
@@ -164,7 +183,7 @@ export const GroupsTable = ({
             height: '100%',
           }}
         >
-          { params.row.member_count }
+          {params.row.member_count}
         </Box>
       ),
     },
@@ -275,8 +294,10 @@ export const GroupsTable = ({
         anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
         transformOrigin={{ vertical: 'top', horizontal: 'right' }}
       >
+        <MenuItem onClick={handleHistory}>
+          {t('changeLog')}
+        </MenuItem>
         <MenuItem onClick={handleDelete} sx={{ color: 'error.main' }}>
-          <DeleteIcon fontSize="small" sx={{ mr: 1 }} />
           {t('commonActions.delete')}
         </MenuItem>
       </Menu>

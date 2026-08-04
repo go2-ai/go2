@@ -38,7 +38,7 @@ export const RecordHistoryPage: React.FC = () => {
   useEffect(() => {
     if (versions && versions.length > 0 && !titleUpdatedRef.current && tabId) {
       const displayName = versions[0]?.record_display_name || `${recordType} #${recordId}`;
-      updateTabTitle(tabId, `History (${displayName})`);
+      updateTabTitle(tabId, t('historyTabTitle', { name: displayName } ));
       titleUpdatedRef.current = true;
     }
   }, [versions, recordType, recordId, tabId, updateTabTitle]);

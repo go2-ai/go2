@@ -1,3 +1,4 @@
+// frontend/src/features/members/components/MemberActionsMenu.tsx
 import { Menu, MenuItem } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { useToast } from '../../../contexts/ToastContext';
@@ -10,6 +11,8 @@ import {
   useRevokeAdminMutation,
 } from '../membersApi';
 import type { Member } from '../types';
+import { useNavigate, useParams } from 'react-router-dom';
+import { useTabManager } from '../../../components/tabs/useTabManager';
 
 interface MemberActionsMenuProps {
   anchorEl: HTMLElement | null;
@@ -27,6 +30,8 @@ export const MemberActionsMenu = ({
   const { t } = useTranslation('shared');
   const { t: tMembers } = useTranslation('members');
   const { showSuccess, showError } = useToast();
+  const navigate = useNavigate();
+  const { organizationId: orgIdParam } = useParams<{ organizationId: string }>();
   
   const [sendInvitation] = useSendInvitationMutation();
   const [uninvite] = useUninviteMutation();
@@ -34,6 +39,7 @@ export const MemberActionsMenu = ({
   const [unarchive] = useUnarchiveMemberMutation();
   const [setAsAdmin] = useSetAsAdminMutation();
   const [revokeAdmin] = useRevokeAdminMutation();
+  const { openTab } = useTabManager();
 
   if (!member) return null;
 
@@ -107,6 +113,18 @@ export const MemberActionsMenu = ({
     onClose();
   };
 
+  const handleHistory = () => {
+    if (!member) return;
+    const path = `/app/organizations/${organizationId}/record-history?type=Member&id=${member.id}`;
+    const memberName = member.name;
+
+    setTimeout(() => {
+      openTab('record-history', `History: ${memberName}`, path);
+      navigate(path);
+    }, 0);
+    onClose();
+  };
+
   const actions = [
     {
       id: 'send-invitation',
@@ -149,6 +167,12 @@ export const MemberActionsMenu = ({
       text: tMembers('revokeAdmin'),
       visible: member.org_admin === true,
       onClick: handleRevokeAdmin,
+    },
+    {
+      id: 'history',
+      text: t('changeLog'),
+      visible: true,
+      onClick: handleHistory,
     },
   ];
 

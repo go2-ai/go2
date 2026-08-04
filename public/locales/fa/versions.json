@@ -9,6 +9,7 @@
     "noVersionsFound": "هنوز تغییری ثبت نشده است.",
     "failedToLoad": "بارگذاری تاریخچه ناموفق بود.",
     "tryAgain": "دوباره تلاش کنید",
-    "deletedData": "داده‌های حذف شده"
+    "deletedData": "داده‌های حذف شده",
+    "historyTabTitle": "تاریخچه ({{name}})"
   }
 }

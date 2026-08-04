@@ -4,7 +4,7 @@ class GroupsController < ApplicationController
   before_action :set_group, only: %i[show update destroy]
 
   def index
-    groups = current_organization.groups
+    groups = current_organization.groups.includes([ members: :user ])
     render json: GroupBlueprint.render(groups), status: :ok
   end
 
