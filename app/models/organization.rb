@@ -30,6 +30,7 @@ class Organization < ApplicationRecord
   has_many :roles, dependent: :nullify
   has_many :members, dependent: :destroy
   has_many :users, through: :members
+  has_many :permissions, dependent: :destroy
   has_many :tasks, dependent: :destroy
   has_many :currencies, dependent: :destroy
   has_many :fiscal_years, dependent: :destroy
@@ -41,6 +42,7 @@ class Organization < ApplicationRecord
   has_many :centers, through: :center_types
   has_many :journal_entries, dependent: :destroy
   has_many :journal_entry_items, through: :journal_entries
+
 
   # Validations
   validate :no_circular_references

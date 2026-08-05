@@ -80,6 +80,12 @@ Rails.application.routes.draw do
 
     resources :groups
 
+    resources :permissions, only: [:index, :create, :destroy] do
+      collection do
+        get :grantable
+      end
+    end
+
     resources :versions, only: [ :index ]
 
     resources :conversations do

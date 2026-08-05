@@ -1,6 +1,6 @@
 require 'swagger_helper'
 
-RSpec.describe 'Users::Sessions API', type: :request do
+RSpec.describe 'Members API', type: :request do
   member_attributes = {
     id: { type: :integer, example: 1 },
     email: { type: :string, example: 'john.doe@example.com' },

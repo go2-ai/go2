@@ -1283,6 +1283,203 @@ paths:
                   example: true
               required:
               - is_trial
+  "/organizations/{organization_id}/permissions/grantable":
+    parameters:
+    - name: organization_id
+      in: path
+      description: Organization ID
+      required: true
+      schema:
+        type: integer
+    get:
+      summary: Get all grantable permissions
+      tags:
+      - Permissions
+      responses:
+        '200':
+          description: Returns grantable permissions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    code:
+                      type: string
+                    name:
+                      type: string
+                    abilities:
+                      type: array
+                      items:
+                        type: string
+                    tags:
+                      type: array
+                      items:
+                        type: string
+        '403':
+          description: Not authorized
+  "/organizations/{organization_id}/permissions":
+    parameters:
+    - name: organization_id
+      in: path
+      description: Organization ID
+      required: true
+      schema:
+        type: integer
+    get:
+      summary: Get permissions
+      tags:
+      - Permissions
+      parameters:
+      - name: code
+        in: query
+        required: false
+        description: Filter by permission code
+        schema:
+          type: string
+      - name: member_id
+        in: query
+        required: false
+        description: Filter by member ID
+        schema:
+          type: integer
+      - name: include_indirect
+        in: query
+        required: false
+        description: Include indirect permissions
+        schema:
+          type: boolean
+      responses:
+        '200':
+          description: Returns direct + indirect permissions for a member
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                    code:
+                      type: string
+                    grantee_type:
+                      type: string
+                    grantee_id:
+                      type: integer
+                    organization_id:
+                      type: integer
+                    created_at:
+                      type: string
+                    updated_at:
+                      type: string
+                    grantee_name:
+                      type: string
+        '403':
+          description: Not authorized
+    post:
+      summary: Grant a permission
+      tags:
+      - Permissions
+      parameters: []
+      responses:
+        '200':
+          description: Permission granted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  code:
+                    type: string
+                  grantee_type:
+                    type: string
+                  grantee_id:
+                    type: integer
+                  organization_id:
+                    type: integer
+                  created_at:
+                    type: string
+                  updated_at:
+                    type: string
+                  grantee_name:
+                    type: string
+        '422':
+          description: Invalid request
+        '403':
+          description: Not authorized
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                code:
+                  type: string
+                  example: Organization.admin
+                grantee_type:
+                  type: string
+                  enum:
+                  - Member
+                  - Role
+                  - Department
+                  - Group
+                grantee_id:
+                  type: integer
+                  example: 1
+              required:
+              - code
+              - grantee_type
+              - grantee_id
+  "/organizations/{organization_id}/permissions/{id}":
+    parameters:
+    - name: organization_id
+      in: path
+      description: Organization ID
+      required: true
+      schema:
+        type: integer
+    - name: id
+      in: path
+      description: Permission ID
+      required: true
+      schema:
+        type: integer
+    delete:
+      summary: Revoke a permission
+      tags:
+      - Permissions
+      responses:
+        '200':
+          description: Permission revoked successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  code:
+                    type: string
+                  grantee_type:
+                    type: string
+                  grantee_id:
+                    type: integer
+                  organization_id:
+                    type: integer
+                  created_at:
+                    type: string
+                  updated_at:
+                    type: string
+                  grantee_name:
+                    type: string
+        '404':
+          description: Permission not found
+        '403':
+          description: Not authorized
   "/organizations/{organization_id}/roles":
     parameters:
     - name: organization_id
