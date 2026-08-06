@@ -3,7 +3,7 @@ class PermissionsController < ApplicationController
   before_action :set_organization
 
   def grantable
-    render json: Permission::GRANTABLE_PERMISSIONS
+    render json: Permission.grantable_permissions
   end
 
   def index

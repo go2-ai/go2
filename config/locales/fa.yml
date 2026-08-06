@@ -119,6 +119,21 @@ fa:
         invited: دعوت شده
         joined: پیوسته
         not_invited: دعوت نشده
+    permission:
+      organization_admin: مدیریت سازمان
+      manage_members: ایجاد، حذف و ویرایش اعضا
+      manage_roles: ایجاد، حذف و ویرایش سمت ها
+      manage_departments: ایجاد، حذف و ویرایش واحدهای سازمانی
+      manage_groups: ایجاد، حذف و ویرایش گروه‌ها
+      manage_permissions: اعطا و لغو دسترسی ها
+      accounting_manage_centers: مدیریت مراکز حسابداری
+      manage_centers: ایجاد، حذف و ویرایش مراکز حسابداری
+      accounting_view_centers: مشاهده مراکز حسابداری
+      view_centers: مشاهده مراکز حسابداری
+      accounting_manage_accounts: مدیریت حساب های حسابداری
+      manage_accounts: ایجاد، حذف و ویرایش حساب های حسابداری
+      accounting_view_accounts: مشاهده حساب های حسابداری
+      view_accounts: مشاهده حساب های حسابداری
   onboarding:
     description: سازمان شما جایی است که تیم، پروژه‌ها و منابع خود را مدیریت خواهید کرد. همیشه می‌توانید این را بعداً تغییر دهید.
     error_message: خطایی در ایجاد سازمان شما رخ داد. لطفاً دوباره تلاش کنید.

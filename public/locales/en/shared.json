@@ -11,7 +11,8 @@
       "delete": "Delete",
       "save": "Save",
       "unarchive": "Unarchive",
-      "update": "Update"
+      "update": "Update",
+      "revoke": "Revoke"
     },
     "components": {
       "MultiLocaleInput": {

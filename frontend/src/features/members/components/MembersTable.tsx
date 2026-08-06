@@ -19,6 +19,7 @@ import SearchIcon from '@mui/icons-material/Search';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import type { Member } from '../types';
 import { MemberActionsMenu } from './MemberActionsMenu';
+import { MemberAvatar } from './MemberAvatar';
 
 interface MembersTableProps {
   members?: Member[];
@@ -79,25 +80,7 @@ export const MembersTable = ({
       width: 200,
       renderCell: (params: GridRenderCellParams<Member>) => (
         <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 1 }}>
-          <Box
-            sx={{
-              width: 32,
-              height: 32,
-              borderRadius: '50%',
-              bgcolor: params.row.color || '#4F46E5',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: (theme) => theme.palette.getContrastText(params.row.color || '#4F46E5'),
-              fontWeight: 'bold',
-              fontSize: '0.875rem',
-              boxShadow: params.row.org_admin 
-                ? '0 0 0 3px gold, 0 0 0 6px rgba(255, 215, 0, 0.2), 0 0 12px 8px rgba(255, 215, 0, 0.1)' 
-                : 'none'
-            }}
-          >
-            {params.row.initial}
-          </Box>
+          <MemberAvatar member={params.row} />
           <Typography variant="body2">{params.row.name}</Typography>
         </Box>
       ),

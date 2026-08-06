@@ -12,6 +12,7 @@ import { DepartmentsPage } from './features/departments/DepartmentsPage';
 import { RolesPage } from './features/roles/RolesPage';
 import { GroupsPage } from './features/groups/GroupsPage';
 import { RecordHistoryPage } from './features/versions/RecordHistoryPage';
+import { PermissionsPage } from './features/permissions/PermissionsPage';
 
 function App() {
   return (
@@ -33,6 +34,7 @@ function App() {
             <Route path=":organizationId/roles" element={<RolesPage />} />
             <Route path=":organizationId/groups" element={<GroupsPage />} />
             <Route path=":organizationId/record-history" element={<RecordHistoryPage />} />
+            <Route path=":organizationId/permissions" element={<PermissionsPage />} />
           </Route>
           
           <Route path="app/" element={<Navigate to="/app/signin" replace />} />

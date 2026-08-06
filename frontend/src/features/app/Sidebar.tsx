@@ -17,7 +17,8 @@ import {
   People,
   Business,
   Assignment,
-  Group
+  Group,
+  Lock,
 } from '@mui/icons-material';
 
 const drawerWidth = 280;
@@ -28,9 +29,7 @@ export function Sidebar() {
   const { openTab } = useTabManager();
 
   const handleNavigation = (pageId: string, title: string, path: string) => {
-    // This now always creates a new tab (we modified openTab to always create)
-    openTab(pageId, title);
-    // Navigate to the route
+    openTab(pageId, title, path);
     navigate(`/app/organizations/${organizationId}${path}`);
   };
 
@@ -54,7 +53,7 @@ export function Sidebar() {
       path: '/departments',
     },
     {
-      pageId: 'roles',  // Add this
+      pageId: 'roles',
       title: 'Roles',
       icon: <Assignment />,
       path: '/roles',
@@ -64,6 +63,12 @@ export function Sidebar() {
       title: 'Groups',
       icon: <Group />,
       path: '/groups',
+    },
+    {
+      pageId: 'permissions',
+      title: 'Permissions',
+      icon: <Lock />,
+      path: '/permissions',
     },
   ];
 

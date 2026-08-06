@@ -11,7 +11,8 @@
       "delete": "حذف",
       "save": "ذخیره",
       "unarchive": "لغو بایگانی",
-      "update": "به روز رسانی"
+      "update": "به روز رسانی",
+      "revoke": "لغو"
     },
     "components": {
       "MultiLocaleInput": {
