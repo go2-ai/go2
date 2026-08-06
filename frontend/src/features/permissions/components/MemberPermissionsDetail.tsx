@@ -308,7 +308,7 @@ export const MemberPermissionsDetail = ({
           <>
             {/* ── Direct Permissions ── */}
             <Box sx={{ mb: 2 }}>
-              <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 1 }}>
+              <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 1, fontWeight: 'bold' }}>
                 {tPermissions('directPermissions')} ({directPermissions.length})
               </Typography>
 
@@ -353,7 +353,7 @@ export const MemberPermissionsDetail = ({
 
             {/* ── Indirect Permissions ── */}
             <Box>
-              <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 1 }}>
+              <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 1, fontWeight: 'bold' }}>
                 {tPermissions('indirectPermissions')} ({filteredIndirectPermissions.length})
               </Typography>
 

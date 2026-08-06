@@ -1,5 +1,14 @@
 class Permission < ApplicationRecord
-  has_paper_trail
+  has_paper_trail meta: {
+    metadata: ->(permission) {
+      {
+        organization_id: permission.organization_id,
+        permission_code: permission.code,
+        grantee_type: permission.grantee_type,
+        grantee_id: permission.grantee_id
+      }
+    }
+  }
 
   # Associations
   belongs_to :grantee, polymorphic: true

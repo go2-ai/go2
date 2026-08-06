@@ -28,6 +28,8 @@ import { resolveMembersForPermission, getMemberPermissions } from './permissionU
 import type { ResolvedMember } from './types';
 import { MemberPermissionsDetail } from './components/MemberPermissionsDetail';
 import { AddPermissionToMemberModal } from './components/AddPermissionToMemberModal';
+import { useTabManager } from '../../components/tabs/useTabManager';
+import { useNavigate } from 'react-router-dom';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -73,6 +75,8 @@ export const PermissionsPage = () => {
   const { t: tPermissions } = useTranslation('permissions');
   const { organizationId } = useParams<{ organizationId: string }>();
   const orgId = parseInt(organizationId || '0', 10);
+  const { openTab } = useTabManager();
+  const navigate = useNavigate();
 
   const [isAddPermissionModalOpen, setIsAddPermissionModalOpen] = useState(false);
 
@@ -243,6 +247,14 @@ export const PermissionsPage = () => {
     refetchPermissionsByCode();
   };
 
+  const handleViewHistory = () => {
+    if (!selectedPermissionCode) return;
+    const permissionName = selectedPermission?.name || selectedPermissionCode;
+    const path = `/app/organizations/${orgId}/permission-history?code=${selectedPermissionCode}`;
+    openTab('permission-history', t('history',  {name: permissionName}), path);
+    navigate(path);
+  };
+
   // ─── Error State ────────────────────────────────────────────────────────
   if (grantableError || permissionsByCodeError || allPermissionsError || membersError || rolesError || groupsError || departmentsError) {
     return (
@@ -274,7 +286,7 @@ export const PermissionsPage = () => {
   }
 
   return (
-    <Container maxWidth="xl" sx={{ height: 'calc(100% - 80px)', display: 'flex', flexDirection: 'column', py: 2, overflow: 'hidden' }}>
+    <Container maxWidth="xl" sx={{ height: '100%', display: 'flex', flexDirection: 'column', py: 2, overflow: 'hidden' }}>
       {/* Header */}
       <Box sx={{ mb: 2, flexShrink: 0 }}>
         <Typography variant="h4" component="h1" gutterBottom>
@@ -320,6 +332,7 @@ export const PermissionsPage = () => {
                     abilities={selectedPermissionAbilities}
                     onGranteeAdded={handleGranteeAdded}
                     onGranteeRemoved={handleGranteeRemoved}
+                    onViewHistory={handleViewHistory}
                   />
                 ) : (
                   <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'text.secondary' }}>

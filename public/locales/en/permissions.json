@@ -79,5 +79,14 @@
   "addPermission": "Add Permission",
   "addDirectPermissionToMember": "Add Direct Permission to {{name}}",
   "noAvailablePermissionsToGrant": "No available permissions to grant",
-  "changePermission": "Change"
+  "changePermission": "Change",
+  "viewHistory": "View History",
+  "permissionHistoryFor": "History for {{name}}",
+  "noPermissionCodeProvided": "No permission code provided",
+  "event": "Event",
+  "dateTime": "Date & time",
+  "actor": "Actor",
+  "grantee": "Grantee",
+  "granted": "Granted",
+  "revoked": "Revoked"
 }

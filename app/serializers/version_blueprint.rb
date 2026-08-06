@@ -39,4 +39,18 @@ class VersionBlueprint < Blueprinter::Base
       end
     end
   end
+
+  view :permission_history do
+    field :actor_name do |version|
+      version.user_display
+    end
+
+    field :grantee_type do |version|
+      version.metadata["grantee_type"]
+    end
+
+    field :grantee_name do |version|
+      version.metadata["grantee_type"].constantize.find(version.metadata["grantee_id"]).name
+    end
+  end
 end

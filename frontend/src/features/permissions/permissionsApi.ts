@@ -27,12 +27,24 @@ export interface GrantPermissionRequest {
   grantee_id: number;
 }
 
+export interface PermissionVersion {
+  id: number;
+  event: 'create' | 'destroy';
+  created_at: string;
+  whodunnit: string;
+  actor_name: string;
+  grantee_type: 'Member' | 'Role' | 'Department' | 'Group';
+  grantee_id: number;
+  grantee_name: string;
+  permission_code: string;
+}
+
 // ─── API Client ─────────────────────────────────────────────────────────────
 
 export const permissionsApi = createApi({
   reducerPath: 'permissionsApi',
   baseQuery: baseQueryWithCsrf,
-  tagTypes: ['Permission', 'GrantablePermission'],
+  tagTypes: ['Permission', 'GrantablePermission', 'PermissionVersion'],
   endpoints: (builder) => ({
     // GET /organizations/:organizationId/permissions/grantable
     getGrantablePermissions: builder.query<GrantablePermission[], number>({
@@ -72,6 +84,22 @@ export const permissionsApi = createApi({
               { type: 'Permission', id: 'LIST' },
             ]
           : [{ type: 'Permission', id: 'LIST' }],
+    }),
+
+    // ─── Permission Versions ──────────────────────────────────────────────────
+
+    getPermissionVersions: builder.query<
+      PermissionVersion[],
+      { organizationId: number; code: string }
+    >({
+      query: ({ organizationId, code }) => ({
+        url: `/organizations/${organizationId}/versions`,
+        method: 'GET',
+        params: { permission_code: code },
+      }),
+      providesTags: (result, error, { code }) => [
+        { type: 'PermissionVersion', id: code },
+      ],
     }),
 
     // POST /organizations/:organizationId/permissions
@@ -115,4 +143,5 @@ export const {
   useGetPermissionsQuery,
   useGrantPermissionMutation,
   useRevokePermissionMutation,
+  useGetPermissionVersionsQuery,
 } = permissionsApi;

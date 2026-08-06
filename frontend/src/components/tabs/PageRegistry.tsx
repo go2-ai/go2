@@ -7,6 +7,7 @@ import { RolesPage } from '../../features/roles/RolesPage';
 import { GroupsPage } from '../../features/groups/GroupsPage';
 import { RecordHistoryPage } from '../../features/versions/RecordHistoryPage';
 import { PermissionsPage } from '../../features/permissions/PermissionsPage';
+import { PermissionHistoryPage } from '../../features/permissions/PermissionHistoryPage';
 import { TabIdContext } from './TabIdContext';
 import { Box, Typography } from '@mui/material';
 
@@ -17,6 +18,7 @@ export const PAGE_REGISTRY: Record<string, React.ComponentType> = {
   roles: RolesPage,
   groups: GroupsPage,
   'record-history': RecordHistoryPage,
+  'permission-history': PermissionHistoryPage,
   permissions: PermissionsPage,
 };
 

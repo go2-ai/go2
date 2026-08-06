@@ -32,6 +32,7 @@ import {
   Assignment as AssignmentIcon,
   Business as BusinessIcon,
   Group as GroupIcon,
+  History as HistoryIcon,
 } from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
 import { useGetMembersQuery } from '../../members/membersApi';
@@ -53,6 +54,7 @@ interface GranteeManagementViewProps {
   abilities?: string[];
   onGranteeAdded: () => void;
   onGranteeRemoved: () => void;
+  onViewHistory: () => void; 
 }
 
 const granteeTypeColors = {
@@ -78,6 +80,7 @@ export const GranteeManagementView = ({
   abilities = [],
   onGranteeAdded,
   onGranteeRemoved,
+  onViewHistory,
 }: GranteeManagementViewProps) => {
   const { t } = useTranslation('shared');
   const { t: tPermissions } = useTranslation('permissions');
@@ -182,19 +185,26 @@ export const GranteeManagementView = ({
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
       {/* Fixed Header */}
-      <Box sx={{ flexShrink: 0 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
-          <Typography variant="h6">{permissionName}</Typography>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+        <Typography variant="h6">{permissionName}</Typography>
+        <Box sx={{ display: 'flex', gap: 1 }}>
+          <Button
+            variant="outlined"
+            size="small"
+            startIcon={<HistoryIcon />}
+            onClick={ onViewHistory }
+          >
+            {tPermissions('viewHistory')}
+          </Button>
           <Button
             variant="contained"
+            size="small"
             startIcon={<AddIcon />}
             onClick={() => setIsAddDialogOpen(true)}
-            size="small"
           >
             {tPermissions('addGrantee')}
           </Button>
         </Box>
-        <Divider sx={{ mb: 1.5 }} />
       </Box>
 
       {/* Scrollable Content */}
@@ -224,7 +234,7 @@ export const GranteeManagementView = ({
         {/* Abilities Section - now in scrollable area */}
         {abilities.length > 0 && (
           <Box sx={{ mb: 2 }}>
-            <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+            <Typography variant="subtitle2" color="text.secondary" gutterBottom sx={{ fontWeight: 'bold'}}>
               {tPermissions('abilities')}
             </Typography>
             {abilities.map((ability) => (
@@ -234,7 +244,7 @@ export const GranteeManagementView = ({
                 color="text.secondary"
                 sx={{ py: 0.25, fontSize: '0.875rem' }}
               >
-                • {ability}
+                - {ability}
               </Typography>
             ))}
           </Box>
@@ -242,7 +252,7 @@ export const GranteeManagementView = ({
 
         {/* Grantees List */}
         <Box sx={{ mb: 2 }}>
-          <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+          <Typography variant="subtitle2" color="text.secondary" gutterBottom sx={{ fontWeight: 'bold'}}>
             {tPermissions('currentGrantees')} ({grantees.length})
           </Typography>
           {grantees.length === 0 ? (
@@ -297,7 +307,7 @@ export const GranteeManagementView = ({
 
         {/* Resolved Members */}
         <Box>
-          <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+          <Typography variant="subtitle2" color="text.secondary" gutterBottom sx={{ fontWeight: 'bold'}}>
             {tPermissions('resolvedMembers')} ({resolvedMembers.length})
           </Typography>
           {resolvedMembers.length === 0 ? (

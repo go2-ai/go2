@@ -46,6 +46,9 @@ export function RouteSynchronizer() {
     } else if (pathname.endsWith(`/record-history`)) {
       pageId = 'record-history';
       title = 'History';
+    } else if (pathname.includes('/permission-history')) {
+      pageId = 'permission-history';
+      title = 'History';
     } else if (pathname.includes('/permissions')) { 
       pageId = 'permissions';
       title = 'Permissions';

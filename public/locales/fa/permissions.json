@@ -79,5 +79,14 @@
   "addPermission": "افزودن دسترسی",
   "addDirectPermissionToMember": "افزودن دسترسی مستقیم به {{name}}",
   "noAvailablePermissionsToGrant": "هیچ دسترسی قابل اعطایی موجود نیست",
-  "changePermission": "تغییر"
+  "changePermission": "تغییر",
+  "viewHistory": "مشاهده تاریخچه",
+  "permissionHistoryFor": "تاریخچه برای {{name}}",
+  "noPermissionCodeProvided": "هیچ کد دسترسی ارائه نشده است",
+  "event": "عملیات",
+  "dateTime": "تاریخو زمان",
+  "actor": "اقدام کننده",
+  "grantee": "اعطا شونده دسرسی",
+  "granted": "اعطای دسترسی",
+  "revoked": "لغو دسترسی"
 }

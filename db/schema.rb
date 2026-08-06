@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_07_08_210106) do
+ActiveRecord::Schema[8.0].define(version: 2026_08_06_133202) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -183,36 +183,6 @@ ActiveRecord::Schema[8.0].define(version: 2026_07_08_210106) do
     t.bigint "member_id", null: false
   end
 
-  create_table "invoice_items", force: :cascade do |t|
-    t.bigint "invoice_id", null: false
-    t.bigint "subscription_id"
-    t.string "module", null: false
-    t.string "plan", null: false
-    t.integer "quantity", default: 1, null: false
-    t.integer "unit_price_cents", null: false
-    t.integer "amount_cents", null: false
-    t.datetime "period_start"
-    t.datetime "period_end"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["invoice_id"], name: "index_invoice_items_on_invoice_id"
-    t.index ["subscription_id"], name: "index_invoice_items_on_subscription_id"
-  end
-
-  create_table "invoices", force: :cascade do |t|
-    t.bigint "organization_id", null: false
-    t.string "invoice_number", null: false
-    t.integer "total_cents", default: 0, null: false
-    t.string "status", default: "pending", null: false
-    t.datetime "due_at"
-    t.datetime "paid_at"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["organization_id", "invoice_number"], name: "index_invoices_on_organization_id_and_invoice_number", unique: true
-    t.index ["organization_id"], name: "index_invoices_on_organization_id"
-    t.index ["status"], name: "index_invoices_on_status"
-  end
-
   create_table "journal_entries", force: :cascade do |t|
     t.date "date", null: false
     t.date "effective_date", null: false
@@ -363,29 +333,6 @@ ActiveRecord::Schema[8.0].define(version: 2026_07_08_210106) do
     t.index ["parent_id"], name: "index_organizations_on_parent_id"
   end
 
-  create_table "payment_events", force: :cascade do |t|
-    t.bigint "payment_id", null: false
-    t.string "event_type"
-    t.jsonb "payload", default: {}
-    t.datetime "received_at", null: false
-    t.index ["payment_id"], name: "index_payment_events_on_payment_id"
-  end
-
-  create_table "payments", force: :cascade do |t|
-    t.bigint "invoice_id", null: false
-    t.string "provider", default: "nowpayments", null: false
-    t.string "provider_payment_id"
-    t.integer "amount_cents", null: false
-    t.string "payment_status", default: "waiting", null: false
-    t.jsonb "provider_response", default: {}
-    t.datetime "paid_at"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["invoice_id"], name: "index_payments_on_invoice_id"
-    t.index ["payment_status"], name: "index_payments_on_payment_status"
-    t.index ["provider_payment_id"], name: "index_payments_on_provider_payment_id", unique: true
-  end
-
   create_table "permissions", force: :cascade do |t|
     t.string "code", null: false
     t.string "grantee_type", null: false
@@ -399,28 +346,6 @@ ActiveRecord::Schema[8.0].define(version: 2026_07_08_210106) do
     t.index ["grantee_type", "grantee_id"], name: "index_permissions_on_grantee_type_and_grantee_id"
     t.index ["grantee_type"], name: "index_permissions_on_grantee_type"
     t.index ["organization_id"], name: "index_permissions_on_organization_id"
-  end
-
-  create_table "plan_limits", force: :cascade do |t|
-    t.string "module", null: false
-    t.string "plan", null: false
-    t.string "key", null: false
-    t.integer "value"
-    t.integer "overage_price_cents"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["module", "plan", "key"], name: "index_plan_limits_on_module_and_plan_and_key", unique: true
-  end
-
-  create_table "prices", force: :cascade do |t|
-    t.string "module", null: false
-    t.string "plan", null: false
-    t.string "billing_period", null: false
-    t.integer "amount_cents", null: false
-    t.boolean "active", default: true, null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["module", "plan", "billing_period"], name: "index_prices_on_module_plan_period_when_active", unique: true, where: "(active = true)"
   end
 
   create_table "roles", force: :cascade do |t|
@@ -440,25 +365,6 @@ ActiveRecord::Schema[8.0].define(version: 2026_07_08_210106) do
     t.index ["parent_id"], name: "index_roles_on_parent_id"
   end
 
-  create_table "subscriptions", force: :cascade do |t|
-    t.bigint "organization_id", null: false
-    t.string "module", null: false
-    t.string "plan", null: false
-    t.bigint "price_id", null: false
-    t.string "status", default: "active", null: false
-    t.datetime "starts_at", null: false
-    t.datetime "ends_at", null: false
-    t.datetime "cancelled_at"
-    t.string "renewal_term"
-    t.boolean "auto_renew", default: true, null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["ends_at"], name: "index_subscriptions_on_ends_at"
-    t.index ["organization_id", "module"], name: "index_subscriptions_on_org_and_module_when_live", unique: true, where: "((status)::text = ANY ((ARRAY['pending'::character varying, 'active'::character varying])::text[]))"
-    t.index ["organization_id"], name: "index_subscriptions_on_organization_id"
-    t.index ["price_id"], name: "index_subscriptions_on_price_id"
-  end
-
   create_table "tasks", force: :cascade do |t|
     t.string "title", null: false
     t.text "description"
@@ -476,18 +382,6 @@ ActiveRecord::Schema[8.0].define(version: 2026_07_08_210106) do
     t.index ["organization_id"], name: "index_tasks_on_organization_id"
     t.index ["status", "priority"], name: "index_tasks_on_status_and_priority"
     t.index ["user_id"], name: "index_tasks_on_user_id"
-  end
-
-  create_table "usage_records", force: :cascade do |t|
-    t.bigint "organization_id", null: false
-    t.string "module", null: false
-    t.string "key", null: false
-    t.date "period", null: false
-    t.integer "quantity", default: 0, null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["organization_id", "module", "key", "period"], name: "index_usage_records_on_org_module_key_period", unique: true
-    t.index ["organization_id"], name: "index_usage_records_on_organization_id"
   end
 
   create_table "users", force: :cascade do |t|
@@ -557,7 +451,9 @@ ActiveRecord::Schema[8.0].define(version: 2026_07_08_210106) do
     t.string "event", null: false
     t.text "object"
     t.jsonb "object_changes"
+    t.jsonb "metadata", default: {}, null: false
     t.index ["item_type", "item_id"], name: "index_versions_on_item_type_and_item_id"
+    t.index ["metadata"], name: "index_versions_on_metadata", using: :gin
   end
 
   add_foreign_key "account_categories", "organizations"
@@ -574,9 +470,6 @@ ActiveRecord::Schema[8.0].define(version: 2026_07_08_210106) do
   add_foreign_key "departments", "organizations"
   add_foreign_key "fiscal_years", "organizations"
   add_foreign_key "groups", "organizations"
-  add_foreign_key "invoice_items", "invoices"
-  add_foreign_key "invoice_items", "subscriptions"
-  add_foreign_key "invoices", "organizations"
   add_foreign_key "journal_entries", "branches"
   add_foreign_key "journal_entries", "fiscal_years"
   add_foreign_key "journal_entries", "members", column: "creator_id"
@@ -599,15 +492,10 @@ ActiveRecord::Schema[8.0].define(version: 2026_07_08_210106) do
   add_foreign_key "messages", "conversations"
   add_foreign_key "messages", "messages", column: "reply_to_id"
   add_foreign_key "organizations", "currencies", column: "main_currency_id"
-  add_foreign_key "payment_events", "payments"
-  add_foreign_key "payments", "invoices"
   add_foreign_key "permissions", "organizations"
   add_foreign_key "roles", "departments"
   add_foreign_key "roles", "members"
   add_foreign_key "roles", "organizations"
-  add_foreign_key "subscriptions", "organizations"
-  add_foreign_key "subscriptions", "prices"
   add_foreign_key "tasks", "organizations"
   add_foreign_key "tasks", "users"
-  add_foreign_key "usage_records", "organizations"
 end

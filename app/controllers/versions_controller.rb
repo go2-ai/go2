@@ -15,14 +15,22 @@ class VersionsController < ApplicationController
 
     elsif params[:deleted] == "true"
                   # Get deleted records
-                  versions = PaperTrail::Version.where(event: "destroy")
+                  @versions = PaperTrail::Version.where(event: "destroy")
 
                   # Optional: filter by model type
                   if params[:model_type].present?
-                    versions = versions.where(item_type: params[:model_type])
+                    @versions = @versions.where(item_type: params[:model_type])
                   end
 
                   versions.order(created_at: :desc).limit(params[:limit] || 100)
+    elsif params[:permission_code].present?
+                  @versions = PaperTrail::Version
+                    .where(item_type: "Permission")
+                    .where("metadata @> ?", { organization_id: @organization.id, permission_code: params[:permission_code] }.to_json)
+                    .order(created_at: :desc)
+
+                  render json: VersionBlueprint.render(@versions, view: :permission_history), status: :ok
+                  return
 
     else
                   # Invalid request - must specify either record_type+record_id or deleted
