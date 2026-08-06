@@ -1,14 +1,14 @@
 {
   "en": {
     "created": "Created",
-    "updated": "Updated",
     "deleted": "Deleted",
+    "deletedData": "Deleted data",
+    "failedToLoad": "Failed to load version history.",
     "history": "History",
     "historyDescription": "Change log of {{type}} \"{{name}}\"",
+    "historyTabTitle": "History ({{name}})",
     "noVersionsFound": "No changes recorded yet.",
-    "failedToLoad": "Failed to load version history.",
     "tryAgain": "Try again",
-    "deletedData": "Deleted data",
-    "historyTabTitle": "History ({{name}})"
+    "updated": "Updated"
   }
 }

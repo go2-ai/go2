@@ -2,6 +2,7 @@
   "fa": {
     "abbreviation": "اختصار",
     "actions": "اقدامات",
+    "changeLog": "تاریخچه تغییرات",
     "color": "رنگ",
     "commonActions": {
       "archive": "بایگانی",
@@ -9,10 +10,10 @@
       "confirm": "تایید",
       "create": "ایجاد",
       "delete": "حذف",
+      "revoke": "لغو",
       "save": "ذخیره",
       "unarchive": "لغو بایگانی",
-      "update": "به روز رسانی",
-      "revoke": "لغو"
+      "update": "به روز رسانی"
     },
     "components": {
       "MultiLocaleInput": {
@@ -27,12 +28,10 @@
     "locale": "زبان/منطقه",
     "name": "نام",
     "password": "رمز عبور",
+    "role": "سمت",
     "signIn": "ورود",
     "signUp": "ثبت‌ نام",
-    "status": "وضعیت",
     "timezone": "منطقه زمانی",
-    "role": "سمت",
-    "changeLog": "تاریخچه تغییرات",
     "validations": {
       "invalidFormat": "فرمت وارد شده صحیح نمی باشد",
       "required": "وارد کردن مقدار برای این فیلد الزامی است"

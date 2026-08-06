@@ -2,6 +2,7 @@
   "en": {
     "abbreviation": "Abbreviation",
     "actions": "Actions",
+    "changeLog": "Change Log",
     "color": "Color",
     "commonActions": {
       "archive": "Archive",
@@ -9,10 +10,10 @@
       "confirm": "Confirm",
       "create": "Create",
       "delete": "Delete",
+      "revoke": "Revoke",
       "save": "Save",
       "unarchive": "Unarchive",
-      "update": "Update",
-      "revoke": "Revoke"
+      "update": "Update"
     },
     "components": {
       "MultiLocaleInput": {
@@ -28,10 +29,8 @@
     "name": "Name",
     "password": "Password",
     "role": "Role",
-    "changeLog": "Change Log",
     "signIn": "Sign in",
     "signUp": "Sign up",
-    "status": "Status",
     "timezone": "Time zone",
     "validations": {
       "invalidFormat": "Format is not valid",
