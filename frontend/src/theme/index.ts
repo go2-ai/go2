@@ -14,26 +14,26 @@ export const createAppTheme = (locale: string = 'en', mode: ThemeMode = 'light')
     palette: {
       mode,
       primary: {
-        main: isDark ? '#818CF8' : '#4F46E5',     // Indigo 400 / 600
+        main: isDark ? '#6366F1' : '#4F46E5',     // Indigo 500 / 600
         light: isDark ? '#A5B4FC' : '#6366F1',    // Indigo 300 / 500
-        dark: isDark ? '#6366F1' : '#3730A3',     // Indigo 500 / 700
+        dark: isDark ? '#4F46E5' : '#3730A3',     // Indigo 600 / 700
         contrastText: '#FFFFFF',
       },
       secondary: {
-        main: isDark ? '#C084FC' : '#7C3AED',     // Violet 400 / 600
-        light: isDark ? '#D8B4FE' : '#8B5CF6',
-        dark: isDark ? '#A855F7' : '#6D28D9',
+        main: isDark ? '#94A3B8' : '#64748B',     // Slate 400 / 500 - subtle contrast
+        light: isDark ? '#CBD5E1' : '#94A3B8',    // Slate 300 / 400
+        dark: isDark ? '#64748B' : '#475569',     // Slate 500 / 600
         contrastText: '#FFFFFF',
       },
       background: {
-        default: isDark ? '#0F0F1A' : '#F5F5FF',
-        paper: isDark ? '#16162A' : '#FFFFFF',
+        default: isDark ? '#0A0A0F' : '#F8FAFC',
+        paper: isDark ? '#14141F' : '#FFFFFF',
       },
       text: {
-        primary: isDark ? '#EEF2FF' : '#1E1B4B',
-        secondary: isDark ? '#A5B4FC' : '#6366F1',
+        primary: isDark ? '#F8FAFC' : '#0F172A',
+        secondary: isDark ? '#94A3B8' : '#475569',
       },
-      divider: isDark ? '#2D2D52' : '#E0E7FF',
+      divider: isDark ? '#1E1E32' : '#E2E8F0',
     },
     typography: {
       fontFamily,
@@ -51,16 +51,42 @@ export const createAppTheme = (locale: string = 'en', mode: ThemeMode = 'light')
         styleOverrides: {
           root: {
             textTransform: 'none',
+            fontWeight: 500,
             borderRadius: 8,
-            fontWeight: 600,
+            ...(isDark && {
+              '&:hover': {
+                boxShadow: '0 0 20px rgba(99, 102, 241, 0.25)',
+              },
+            }),
           },
         },
+        variants: [
+          {
+            props: { variant: 'contained', color: 'primary' },
+            style: {
+              background: isDark 
+                ? 'linear-gradient(135deg, #6366F1, #4F46E5)'
+                : undefined,
+            },
+          },
+        ],
       },
       MuiCard: {
         styleOverrides: {
           root: {
             borderRadius: 16,
-            border: isDark ? '1px solid #2D2D52' : '1px solid #E0E7FF',
+            background: isDark ? '#14141F' : '#FFFFFF',
+            border: isDark ? '1px solid #1E1E32' : '1px solid #E2E8F0',
+            boxShadow: isDark 
+              ? '0 4px 24px rgba(99, 102, 241, 0.08)'
+              : '0 1px 3px rgba(0,0,0,0.06)',
+            transition: 'all 0.3s ease',
+            '&:hover': {
+              borderColor: isDark ? '#6366F1' : '#6366F1',
+              boxShadow: isDark 
+                ? '0 8px 32px rgba(99, 102, 241, 0.15)'
+                : '0 4px 12px rgba(99, 102, 241, 0.1)',
+            },
           },
         },
       },
@@ -68,6 +94,10 @@ export const createAppTheme = (locale: string = 'en', mode: ThemeMode = 'light')
         styleOverrides: {
           root: {
             borderRadius: 8,
+            ...(isDark && {
+              background: 'rgba(20, 20, 31, 0.9)',
+              backdropFilter: 'blur(12px)',
+            }),
           },
         },
       },
@@ -81,6 +111,28 @@ export const createAppTheme = (locale: string = 'en', mode: ThemeMode = 'light')
       MuiTypography: {
         styleOverrides: {
           root: { fontFamily },
+        },
+      },
+      MuiAppBar: {
+        styleOverrides: {
+          root: {
+            ...(isDark && {
+              background: 'rgba(20, 20, 31, 0.8)',
+              backdropFilter: 'blur(12px)',
+              borderBottom: '1px solid #1E1E32',
+            }),
+          },
+        },
+      },
+      MuiDrawer: {
+        styleOverrides: {
+          paper: {
+            ...(isDark && {
+              background: 'rgba(20, 20, 31, 0.95)',
+              backdropFilter: 'blur(12px)',
+              borderRight: '1px solid #1E1E32',
+            }),
+          },
         },
       },
     },
