@@ -28,6 +28,7 @@ import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../contexts/ThemeContext';
 import { clearOrganizations } from '../organizations/organizationsSlice';
 import { clearUser } from '../auth/authSlice';
+import { useSignOutMutation } from '../auth/authApi';
 import type { RootState } from '../../app/store';
 
 const Search = styled('div')(({ theme }) => ({
@@ -87,6 +88,7 @@ export const TopBar = () => {
   const [notificationAnchor, setNotificationAnchor] = useState<null | HTMLElement>(null);
   const { user } = useSelector((state: RootState) => state.auth);
   const { currentOrganization } = useSelector((state: RootState) => state.organizations);
+  const [signOut] = useSignOutMutation();
 
   const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -104,11 +106,17 @@ export const TopBar = () => {
     setNotificationAnchor(null);
   };
 
-  const handleSignOut = () => {
-    dispatch(clearOrganizations());
-    dispatch(clearUser());
-    navigate('/app/signin');
-    handleMenuClose();
+  const handleSignOut = async () => {
+    try {
+      await signOut().unwrap();
+    } catch (error) {
+      console.error('Sign out failed:', error);
+    } finally {
+      // Always clear local state, even if API call fails
+      dispatch(clearOrganizations());
+      dispatch(clearUser());
+      navigate('/app/signin');
+    }
   };
 
   return (

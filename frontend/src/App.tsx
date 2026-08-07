@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AppProviders } from './providers/AppProviders';
 import { SignUp } from './features/auth/SignUp';
 import { SignIn } from './features/auth/SignIn';
@@ -14,6 +14,8 @@ import { GroupsPage } from './features/groups/GroupsPage';
 import { RecordHistoryPage } from './features/versions/RecordHistoryPage';
 import { PermissionHistoryPage } from './features/permissions/PermissionHistoryPage';
 import { PermissionsPage } from './features/permissions/PermissionsPage';
+import { ProtectedRoute } from './features/auth/ProtectedRoute';
+import { RootRedirect } from './features/auth/RootRedirect';
 
 function App() {
   return (
@@ -28,19 +30,21 @@ function App() {
           <Route path="app/onboarding" element={<Onboarding />} />
           
           {/* Main app layout with nested routes */}
-          <Route path="app/organizations" element={<AppLayout />}>
-            <Route path=":organizationId" element={<Dashboard />} />
-            <Route path=":organizationId/members" element={<MembersPage />} />
-            <Route path=":organizationId/departments" element={<DepartmentsPage />} />
-            <Route path=":organizationId/roles" element={<RolesPage />} />
-            <Route path=":organizationId/groups" element={<GroupsPage />} />
-            <Route path=":organizationId/record-history" element={<RecordHistoryPage />} />
-            <Route path=":organizationId/permission-history" element={<PermissionHistoryPage />} />
-            <Route path=":organizationId/permissions" element={<PermissionsPage />} />
+          <Route element={<ProtectedRoute />}>
+            <Route path="app/organizations" element={<AppLayout />}>
+              <Route path=":organizationId" element={<Dashboard />} />
+              <Route path=":organizationId/members" element={<MembersPage />} />
+              <Route path=":organizationId/departments" element={<DepartmentsPage />} />
+              <Route path=":organizationId/roles" element={<RolesPage />} />
+              <Route path=":organizationId/groups" element={<GroupsPage />} />
+              <Route path=":organizationId/record-history" element={<RecordHistoryPage />} />
+              <Route path=":organizationId/permission-history" element={<PermissionHistoryPage />} />
+              <Route path=":organizationId/permissions" element={<PermissionsPage />} />
+            </Route>
           </Route>
           
-          <Route path="app/" element={<Navigate to="/app/signin" replace />} />
-          <Route path="/" element={<Navigate to="/app/signin" replace />} />
+          <Route path="app/" element={<RootRedirect />} />
+          <Route path="/" element={<RootRedirect />} />
         </Routes>
       </Router>
     </AppProviders>

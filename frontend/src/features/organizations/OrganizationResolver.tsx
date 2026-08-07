@@ -37,7 +37,7 @@ export const OrganizationResolver = () => {
   useEffect(() => {
     if (error) {
       console.error('Failed to fetch organizations:', error);
-      navigate('/signin', { replace: true });
+      navigate('/app/signin', { replace: true });
     }
   }, [error, navigate]);
 
