@@ -1,10 +1,12 @@
+// src/hooks/useTranslatableLocales.ts
+
 import { useMemo } from 'react';
 import { useSelector } from 'react-redux';
 import type { RootState } from '../app/store';
 import { useGetOrganizationQuery } from '../features/organizations/organizationsApi';
 import {
-  getNonPrimaryLocales,
   getOrganizationLocales,
+  getNonPrimaryLocales,
 } from '../utils/translationHelper';
 
 interface UseTranslatableLocalesOptions {
@@ -41,29 +43,34 @@ export const useTranslatableLocales = ({
 
   const organization = organizationFromStore ?? fetchedOrganization;
 
-  const allLocales = useMemo(
-    () => (organization ? getOrganizationLocales(organization) : []),
-    [organization]
-  );
+  // Primary locale with proper fallback chain
+  const primaryLocale = useMemo(() => {
+    if (locale) return locale;
+    if (isAuthInitialized && user?.locale) return user.locale;
+    if (organization?.locale) return organization.locale;
+    return 'en';
+  }, [locale, isAuthInitialized, user?.locale, organization?.locale]);
 
-  const primaryLocale =
-    locale ?? (isAuthInitialized && user?.locale ? user.locale : '');
+  // ✅ Uses the helper for consistency
+  const allLocales = useMemo(() => {
+    if (!organization) return [];
+    return getOrganizationLocales(organization);
+  }, [organization]);
 
-  const resolvedNonPrimaryLocales = useMemo(() => {
+  // ✅ Uses the helper for consistency
+  const nonPrimaryLocales = useMemo(() => {
     if (otherLocales !== undefined) return otherLocales;
     if (!organization || !primaryLocale) return [];
     return getNonPrimaryLocales(organization, primaryLocale);
   }, [otherLocales, organization, primaryLocale]);
 
-  const isReady =
-    isAuthInitialized &&
-    !!organization &&
-    allLocales.length > 0 &&
-    !!primaryLocale;
+  const isReady = useMemo(() => {
+    return isAuthInitialized && !!organization && allLocales.length > 0 && !!primaryLocale;
+  }, [isAuthInitialized, organization, allLocales, primaryLocale]);
 
   return {
     primaryLocale,
-    nonPrimaryLocales: resolvedNonPrimaryLocales,
+    nonPrimaryLocales,
     allLocales,
     isReady,
     isAuthInitialized,

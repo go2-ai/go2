@@ -1,3 +1,5 @@
+// src/utils/translationHelper.ts
+
 export type LocaleMap = Record<string, string>;
 
 export interface TranslatedField {
@@ -8,22 +10,31 @@ export function getOrganizationLocales(organization: {
   locale: string;
   active_locales: string[];
 }): string[] {
-  return [...new Set([organization.locale, ...organization.active_locales])];
+  // Always include the primary locale
+  const locales = [organization.locale];
+  
+  // Add active_locales (additional locales)
+  if (organization.active_locales && organization.active_locales.length > 0) {
+    locales.push(...organization.active_locales);
+  }
+  
+  // Remove duplicates (in case primary is also in active_locales)
+  return [...new Set(locales)];
 }
 
 export function getNonPrimaryLocales(
   organization: { locale: string; active_locales: string[] },
   primaryLocale: string
 ): string[] {
-  return getOrganizationLocales(organization).filter((locale) => locale !== primaryLocale);
+  return getOrganizationLocales(organization).filter(
+    (locale) => locale !== primaryLocale
+  );
 }
 
-/** Builds a locale map with empty strings for every requested locale. */
 export function emptyLocaleMap(locales: string[]): LocaleMap {
   return Object.fromEntries(locales.map((locale) => [locale, '']));
 }
 
-/** Merges stored translations into a complete locale map for the given locales. */
 export function buildLocaleMap(
   translations: TranslatedField | undefined,
   locales: string[]
@@ -33,11 +44,6 @@ export function buildLocaleMap(
   );
 }
 
-/**
- * Flattens translatable fields (e.g. { name: { en: "Legal", fa: "..." } })
- * into locale-suffixed keys (e.g. { name_en: "Legal", name_fa: "..." })
- * for APIs using the t_params pattern.
- */
 export const flattenTranslations = <T extends object>(
   data: T,
   translatableFields: (keyof T)[]
@@ -48,7 +54,9 @@ export const flattenTranslations = <T extends object>(
     if (translatableFields.includes(key as keyof T)) {
       const translations = value as TranslatedField;
       Object.entries(translations).forEach(([locale, localeValue]) => {
-        flattened[`${key}_${locale}`] = localeValue;
+        if (locale && locale.trim()) {
+          flattened[`${key}_${locale}`] = localeValue;
+        }
       });
     } else {
       flattened[key] = value as string;
