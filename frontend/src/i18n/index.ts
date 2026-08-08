@@ -10,7 +10,7 @@ i18n
   .init({
     fallbackLng: 'en',
     defaultNS: 'shared',
-    ns: ['shared', 'auth', 'organizations', 'members', 'departments', 'roles', 'groups', 'versions', 'permissions'],
+    ns: ['shared', 'auth', 'organizations', 'members', 'departments', 'roles', 'groups', 'versions', 'permissions', 'settings'],
     backend: {
       loadPath: '/locales/{{lng}}/{{ns}}.json',
       parse: (data: string, languages?: string | string[]) => {

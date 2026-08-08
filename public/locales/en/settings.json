@@ -1,0 +1,7 @@
+{
+  "settings": "Settings",
+  "general": "General",
+  "preferences": "Preferences",
+  "settingsSaved": "Settings saved successfully",
+  "saveFailed": "Failed to save settings"
+}

@@ -22,6 +22,7 @@ export const AuthBootstrap: React.FC<{ children: React.ReactNode }> = ({ childre
       first_name: data.first_name,
       last_name: data.last_name,
       locale: data.locale,
+      timezone: data.timezone,
     }));
   }, [data, dispatch, isSuccess]);
 

@@ -8,6 +8,7 @@ export interface CurrentUser {
   first_name: string;
   last_name: string;
   locale: string;
+  timezone: string;
 }
 
 export const authApi = createApi({
@@ -16,8 +17,16 @@ export const authApi = createApi({
   tagTypes: ['Auth'] as const,
   endpoints: (builder) => ({
     getMe: builder.query<CurrentUser, void>({
-      query: () => '/api/me',
+      query: () => '/me',
       providesTags: ['Auth'],
+    }),
+    updateMe: builder.mutation<CurrentUser, Partial<CurrentUser>>({
+      query: (data) => ({
+        url: '/me',
+        method: 'PATCH',
+        body: data,
+      }),
+      invalidatesTags: ['Auth'],
     }),
     signUp: builder.mutation({
       query: (userData) => ({
@@ -57,4 +66,5 @@ export const {
   useConfirmEmailMutation,
   useSignInMutation,
   useSignOutMutation,
+  useUpdateMeMutation,
 } = authApi;

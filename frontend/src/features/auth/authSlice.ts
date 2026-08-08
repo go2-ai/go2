@@ -7,6 +7,7 @@ interface User {
   first_name: string;
   last_name: string;
   locale: string;
+  timezone: string;
 }
 
 interface AuthState {

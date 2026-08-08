@@ -31,10 +31,12 @@
     "role": "Role",
     "signIn": "Sign in",
     "signUp": "Sign up",
+    "signOut": "Sign out",
     "timezone": "Time zone",
     "validations": {
       "invalidFormat": "Format is not valid",
       "required": "Required"
-    }
+    },
+    "settings": "Settings"
   }
 }

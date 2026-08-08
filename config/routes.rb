@@ -105,6 +105,7 @@ Rails.application.routes.draw do
   end
 
   resources :users, only: [ :show ]
+  resource :me, only: [:show, :update], controller: "me"
 
   namespace :admin do
     resources :organizations do
@@ -142,7 +143,6 @@ Rails.application.routes.draw do
     get "translations", to: "translations#index"
     get "/health", to: "health#show"
     post "/echo", to: "echo#create"
-    get "/me", to: "me#show"
   end
 
   # Onboarding routes

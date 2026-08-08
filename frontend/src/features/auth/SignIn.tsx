@@ -56,6 +56,7 @@ export const SignIn = () => {
         first_name: result.first_name ?? '',
         last_name: result.last_name ?? '',
         locale: result.locale ?? 'en',
+        timezone: result.timezone || 'UTC', 
       }));
 
       navigate('/app/organization-resolver');

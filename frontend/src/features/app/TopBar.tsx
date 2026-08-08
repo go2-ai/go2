@@ -30,6 +30,8 @@ import { clearOrganizations } from '../organizations/organizationsSlice';
 import { clearUser } from '../auth/authSlice';
 import { useSignOutMutation } from '../auth/authApi';
 import type { RootState } from '../../app/store';
+import SettingsIcon from '@mui/icons-material/Settings';
+import { SettingsModal } from '../me/SettingsModal';
 
 const Search = styled('div')(({ theme }) => ({
   position: 'relative',
@@ -80,7 +82,7 @@ const getInitials = (firstName: string, lastName: string): string => {
 };
 
 export const TopBar = () => {
-  const { t } = useTranslation('app');
+  const { t } = useTranslation('shared');
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { mode, toggleTheme } = useTheme();
@@ -89,6 +91,7 @@ export const TopBar = () => {
   const { user } = useSelector((state: RootState) => state.auth);
   const { currentOrganization } = useSelector((state: RootState) => state.organizations);
   const [signOut] = useSignOutMutation();
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -249,6 +252,10 @@ export const TopBar = () => {
               {user?.email}
             </Typography>
           </MenuItem>
+          <MenuItem onClick={() => { handleMenuClose(); setIsSettingsOpen(true); }}>
+            <SettingsIcon sx={{ mr: 1, fontSize: 20 }} />
+            {t('settings')}
+          </MenuItem>
           <MenuItem onClick={handleSignOut}>
             <LogoutIcon sx={{ mr: 1, fontSize: 20 }} />
             {t('signOut')}
@@ -276,6 +283,10 @@ export const TopBar = () => {
           </MenuItem>
         </Menu>
       </Toolbar>
+      <SettingsModal
+        open={isSettingsOpen}
+        onClose={() => setIsSettingsOpen(false)}
+      />
     </AppBar>
   );
 };
