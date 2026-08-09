@@ -1,5 +1,6 @@
 {
   "en": {
+    "activeLocales": "Additional Locales",
     "createOrganization": "Create Organization",
     "createYourOrganization": "Create Your Organization",
     "loadingOrganizations": "Loading your organizations...",
@@ -7,6 +8,7 @@
     "organizationCreationFailed": "Failed to create organization. Please try again.",
     "organizationName": "Organization Name",
     "organizationNamePlaceholder": "Enter your organization name",
-    "signOut": "Sign Out"
+    "organizationSettings": "Organization Settings",
+    "primaryLocale": "Primary Locale"
   }
 }

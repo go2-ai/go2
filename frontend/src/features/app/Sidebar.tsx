@@ -19,6 +19,7 @@ import {
   Assignment,
   Group,
   Lock,
+  Settings
 } from '@mui/icons-material';
 
 const drawerWidth = 280;
@@ -70,6 +71,12 @@ export function Sidebar() {
       icon: <Lock />,
       path: '/permissions',
     },
+    {
+      pageId: 'organization-settings',
+      title: 'Settings',
+      icon: <Settings />,
+      path: '/settings',
+    }
   ];
 
   return (

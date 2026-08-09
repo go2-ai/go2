@@ -102,6 +102,10 @@ Rails.application.routes.draw do
     end
 
     resources :messages
+
+    namespace :accounting do
+      resource :settings, only: [:show, :update]
+    end
   end
 
   resources :users, only: [ :show ]
@@ -119,21 +123,6 @@ Rails.application.routes.draw do
     end
   end
 
-  # Custom route for examples dashboard
-  get "examples/dashboard", to: "examples#dashboard", as: :examples_dashboard
-  get "examples/test_layout", to: "examples#test_layout", as: :examples_test_layout
-
-  # Tab demo page - single page with dynamic content loading
-  get "tab-demo", to: "tab_demo#index", as: :tab_demo
-  get "tab-demo/sidebar/:sidebar_type", to: "tab_demo#sidebar_content", as: :tab_demo_sidebar
-  get "tab-demo/content/:content_type/:content_id", to: "tab_demo#tab_content", as: :tab_demo_content
-
-  # Reusable tabs components demo
-  get "reusable-tabs-demo", to: "reusable_tabs_demo#index", as: :reusable_tabs_demo
-  get "reusable-tabs-demo/full", to: "reusable_tabs_demo#full_implementation", as: :reusable_tabs_demo_full
-  get "reusable-tabs-demo/test", to: "reusable_tabs_demo#test", as: :reusable_tabs_demo_test
-  get "reusable-tabs-demo/sidebar/:sidebar_type", to: "reusable_tabs_demo#sidebar_content", as: :reusable_tabs_demo_sidebar
-  get "reusable-tabs-demo/content/:content_type/:content_id", to: "reusable_tabs_demo#tab_content", as: :reusable_tabs_demo_content
 
   get "app/*path", to: "home#index", constraints: ->(req) { req.format.html? }
   # Defines the root path route ("/")

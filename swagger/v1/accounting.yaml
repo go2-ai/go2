@@ -1,0 +1,139 @@
+---
+openapi: 3.0.1
+info:
+  title: Accounting API
+  version: v1
+servers:
+- url: http://localhost:5000
+  variables:
+    defaultHost:
+      default: localhost:5000
+tags:
+- name: Settings
+  description: Organization-level accounting configuration
+paths:
+  "/organizations/{organization_id}/accounting/settings":
+    parameters:
+    - name: organization_id
+      in: path
+      description: Organization ID
+      required: true
+      schema:
+        type: integer
+    get:
+      summary: Get accounting settings for the organization
+      tags:
+      - Settings
+      responses:
+        '200':
+          description: Loaded successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    example: 1
+                  main_currency_id:
+                    type:
+                    - integer
+                    - nil
+                    example: 1
+                  use_parent_org_currencies:
+                    type: boolean
+                    example: false
+                  use_parent_org_accounts:
+                    type: boolean
+                    example: false
+                  use_parent_org_centers:
+                    type: boolean
+                    example: false
+                  use_parent_org_fiscal_years:
+                    type: boolean
+                    example: false
+                  account_category_length:
+                    type: integer
+                    example: 1
+                  ledger_length:
+                    type: integer
+                    example: 2
+                  account_length:
+                    type: integer
+                    example: 2
+                  center_length:
+                    type: integer
+                    example: 6
+                  center_levels:
+                    type: integer
+                    example: 3
+        '403':
+          description: Not authorized
+    patch:
+      summary: Updates accounting settings for the organization
+      tags:
+      - Settings
+      parameters: []
+      responses:
+        '200':
+          description: Updates the settings successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    example: 1
+                  main_currency_id:
+                    type:
+                    - integer
+                    - nil
+                    example: 1
+                  use_parent_org_currencies:
+                    type: boolean
+                    example: false
+                  use_parent_org_accounts:
+                    type: boolean
+                    example: false
+                  use_parent_org_centers:
+                    type: boolean
+                    example: false
+                  use_parent_org_fiscal_years:
+                    type: boolean
+                    example: false
+                  account_category_length:
+                    type: integer
+                    example: 1
+                  ledger_length:
+                    type: integer
+                    example: 2
+                  account_length:
+                    type: integer
+                    example: 2
+                  center_length:
+                    type: integer
+                    example: 6
+                  center_levels:
+                    type: integer
+                    example: 3
+        '403':
+          description: Not authorized when only holding view permission
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                accounting_setting:
+                  type: object
+                  properties:
+                    main_currency_id:
+                      type: integer
+                      example: 1
+                    account_length:
+                      type: integer
+                      example: 3
+                    use_parent_org_accounts:
+                      type: boolean
+                      example: true

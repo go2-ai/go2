@@ -20,6 +20,8 @@ class Permission < ApplicationRecord
   validates :grantee_id, uniqueness: { scope: [ :grantee_type, :code ] }
 
   ORG_ADMIN = "Organization.admin".freeze
+  ACCOUNTING_MANAGE_SETTINGS = "Accounting.manage_settings".freeze
+  ACCOUNTING_VIEW_SETTINGS = "Accounting.view_settings".freeze
   ACCOUNTING_MANAGE_CENTERS = "Accounting.manage_centers".freeze
   ACCOUNTING_VIEW_CENTERS = "Accounting.view_centers".freeze
   ACCOUNTING_MANAGE_ACCOUNTS = "Accounting.manage_accounts".freeze
@@ -38,6 +40,22 @@ class Permission < ApplicationRecord
           model_t("manage_permissions")
         ],
         tags: []
+      },
+      {
+        code: ACCOUNTING_MANAGE_SETTINGS,
+        name: model_t("accounting_manage_settings"),
+        abilities: [
+          model_t("manage_settings")
+        ],
+        tags: %w[accounting]
+      },
+      {
+        code: ACCOUNTING_VIEW_SETTINGS,
+        name: model_t("accounting_view_settings"),
+        abilities: [
+          model_t("view_settings")
+        ],
+        tags: %w[accounting]
       },
       {
         code: ACCOUNTING_MANAGE_CENTERS,

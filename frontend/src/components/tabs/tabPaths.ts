@@ -20,6 +20,8 @@ export function getTabPath(tab: Tab, organizationId: string): string {
         return `/app/organizations/${organizationId}/permissions`;
       case 'permission-history':
         return `/app/organizations/${organizationId}/permission-history`;
+      case 'organization-settings':
+        return `/app/organizations/${organizationId}/settings`;
       default:
         return `/app/organizations/${organizationId}`;
     }

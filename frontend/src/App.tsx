@@ -16,6 +16,7 @@ import { PermissionHistoryPage } from './features/permissions/PermissionHistoryP
 import { PermissionsPage } from './features/permissions/PermissionsPage';
 import { ProtectedRoute } from './features/auth/ProtectedRoute';
 import { RootRedirect } from './features/auth/RootRedirect';
+import { OrganizationSettingsPage } from './features/organizations/OrganizationSettingsPage';
 
 function App() {
   return (
@@ -40,6 +41,7 @@ function App() {
               <Route path=":organizationId/record-history" element={<RecordHistoryPage />} />
               <Route path=":organizationId/permission-history" element={<PermissionHistoryPage />} />
               <Route path=":organizationId/permissions" element={<PermissionsPage />} />
+              <Route path=":organizationId/settings" element={<OrganizationSettingsPage />} />
             </Route>
           </Route>
           

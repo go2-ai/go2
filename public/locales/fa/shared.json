@@ -29,14 +29,14 @@
     "name": "نام",
     "password": "رمز عبور",
     "role": "سمت",
+    "settings": "تنظیمات",
     "signIn": "ورود",
-    "signUp": "ثبت‌ نام",
     "signOut": "خروج",
+    "signUp": "ثبت‌ نام",
     "timezone": "منطقه زمانی",
     "validations": {
       "invalidFormat": "فرمت وارد شده صحیح نمی باشد",
       "required": "وارد کردن مقدار برای این فیلد الزامی است"
-    },
-    "settings": "تنظیمات"
+    }
   }
 }

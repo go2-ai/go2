@@ -32,7 +32,7 @@ export const DepartmentsPage = () => {
   };
 
   return (
-    <Container maxWidth="xl" sx={{ height: 'calc(100% - 130px)', display: 'flex', flexDirection: 'column' }}>
+    <Container maxWidth="xl" sx={{ height: '100%', display: 'flex', flexDirection: 'column', pb: 2 }}>
       <Box sx={{ my: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <Box>
           <Typography variant="h4" component="h1" gutterBottom>

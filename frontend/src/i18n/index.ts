@@ -21,6 +21,9 @@ i18n
         }
         return parsed;
       },
+      requestOptions: {
+        cache: 'no-cache',
+      },
     },
     interpolation: {
       escapeValue: false,

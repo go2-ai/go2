@@ -7,8 +7,12 @@ module TranslationHelper
       self.mobility_attributes || []
     end
 
-    def validates_uniqueness_of_translated(attribute, locales: nil, scope: nil, case_sensitive: true, message: nil)
-      validate do |record|
+    def validates_uniqueness_of_translated(attribute, locales: nil, scope: nil, case_sensitive: true, message: nil, if: nil, unless: nil)
+      validate_options = {}
+      validate_options[:if] = binding.local_variable_get(:if) if binding.local_variable_get(:if)
+      validate_options[:unless] = binding.local_variable_get(:unless) if binding.local_variable_get(:unless)
+
+      validate(**validate_options) do |record|
         record.validate_translated_uniqueness(
           attribute,
           locales: locales,

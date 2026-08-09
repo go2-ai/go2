@@ -3,5 +3,6 @@ class OrganizationBlueprint < Blueprinter::Base
 
   view :basic do
     fields :name, :locale, :active_locales
+    field :translations_hash, name: :t
   end
 end

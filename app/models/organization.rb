@@ -43,11 +43,13 @@ class Organization < ApplicationRecord
   has_many :journal_entries, dependent: :destroy
   has_many :journal_entry_items, through: :journal_entries
 
+  has_one :accounting_setting, class_name: "Accounting::Setting", dependent: :destroy
+
 
   # Validations
   validate :no_circular_references
   validates_non_empty_translation :name, locales: ->(org) { [ org.locale ] }
-  validates_uniqueness_of_translated :name, scope: :parent
+  validates_uniqueness_of_translated :name, scope: :parent, if: -> { parent_id.present? }
 
   # Methods
   def ancestors

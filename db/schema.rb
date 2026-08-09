@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_08_06_133202) do
+ActiveRecord::Schema[8.0].define(version: 2026_08_09_184956) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -24,6 +24,24 @@ ActiveRecord::Schema[8.0].define(version: 2026_08_06_133202) do
     t.index ["code"], name: "index_account_categories_on_code"
     t.index ["name"], name: "index_account_categories_on_name", using: :gin
     t.index ["organization_id"], name: "index_account_categories_on_organization_id"
+  end
+
+  create_table "accounting_settings", force: :cascade do |t|
+    t.bigint "organization_id", null: false
+    t.bigint "main_currency_id"
+    t.boolean "use_parent_org_currencies", default: false
+    t.boolean "use_parent_org_accounts", default: false
+    t.boolean "use_parent_org_centers", default: false
+    t.boolean "use_parent_org_fiscal_years", default: false
+    t.integer "account_category_length", default: 1
+    t.integer "ledger_length", default: 2
+    t.integer "account_length", default: 2
+    t.integer "center_length", default: 6
+    t.integer "center_levels", default: 3
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["main_currency_id"], name: "index_accounting_settings_on_main_currency_id"
+    t.index ["organization_id"], name: "index_accounting_settings_on_organization_id", unique: true
   end
 
   create_table "accounts", force: :cascade do |t|
@@ -314,21 +332,10 @@ ActiveRecord::Schema[8.0].define(version: 2026_08_06_133202) do
     t.boolean "is_trial", default: false
     t.datetime "archived_at"
     t.integer "archive_number"
-    t.bigint "main_currency_id"
-    t.boolean "use_parent_org_currencies", default: false
-    t.boolean "use_parent_org_accounts", default: false
-    t.boolean "use_parent_org_centers", default: false
-    t.boolean "use_parent_org_fiscal_years", default: false
-    t.integer "account_category_length", default: 1
-    t.integer "ledger_length", default: 2
-    t.integer "account_length", default: 2
-    t.integer "center_length", default: 6
-    t.integer "center_levels", default: 3
     t.string "locale", default: "en", null: false
     t.string "active_locales", default: [], null: false, array: true
     t.string "inactive_locales", default: [], null: false, array: true
     t.index ["archived_at"], name: "index_organizations_on_archived_at"
-    t.index ["main_currency_id"], name: "index_organizations_on_main_currency_id"
     t.index ["name"], name: "index_organizations_on_name", using: :gin
     t.index ["parent_id"], name: "index_organizations_on_parent_id"
   end
@@ -457,6 +464,8 @@ ActiveRecord::Schema[8.0].define(version: 2026_08_06_133202) do
   end
 
   add_foreign_key "account_categories", "organizations"
+  add_foreign_key "accounting_settings", "currencies", column: "main_currency_id"
+  add_foreign_key "accounting_settings", "organizations"
   add_foreign_key "accounts", "accounts", column: "contra_for_id"
   add_foreign_key "accounts", "ledgers"
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
@@ -491,7 +500,6 @@ ActiveRecord::Schema[8.0].define(version: 2026_08_06_133202) do
   add_foreign_key "message_receipts", "users"
   add_foreign_key "messages", "conversations"
   add_foreign_key "messages", "messages", column: "reply_to_id"
-  add_foreign_key "organizations", "currencies", column: "main_currency_id"
   add_foreign_key "permissions", "organizations"
   add_foreign_key "roles", "departments"
   add_foreign_key "roles", "members"

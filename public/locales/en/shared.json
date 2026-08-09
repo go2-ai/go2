@@ -29,14 +29,14 @@
     "name": "Name",
     "password": "Password",
     "role": "Role",
+    "settings": "Settings",
     "signIn": "Sign in",
-    "signUp": "Sign up",
     "signOut": "Sign out",
+    "signUp": "Sign up",
     "timezone": "Time zone",
     "validations": {
       "invalidFormat": "Format is not valid",
       "required": "Required"
-    },
-    "settings": "Settings"
+    }
   }
 }

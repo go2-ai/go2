@@ -1,5 +1,4 @@
 class ConversationsController < ApplicationController
-  include TabContent
   before_action :authenticate_user!
 
   def index

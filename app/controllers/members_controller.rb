@@ -1,14 +1,13 @@
 class MembersController < ApplicationController
   before_action :authenticate_user!
+  before_action :authorize_user!
 
   def index
-    authorize current_member
     members = current_organization.members.includes(:user).order(id: :desc)
     render json: MemberBlueprint.render(members, view: :index), status: :ok
   end
 
   def show
-    authorize current_member
     member = current_organization.members.find_by_id(params[:id])
     render json: { errors: [ controller_t("not_found") ] }, status: :not_found unless member
     # Tech debt: Add translation
@@ -16,7 +15,6 @@ class MembersController < ApplicationController
   end
 
   def create
-    authorize current_member
     member = current_organization.members.new(permitted_params)
 
     if member.save
@@ -31,7 +29,6 @@ class MembersController < ApplicationController
   end
 
   def update
-    authorize current_member
     member = Member.find_by(id: params[:id])
     if member.update(permitted_params)
       if params[:invite]
@@ -43,7 +40,6 @@ class MembersController < ApplicationController
   end
 
   def set_as_admin
-    authorize current_member
     member = Member.find_by(id: params[:id])
     Permission.find_or_create_by(organization: member.organization, grantee: member, code: Permission::ORG_ADMIN)
 
@@ -51,7 +47,6 @@ class MembersController < ApplicationController
   end
 
   def revoke_admin
-    authorize current_member
     member = Member.find_by(id: params[:id])
     Permission.where(organization: member.organization, grantee: member, code: Permission::ORG_ADMIN).destroy_all
 
@@ -59,7 +54,6 @@ class MembersController < ApplicationController
   end
 
   def send_invitation
-    authorize current_member
     member = Member.find_by(id: params[:id])
     render json: { errors: controller_t("already_joined") }, status: :unprocessable_content if member.joined_at.present?
     # Tech debt: Add translation
@@ -68,21 +62,18 @@ class MembersController < ApplicationController
   end
 
   def archive
-    authorize current_member
     member = Member.find_by(id: params[:id])
     member.archive!
     render json: MemberBlueprint.render(member, view: :index), status: :ok
   end
 
   def unarchive
-    authorize current_member
     member = Member.find_by(id: params[:id])
     member.unarchive!
     render json: MemberBlueprint.render(member, view: :index), status: :ok
   end
 
   def export
-    authorize current_member
     @members = current_organization.members.to_a.sort_by do |member|
       [
         member.archived? ? 1 : 0,       # unarchived first
@@ -114,6 +105,10 @@ class MembersController < ApplicationController
       locale: member.organization.locale,
       email: member.email
     ).deliver_later
+  end
+
+  def authorize_user!
+    authorize current_organization, :administrate?
   end
 
   def permitted_params

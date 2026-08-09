@@ -1,14 +1,13 @@
 class DepartmentsController < ApplicationController
   before_action :authenticate_user!
+  before_action :authorize_user!
 
   def index
-    authorize current_organization, :administrate?
     departments = current_organization.departments.order(id: :desc)
     render json: DepartmentBlueprint.render(departments), status: :ok
   end
 
   def show
-    authorize current_organization, :administrate?
     department = current_organization.departments.find_by_id(params[:id])
     return render json: { errors: [ controller_t("not_found") ] }, status: :not_found unless department
     # Tech debt: Add translation
@@ -16,7 +15,6 @@ class DepartmentsController < ApplicationController
   end
 
   def create
-    authorize current_organization, :administrate?
     department = current_organization.departments.new(permitted_params)
 
     if department.save
@@ -27,7 +25,6 @@ class DepartmentsController < ApplicationController
   end
 
   def update
-    authorize current_organization, :administrate?
     department = current_organization.departments.find_by(id: params[:id])
     return render json: { errors: [ controller_t("not_found") ] }, status: :not_found unless department
     # Tech debt: Add translation
@@ -39,7 +36,6 @@ class DepartmentsController < ApplicationController
   end
 
   def destroy
-    authorize current_organization, :administrate?
     department = current_organization.departments.find_by(id: params[:id])
     return render json: { errors: [ controller_t("not_found") ] }, status: :not_found unless department
     # Tech debt: Add translation
@@ -48,6 +44,10 @@ class DepartmentsController < ApplicationController
   end
 
   private
+
+  def authorize_user!
+    authorize current_organization, :administrate?
+  end
 
   def permitted_params
     params.permit(:abbreviation, *t_params(:name), *t_params(:description))

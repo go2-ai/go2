@@ -1,6 +1,6 @@
 class OrganizationsController < ApplicationController
   before_action :authenticate_user!
-  before_action :set_organization, only: [ :show, :edit, :update, :destroy ]
+  before_action :set_organization, only: [ :show, :update, :destroy ]
 
   def index
     if params[:my_organizations]
@@ -15,15 +15,6 @@ class OrganizationsController < ApplicationController
     authorize organization
 
     render json: OrganizationBlueprint.render(organization, view: params[:view] || :basic)
-  end
-
-  def new
-    @organization = Organization.new(parent_id: params[:parent_id])
-    authorize @organization
-  end
-
-  def edit
-    authorize @organization
   end
 
   def create
@@ -45,12 +36,12 @@ class OrganizationsController < ApplicationController
   end
 
   def update
-    authorize @organization
+    authorize @organization, :administrate?
 
-    if @organization.update(permitted_organization_params)
-      redirect_to @organization, notice: "Organization was successfully updated."
+    if @organization.update(permitted_params)
+      render json: @organization, status: :ok
     else
-      render :edit
+      render json: { errors: @organization.errors.full_messages }, status: :unprocessable_content
     end
   end
 
@@ -76,13 +67,11 @@ class OrganizationsController < ApplicationController
   def set_organization
     @organization = Organization.unarchived.find(params[:id])
   rescue ActiveRecord::RecordNotFound
-    # Attempt to find the record even if it's archived
-    @organization = Organization.archived.find(params[:id])
-    redirect_to organizations_path, alert: "The organization you are looking for has been archived." if @organization.archived?
+    render json: { errors: [ "not_found" ] }, status: :not_found
   end
 
-  def permitted_organization_params
-    params.require(:organization).permit(*policy(@organization || Organization).permitted_attributes)
+  def permitted_params
+    params.permit(:locale, *t_params(:name), active_locales: [])
   end
 
   def setCurrentUserAsAdmin

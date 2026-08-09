@@ -1,5 +1,6 @@
 {
   "fa": {
+    "activeLocales": "سایر زبان های فعال",
     "createOrganization": "ایجاد سازمان",
     "createYourOrganization": "ایجاد سازمان شما",
     "loadingOrganizations": "در حال بارگذاری سازمان‌های شما...",
@@ -7,6 +8,7 @@
     "organizationCreationFailed": "ایجاد سازمان ناموفق بود. لطفا دوباره تلاش کنید.",
     "organizationName": "نام سازمان",
     "organizationNamePlaceholder": "نام سازمان خود را وارد کنید",
-    "signOut": "خروج"
+    "organizationSettings": "تنظیمات سازمان",
+    "primaryLocale": "زبان اصلی"
   }
 }

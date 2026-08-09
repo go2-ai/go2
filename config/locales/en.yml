@@ -134,6 +134,10 @@ en:
       manage_accounts: Add, remove, or update accounting accounts
       accounting_view_accounts: View accounting accounts
       view_accounts: View accounting accounts
+      accounting_manage_settings: Manage accounting settings
+      accounting_view_settings: View accounting settings
+      manage_settings: Change accounting settings
+      view_settings: View accounting settings
   onboarding:
     description: Your organization is where you'll manage your team, projects, and resources. You can always change this later.
     error_message: There was an error creating your organization. Please try again.
