@@ -1,5 +1,5 @@
 class OnboardingController < ApplicationController
-  before_action :authenticate_user!
+  
   before_action :check_organization_exists, only: [ :new ]
 
   def new

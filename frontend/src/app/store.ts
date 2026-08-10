@@ -7,6 +7,8 @@ import { rolesApi } from '../features/roles/rolesApi';
 import { groupsApi } from '../features/groups/groupsApi';
 import { versionsApi } from '../features/versions/versionsApi';
 import { permissionsApi } from '../features/permissions/permissionsApi';
+import { accountingSettingsApi } from '../features/accounting/settings/settingsApi';
+import { accountingCurrenciesApi } from '../features/accounting/currencies/currenciesApi';
 import organizationsReducer from '../features/organizations/organizationsSlice';
 import authReducer from '../features/auth/authSlice';
 
@@ -20,6 +22,8 @@ export const store = configureStore({
     [groupsApi.reducerPath]: groupsApi.reducer,
     [versionsApi.reducerPath]: versionsApi.reducer,
     [permissionsApi.reducerPath]: permissionsApi.reducer,
+    [accountingSettingsApi.reducerPath]: accountingSettingsApi.reducer,
+    [accountingCurrenciesApi.reducerPath]: accountingCurrenciesApi.reducer,
     organizations: organizationsReducer,
     auth: authReducer,
   },
@@ -33,6 +37,8 @@ export const store = configureStore({
       groupsApi.middleware,
       versionsApi.middleware,
       permissionsApi.middleware,
+      accountingSettingsApi.middleware,
+      accountingCurrenciesApi.middleware
     ),
 });
 

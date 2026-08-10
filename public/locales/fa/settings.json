@@ -1,7 +1,8 @@
 {
-  "settings": "تنظیمات",
-  "general": "عمومی",
-  "preferences": "ترجیحات",
-  "settingsSaved": "تنظیمات با موفقیت ذخیره شد.",
-  "saveFailed": "امکان ذخیره تغییرات وجود ندارد."
+  "fa": {
+    "general": "عمومی",
+    "preferences": "ترجیحات",
+    "saveFailed": "امکان ذخیره تغییرات وجود ندارد.",
+    "settingsSaved": "تنظیمات با موفقیت ذخیره شد."
+  }
 }

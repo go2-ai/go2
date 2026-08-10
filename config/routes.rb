@@ -105,6 +105,7 @@ Rails.application.routes.draw do
 
     namespace :accounting do
       resource :settings, only: [:show, :update]
+      resources :currencies, only: [:index, :create, :update, :destroy]
     end
   end
 

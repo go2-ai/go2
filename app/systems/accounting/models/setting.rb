@@ -1,5 +1,6 @@
 module Accounting
   class Setting < ApplicationRecord
+    has_paper_trail
     self.table_name = "accounting_settings"
 
     belongs_to :organization

@@ -11,7 +11,194 @@ servers:
 tags:
 - name: Settings
   description: Organization-level accounting configuration
+- name: Currencies
+  description: Organization-level currency management
 paths:
+  "/organizations/{organization_id}/accounting/currencies":
+    parameters:
+    - name: organization_id
+      in: path
+      description: Organization ID
+      required: true
+      schema:
+        type: integer
+    get:
+      summary: Get all organization currencies
+      tags:
+      - Currencies
+      responses:
+        '200':
+          description: Loaded successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                      example: 1
+                    abr:
+                      type: string
+                      example: USD
+                    decimal_digits:
+                      type: integer
+                      example: 2
+                    organization_id:
+                      type: integer
+                      example: 1
+                    created_at:
+                      type: string
+                      example: '2026-02-20 10:52:46.787878000 +0000'
+                    updated_at:
+                      type: string
+                      example: '2026-02-20 10:52:46.787878000 +0000'
+    post:
+      summary: Creating a new currency
+      tags:
+      - Currencies
+      parameters: []
+      responses:
+        '200':
+          description: Creates the new currency successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    example: 1
+                  abr:
+                    type: string
+                    example: USD
+                  decimal_digits:
+                    type: integer
+                    example: 2
+                  organization_id:
+                    type: integer
+                    example: 1
+                  created_at:
+                    type: string
+                    example: '2026-02-20 10:52:46.787878000 +0000'
+                  updated_at:
+                    type: string
+                    example: '2026-02-20 10:52:46.787878000 +0000'
+        '403':
+          description: Not authorized
+        '422':
+          description: Invalid request
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                abr:
+                  type: string
+                  example: GBP
+                decimal_digits:
+                  type: integer
+                  example: 2
+                name_en:
+                  type: string
+                  example: British Pound
+                name_fa:
+                  type: string
+                  example: پوند بریتانیا
+  "/organizations/{organization_id}/accounting/currencies/{id}":
+    parameters:
+    - name: organization_id
+      in: path
+      description: Organization ID
+      required: true
+      schema:
+        type: integer
+    - name: id
+      in: path
+      description: Currency ID
+      required: true
+      schema:
+        type: integer
+    patch:
+      summary: Updates the currency
+      tags:
+      - Currencies
+      parameters: []
+      responses:
+        '200':
+          description: Updates the currency successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    example: 1
+                  abr:
+                    type: string
+                    example: USD
+                  decimal_digits:
+                    type: integer
+                    example: 2
+                  organization_id:
+                    type: integer
+                    example: 1
+                  created_at:
+                    type: string
+                    example: '2026-02-20 10:52:46.787878000 +0000'
+                  updated_at:
+                    type: string
+                    example: '2026-02-20 10:52:46.787878000 +0000'
+        '403':
+          description: Not authorized
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                abr:
+                  type: string
+                  example: USD
+                decimal_digits:
+                  type: integer
+                  example: 2
+                name_en:
+                  type: string
+                  example: Updated Name
+    delete:
+      summary: Deletes the currency
+      tags:
+      - Currencies
+      responses:
+        '200':
+          description: Deletes the currency successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    example: 1
+                  abr:
+                    type: string
+                    example: USD
+                  decimal_digits:
+                    type: integer
+                    example: 2
+                  organization_id:
+                    type: integer
+                    example: 1
+                  created_at:
+                    type: string
+                    example: '2026-02-20 10:52:46.787878000 +0000'
+                  updated_at:
+                    type: string
+                    example: '2026-02-20 10:52:46.787878000 +0000'
   "/organizations/{organization_id}/accounting/settings":
     parameters:
     - name: organization_id

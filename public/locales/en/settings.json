@@ -1,7 +1,8 @@
 {
-  "settings": "Settings",
-  "general": "General",
-  "preferences": "Preferences",
-  "settingsSaved": "Settings saved successfully",
-  "saveFailed": "Failed to save settings"
+  "en": {
+    "general": "General",
+    "preferences": "Preferences",
+    "saveFailed": "Failed to save settings",
+    "settingsSaved": "Settings saved successfully"
+  }
 }

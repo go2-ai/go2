@@ -1,14 +1,12 @@
 module Accounting
   class SettingsController < ApplicationController
-    before_action :set_setting
+    before_action :authorize_user!
 
     def show
-      authorize @setting
       render json: SettingBlueprint.render(@setting)
     end
 
     def update
-      authorize @setting
       if @setting.update(setting_params)
         render json: SettingBlueprint.render(@setting)
       else
@@ -18,9 +16,9 @@ module Accounting
 
     private
 
-    def set_setting
-      @setting = current_organization.accounting_setting ||
-                 current_organization.create_accounting_setting!
+    def authorize_user!
+      @setting = current_organization.accounting_setting
+      authorize @setting
     end
 
     def setting_params

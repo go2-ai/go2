@@ -166,13 +166,13 @@ RSpec.describe Member, type: :model do
 
     it "supports name translations" do
       member = create(:member, organization: organization,
-                      name: { "en" => "John Smith", "fr" => "Jean Smith" })
+                      name: { "en" => "John Smith", "fa" => "Jean Smith" })
 
       Mobility.with_locale(:en) do
         expect(member.name).to eq("John Smith")
       end
 
-      Mobility.with_locale(:fr) do
+      Mobility.with_locale(:fa) do
         expect(member.name).to eq("Jean Smith")
       end
     end
@@ -180,7 +180,7 @@ RSpec.describe Member, type: :model do
     it "uses fallbacks if translation is missing" do
       member = create(:member, organization: organization, name: { "en" => "Alice Johnson" })
 
-      Mobility.with_locale(:fr) do
+      Mobility.with_locale(:fa) do
         expect(member.name).to eq("Alice Johnson") # Falls back to English
       end
     end

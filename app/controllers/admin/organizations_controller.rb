@@ -1,6 +1,6 @@
 module Admin
   class OrganizationsController < ApplicationController
-    before_action :authenticate_user!
+    
     before_action :set_organization, only: [ :show, :edit, :update, :archive, :unarchive ]
 
     def index

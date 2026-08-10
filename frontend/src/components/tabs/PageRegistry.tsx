@@ -9,6 +9,7 @@ import { RecordHistoryPage } from '../../features/versions/RecordHistoryPage';
 import { PermissionsPage } from '../../features/permissions/PermissionsPage';
 import { PermissionHistoryPage } from '../../features/permissions/PermissionHistoryPage';
 import { OrganizationSettingsPage } from '../../features/organizations/OrganizationSettingsPage';
+import { AccountingSettingsPage } from '../../features/accounting/settings/AccountingSettingsPage';
 import { TabIdContext } from './TabIdContext';
 import { Box, Typography } from '@mui/material';
 
@@ -22,6 +23,7 @@ export const PAGE_REGISTRY: Record<string, React.ComponentType> = {
   'permission-history': PermissionHistoryPage,
   permissions: PermissionsPage,
   'organization-settings': OrganizationSettingsPage,
+  'accounting-settings': AccountingSettingsPage,
 };
 
 export function PageContent({ pageId, tabId }: { pageId: string; tabId?: string }) {

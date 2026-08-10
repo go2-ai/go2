@@ -25,7 +25,6 @@
     "roleActivated": "Role activated successfully",
     "roleDeactivated": "Role deactivated successfully",
     "roles": "Roles",
-    "saveFailed": "Failed to save role. Please try again.",
     "searchDepartment": "Search for department...",
     "searchMember": "Search for member...",
     "searchParentRole": "Search for parent role...",

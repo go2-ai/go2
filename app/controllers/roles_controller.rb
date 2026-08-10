@@ -1,5 +1,5 @@
 class RolesController < ApplicationController
-  before_action :authenticate_user!
+  
   before_action :authorize_user!
   before_action :set_role, only: %i[show update destroy]
 

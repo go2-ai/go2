@@ -17,6 +17,7 @@ import { PermissionsPage } from './features/permissions/PermissionsPage';
 import { ProtectedRoute } from './features/auth/ProtectedRoute';
 import { RootRedirect } from './features/auth/RootRedirect';
 import { OrganizationSettingsPage } from './features/organizations/OrganizationSettingsPage';
+import { AccountingSettingsPage } from './features/accounting/settings/AccountingSettingsPage';
 
 function App() {
   return (
@@ -42,6 +43,8 @@ function App() {
               <Route path=":organizationId/permission-history" element={<PermissionHistoryPage />} />
               <Route path=":organizationId/permissions" element={<PermissionsPage />} />
               <Route path=":organizationId/settings" element={<OrganizationSettingsPage />} />
+              <Route path=":organizationId/accounting/settings" element={<AccountingSettingsPage />} />
+
             </Route>
           </Route>
           

@@ -31,25 +31,22 @@ class Organization < ApplicationRecord
   has_many :members, dependent: :destroy
   has_many :users, through: :members
   has_many :permissions, dependent: :destroy
-  has_many :tasks, dependent: :destroy
-  has_many :currencies, dependent: :destroy
-  has_many :fiscal_years, dependent: :destroy
-  has_many :branches, dependent: :destroy
-  has_many :account_categories, dependent: :destroy
-  has_many :ledgers, through: :account_categories
-  has_many :accounts, through: :ledgers
-  has_many :center_types, dependent: :destroy
-  has_many :centers, through: :center_types
-  has_many :journal_entries, dependent: :destroy
-  has_many :journal_entry_items, through: :journal_entries
 
+  has_many :currencies, class_name: "Accounting::Currency", dependent: :destroy
   has_one :accounting_setting, class_name: "Accounting::Setting", dependent: :destroy
-
 
   # Validations
   validate :no_circular_references
   validates_non_empty_translation :name, locales: ->(org) { [ org.locale ] }
   validates_uniqueness_of_translated :name, scope: :parent, if: -> { parent_id.present? }
+
+  after_create :create_default_accounting_setting!
+
+  def create_default_accounting_setting!
+    create_accounting_setting!
+    currency = currencies.create!(name: "US Dollar", abr: "USD", decimal_digits: 2) if currencies.empty?
+    accounting_setting.update!(main_currency: currency)
+  end
 
   # Methods
   def ancestors

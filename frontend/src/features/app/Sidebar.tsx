@@ -19,7 +19,7 @@ import {
   Assignment,
   Group,
   Lock,
-  Settings
+  Settings,
 } from '@mui/icons-material';
 
 const drawerWidth = 280;
@@ -76,7 +76,13 @@ export function Sidebar() {
       title: 'Settings',
       icon: <Settings />,
       path: '/settings',
-    }
+    },
+    {
+      pageId: 'accounting-settings',
+      title: 'Accounting',
+      icon: <Settings />,
+      path: '/accounting/settings',
+    },
   ];
 
   return (

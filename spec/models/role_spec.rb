@@ -141,21 +141,21 @@ RSpec.describe Role, type: :model do
     let(:organization) { create(:organization, name: { en: "Translation Org #{SecureRandom.uuid}" }) }
 
     it "supports name translations" do
-      role = create(:role, organization: organization, name: { "en" => "Manager", "fr" => "Directeur" })
+      role = create(:role, organization: organization, name: { "en" => "Manager", "fa" => "مدیر" })
 
       Mobility.with_locale(:en) do
         expect(role.name).to eq("Manager")
       end
 
-      Mobility.with_locale(:fr) do
-        expect(role.name).to eq("Directeur")
+      Mobility.with_locale(:fa) do
+        expect(role.name).to eq("مدیر")
       end
     end
 
     it "uses fallbacks if translation is missing" do
       role = create(:role, organization: organization, name: { "en" => "Director" })
 
-      Mobility.with_locale(:fr) do
+      Mobility.with_locale(:fa) do
         expect(role.name).to eq("Director") # Falls back to English
       end
     end

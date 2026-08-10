@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_08_09_184956) do
+ActiveRecord::Schema[8.0].define(version: 2026_08_10_073657) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -150,7 +150,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_08_09_184956) do
   end
 
   create_table "currencies", force: :cascade do |t|
-    t.jsonb "name"
+    t.jsonb "name", default: {}, null: false
     t.string "abr"
     t.integer "decimal_digits"
     t.bigint "organization_id", null: false

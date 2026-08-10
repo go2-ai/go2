@@ -17,7 +17,8 @@ RSpec.configure do |config|
       info: { title: 'Accounting API', version: 'v1' },
       servers: [ { url: 'http://localhost:5000', variables: { defaultHost: { default: 'localhost:5000' } } } ],
       tags: [
-        { name: 'Settings', description: 'Organization-level accounting configuration' }
+        { name: 'Settings', description: 'Organization-level accounting configuration' },
+        { name: 'Currencies', description: 'Organization-level currency management' }
       ]
     }
   }

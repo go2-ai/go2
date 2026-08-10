@@ -7,7 +7,6 @@ class PermissionsController < ApplicationController
   end
 
   def index
-    puts params
     @permissions = @organization.permissions
 
     if params[:code].present?

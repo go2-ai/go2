@@ -144,24 +144,24 @@ RSpec.describe Department, type: :model do
   end
 
   describe "translations" do
-    let(:organization) { create(:organization) }
+    let(:organization) { create(:organization, active_locales: [ :fa ]) }
 
     it "supports name translations" do
-      department = create(:department, organization: organization, name: { "en" => "Marketing", "fr" => "Marketing FR" })
+      department = create(:department, organization: organization, name: { "en" => "Marketing", "fa" => "Marketing FA" })
 
       Mobility.with_locale(:en) do
         expect(department.name).to eq("Marketing")
       end
 
-      Mobility.with_locale(:fr) do
-        expect(department.name).to eq("Marketing FR")
+      Mobility.with_locale(:fa) do
+        expect(department.name).to eq("Marketing FA")
       end
     end
 
     it "uses fallbacks if translation is missing" do
       department = create(:department, organization: organization, name: { "en" => "Sales" })
 
-      Mobility.with_locale(:fr) do
+      Mobility.with_locale(:fa) do
         expect(department.name).to eq("Sales") # Falls back to English
       end
     end

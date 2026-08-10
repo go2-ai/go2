@@ -1,6 +1,6 @@
 class OrganizationsController < ApplicationController
-  before_action :authenticate_user!
   before_action :set_organization, only: [ :show, :update, :destroy ]
+  skip_before_action :verify_authenticity_token
 
   def index
     if params[:my_organizations]
@@ -86,8 +86,14 @@ class OrganizationsController < ApplicationController
         color: "#c9b12d"
       )
 
-      permission = Permission.create(
+      Permission.create(
         code: Permission::ORG_ADMIN,
+        grantee: member,
+        organization: @organization
+      )
+
+      Permission.create(
+        code: Permission::ACCOUNTING_MANAGE_SETTINGS,
         grantee: member,
         organization: @organization
       )

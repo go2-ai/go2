@@ -28,7 +28,6 @@ RSpec.describe Accounting::Setting, type: :model do
   describe "validations" do
     it "validates uniqueness of organization_id" do
       organization = create(:organization)
-      create(:accounting_setting, organization:)
 
       duplicate = build(:accounting_setting, organization:)
       expect(duplicate).not_to be_valid

@@ -1,6 +1,6 @@
 # app/controllers/versions_controller.rb
 class VersionsController < ApplicationController
-  before_action :authenticate_user!
+  
   before_action :set_organization
   before_action :authorize_organization!
 
@@ -22,7 +22,7 @@ class VersionsController < ApplicationController
                     @versions = @versions.where(item_type: params[:model_type])
                   end
 
-                  versions.order(created_at: :desc).limit(params[:limit] || 100)
+                  @versions.order(created_at: :desc).limit(params[:limit] || 100)
     elsif params[:permission_code].present?
                   @versions = PaperTrail::Version
                     .where(item_type: "Permission")
