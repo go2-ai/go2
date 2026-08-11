@@ -1,6 +1,4 @@
 class MessagesController < ApplicationController
-  
-
   def create
     @conversation = Conversation.find(params[:conversation_id])
     @message = Message.new(conversation: @conversation, body: params[:body], sender: current_user)

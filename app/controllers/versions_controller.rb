@@ -1,6 +1,5 @@
 # app/controllers/versions_controller.rb
 class VersionsController < ApplicationController
-  
   before_action :set_organization
   before_action :authorize_organization!
 

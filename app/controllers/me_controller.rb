@@ -1,6 +1,4 @@
 class MeController < ApplicationController
-  
-
   def show
     render json: current_user, only: %i[id email first_name last_name locale timezone], status: :ok
   end

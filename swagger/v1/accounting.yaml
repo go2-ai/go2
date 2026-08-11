@@ -13,7 +13,283 @@ tags:
   description: Organization-level accounting configuration
 - name: Currencies
   description: Organization-level currency management
+- name: Center Types
+  description: Organization-level center types
 paths:
+  "/organizations/{organization_id}/accounting/center_types":
+    parameters:
+    - name: organization_id
+      in: path
+      description: Organization ID
+      required: true
+      schema:
+        type: integer
+    get:
+      summary: Get all organization center types
+      tags:
+      - Center Types
+      responses:
+        '200':
+          description: Loaded successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                      example: 1
+                    first_code:
+                      type: string
+                      example: '001'
+                    last_code:
+                      type: string
+                      example: '010'
+                    auto_increment:
+                      type: boolean
+                      example: true
+                    metadata:
+                      type: array
+                      example: []
+                    name:
+                      type: string
+                      example: Cost Centers
+                    t:
+                      type: object
+                      example:
+                        name:
+                          en: Cost Centers
+                          fa: مراکز هزینه
+                    organization_id:
+                      type: integer
+                      example: 1
+                    created_at:
+                      type: string
+                      example: '2026-02-20 10:52:46.787878000 +0000'
+                    updated_at:
+                      type: string
+                      example: '2026-02-20 10:52:46.787878000 +0000'
+    post:
+      summary: Creating a new center type
+      tags:
+      - Center Types
+      parameters: []
+      responses:
+        '200':
+          description: Creates the new center type successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    example: 1
+                  first_code:
+                    type: string
+                    example: '001'
+                  last_code:
+                    type: string
+                    example: '010'
+                  auto_increment:
+                    type: boolean
+                    example: true
+                  metadata:
+                    type: array
+                    example: []
+                  name:
+                    type: string
+                    example: Cost Centers
+                  t:
+                    type: object
+                    example:
+                      name:
+                        en: Cost Centers
+                        fa: مراکز هزینه
+                  organization_id:
+                    type: integer
+                    example: 1
+                  created_at:
+                    type: string
+                    example: '2026-02-20 10:52:46.787878000 +0000'
+                  updated_at:
+                    type: string
+                    example: '2026-02-20 10:52:46.787878000 +0000'
+        '403':
+          description: Not authorized
+        '422':
+          description: Invalid request
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                first_code:
+                  type: string
+                  example: '101'
+                last_code:
+                  type: string
+                  example: '150'
+                auto_increment:
+                  type: boolean
+                  example: true
+                metadata:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        example: swift_code
+                      name:
+                        type: object
+                        example:
+                          en: Swift Code
+                          fa: کد سوئیفت
+                      type:
+                        type: string
+                        example: text
+                      required:
+                        type: boolean
+                        example: true
+                name_en:
+                  type: string
+                  example: Bank Accounts
+                name_fa:
+                  type: string
+                  example: حساب‌های بانکی
+  "/organizations/{organization_id}/accounting/center_types/{id}":
+    parameters:
+    - name: organization_id
+      in: path
+      description: Organization ID
+      required: true
+      schema:
+        type: integer
+    - name: id
+      in: path
+      description: Center Type ID
+      required: true
+      schema:
+        type: integer
+    patch:
+      summary: Updates the center type
+      tags:
+      - Center Types
+      parameters: []
+      responses:
+        '200':
+          description: Updates the center type successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    example: 1
+                  first_code:
+                    type: string
+                    example: '001'
+                  last_code:
+                    type: string
+                    example: '010'
+                  auto_increment:
+                    type: boolean
+                    example: true
+                  metadata:
+                    type: array
+                    example: []
+                  name:
+                    type: string
+                    example: Cost Centers
+                  t:
+                    type: object
+                    example:
+                      name:
+                        en: Cost Centers
+                        fa: مراکز هزینه
+                  organization_id:
+                    type: integer
+                    example: 1
+                  created_at:
+                    type: string
+                    example: '2026-02-20 10:52:46.787878000 +0000'
+                  updated_at:
+                    type: string
+                    example: '2026-02-20 10:52:46.787878000 +0000'
+        '403':
+          description: Not authorized
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                first_code:
+                  type: string
+                  example: '001'
+                last_code:
+                  type: string
+                  example: '010'
+                auto_increment:
+                  type: boolean
+                  example: false
+                metadata:
+                  type: array
+                  items:
+                    type: object
+                name_en:
+                  type: string
+                  example: Updated Name
+    delete:
+      summary: Deletes the center type
+      tags:
+      - Center Types
+      responses:
+        '200':
+          description: Deletes the center type successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    example: 1
+                  first_code:
+                    type: string
+                    example: '001'
+                  last_code:
+                    type: string
+                    example: '010'
+                  auto_increment:
+                    type: boolean
+                    example: true
+                  metadata:
+                    type: array
+                    example: []
+                  name:
+                    type: string
+                    example: Cost Centers
+                  t:
+                    type: object
+                    example:
+                      name:
+                        en: Cost Centers
+                        fa: مراکز هزینه
+                  organization_id:
+                    type: integer
+                    example: 1
+                  created_at:
+                    type: string
+                    example: '2026-02-20 10:52:46.787878000 +0000'
+                  updated_at:
+                    type: string
+                    example: '2026-02-20 10:52:46.787878000 +0000'
   "/organizations/{organization_id}/accounting/currencies":
     parameters:
     - name: organization_id

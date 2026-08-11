@@ -113,6 +113,12 @@ en:
           join: Join %{organization_name}
         you_are_invited: You're invited to join %{organization_name}
   models:
+    accounting/center_type:
+      errors:
+        codes:
+          blank: "cannot be blank"
+          first_greater_than_last: "cannot be greater than last code"
+          overlap: "code range overlaps with an existing center type"
     member:
       status:
         archived: archived

@@ -80,7 +80,7 @@ Rails.application.routes.draw do
 
     resources :groups
 
-    resources :permissions, only: [:index, :create, :destroy] do
+    resources :permissions, only: [ :index, :create, :destroy ] do
       collection do
         get :grantable
       end
@@ -104,13 +104,14 @@ Rails.application.routes.draw do
     resources :messages
 
     namespace :accounting do
-      resource :settings, only: [:show, :update]
-      resources :currencies, only: [:index, :create, :update, :destroy]
+      resource :settings, only: [ :show, :update ]
+      resources :currencies, only: [ :index, :create, :update, :destroy ]
+      resources :center_types, only: [ :index, :create, :update, :destroy ]
     end
   end
 
   resources :users, only: [ :show ]
-  resource :me, only: [:show, :update], controller: "me"
+  resource :me, only: [ :show, :update ], controller: "me"
 
   namespace :admin do
     resources :organizations do

@@ -1,5 +1,4 @@
 class OnboardingController < ApplicationController
-  
   before_action :check_organization_exists, only: [ :new ]
 
   def new

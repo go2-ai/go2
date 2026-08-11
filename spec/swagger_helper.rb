@@ -18,7 +18,8 @@ RSpec.configure do |config|
       servers: [ { url: 'http://localhost:5000', variables: { defaultHost: { default: 'localhost:5000' } } } ],
       tags: [
         { name: 'Settings', description: 'Organization-level accounting configuration' },
-        { name: 'Currencies', description: 'Organization-level currency management' }
+        { name: 'Currencies', description: 'Organization-level currency management' },
+        { name: 'Center Types', description: 'Organization-level center types' }
       ]
     }
   }

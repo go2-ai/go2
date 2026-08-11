@@ -1,5 +1,4 @@
 class GroupsController < ApplicationController
-  
   before_action :authorize_user!
   before_action :set_group, only: %i[show update destroy]
 

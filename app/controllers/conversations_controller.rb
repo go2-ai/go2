@@ -1,6 +1,4 @@
 class ConversationsController < ApplicationController
-  
-
   def index
     @organization = current_organization
     @conversations = current_user.conversations.where(organization: @organization)

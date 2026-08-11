@@ -113,6 +113,12 @@ fa:
           join: به  %{organization_name} وارد شوید
         you_are_invited: شما به سازمان %{organization_name} دعوت شده اید
   models:
+    accounting/center_type:
+      errors:
+        codes:
+          blank: "نمی‌تواند خالی باشد"
+          first_greater_than_last: "نمی‌تواند بزرگتر از کد پایانی باشد"
+          overlap: "بازه کد با یک نوع مرکز موجود هم‌پوشانی دارد"
     member:
       status:
         archived: بایگانی شده
