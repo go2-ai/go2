@@ -24,6 +24,8 @@ export function getTabPath(tab: Tab, organizationId: string): string {
         return `/app/organizations/${organizationId}/settings`;
       case 'accounting-settings':
         return `/app/organizations/${organizationId}/accounting/settings`;
+      case 'center-types':
+        return `/app/organizations/${organizationId}/accounting/center-types`;
       default:
         return `/app/organizations/${organizationId}`;
     }

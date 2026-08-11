@@ -9,6 +9,7 @@ import { versionsApi } from '../features/versions/versionsApi';
 import { permissionsApi } from '../features/permissions/permissionsApi';
 import { accountingSettingsApi } from '../features/accounting/settings/settingsApi';
 import { accountingCurrenciesApi } from '../features/accounting/currencies/currenciesApi';
+import { accountingCenterTypesApi } from '../features/accounting/centerTypes/centerTypesApi';
 import organizationsReducer from '../features/organizations/organizationsSlice';
 import authReducer from '../features/auth/authSlice';
 
@@ -24,6 +25,7 @@ export const store = configureStore({
     [permissionsApi.reducerPath]: permissionsApi.reducer,
     [accountingSettingsApi.reducerPath]: accountingSettingsApi.reducer,
     [accountingCurrenciesApi.reducerPath]: accountingCurrenciesApi.reducer,
+    [accountingCenterTypesApi.reducerPath]: accountingCenterTypesApi.reducer,
     organizations: organizationsReducer,
     auth: authReducer,
   },
@@ -38,7 +40,8 @@ export const store = configureStore({
       versionsApi.middleware,
       permissionsApi.middleware,
       accountingSettingsApi.middleware,
-      accountingCurrenciesApi.middleware
+      accountingCurrenciesApi.middleware,
+      accountingCenterTypesApi.middleware,
     ),
 });
 

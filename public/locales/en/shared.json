@@ -18,6 +18,23 @@
     "components": {
       "MultiLocaleInput": {
         "title": "Translations for \"{{field}}\" in other locales"
+      },
+      "metadataFieldsEditor": {
+        "addField": "Add Field",
+        "deleteFieldMessage": "Are you sure you want to delete the field \"{id}\"? This cannot be undone.",
+        "deleteFieldTitle": "Delete Metadata Field",
+        "fieldId": "Field ID",
+        "fieldType": "Field Type",
+        "invalidSnakeCase": "Must be snake_case (lowercase letters, numbers, and underscores)",
+        "noFields": "No fields defined",
+        "required": "Required",
+        "snakeCaseHint": "Use snake_case: lowercase letters, numbers, and underscores (e.g., swift_code)",
+        "title": "Metadata Fields",
+        "types": {
+          "boolean": "Boolean",
+          "number": "Number",
+          "text": "Text"
+        }
       }
     },
     "confirmPassword": "Password repeat",

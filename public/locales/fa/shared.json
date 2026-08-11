@@ -18,6 +18,23 @@
     "components": {
       "MultiLocaleInput": {
         "title": "معادل \"{{field}}\" در سایر زبان ها"
+      },
+      "metadataFieldsEditor": {
+        "addField": "افزودن فیلد",
+        "deleteFieldMessage": "آیا از حذف فیلد \"{id}\" اطمینان دارید؟ این عملیات قابل بازگشت نیست.",
+        "deleteFieldTitle": "حذف فیلد فراداده",
+        "fieldId": "شناسه فیلد",
+        "fieldType": "نوع فیلد",
+        "invalidSnakeCase": "باید به صورت snake_case باشد (حروف کوچک، اعداد و زیرخط)",
+        "noFields": "هیچ فیلدی تعریف نشده است",
+        "required": "الزامی",
+        "snakeCaseHint": "از snake_case استفاده کنید: حروف کوچک، اعداد و زیرخط (مثلاً swift_code)",
+        "title": "فیلدهای فراداده",
+        "types": {
+          "boolean": "بولی",
+          "number": "عدد",
+          "text": "متن"
+        }
       }
     },
     "confirmPassword": "تکرار رمز عبور",

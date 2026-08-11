@@ -21,6 +21,7 @@ import {
   Lock,
   Settings,
 } from '@mui/icons-material';
+import AccountTree from '@mui/icons-material/AccountTree';
 
 const drawerWidth = 280;
 
@@ -82,6 +83,12 @@ export function Sidebar() {
       title: 'Accounting',
       icon: <Settings />,
       path: '/accounting/settings',
+    },
+    {
+      pageId: 'center-types',
+      title: 'Center Types',
+      icon: <AccountTree />,
+      path: '/accounting/center-types',
     },
   ];
 

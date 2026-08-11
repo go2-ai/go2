@@ -18,6 +18,7 @@ import { ProtectedRoute } from './features/auth/ProtectedRoute';
 import { RootRedirect } from './features/auth/RootRedirect';
 import { OrganizationSettingsPage } from './features/organizations/OrganizationSettingsPage';
 import { AccountingSettingsPage } from './features/accounting/settings/AccountingSettingsPage';
+import { CenterTypesPage } from './features/accounting/centerTypes/CenterTypesPage';
 
 function App() {
   return (
@@ -44,7 +45,7 @@ function App() {
               <Route path=":organizationId/permissions" element={<PermissionsPage />} />
               <Route path=":organizationId/settings" element={<OrganizationSettingsPage />} />
               <Route path=":organizationId/accounting/settings" element={<AccountingSettingsPage />} />
-
+              <Route path=":organizationId/accounting/center-types" element={<CenterTypesPage />} />
             </Route>
           </Route>
           
