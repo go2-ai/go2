@@ -1,26 +1,26 @@
-import { useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useState, useMemo } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import {
   Container,
   Paper,
   Typography,
   Box,
   Button,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Chip,
+  TextField,
+  InputAdornment,
   IconButton,
   CircularProgress,
   Alert,
+  Chip,
   Stack,
+  Menu,
+  MenuItem,
 } from '@mui/material';
-import EditIcon from '@mui/icons-material/Edit';
-import DeleteIcon from '@mui/icons-material/Delete';
+import { DataGrid } from '@mui/x-data-grid';
+import type { GridColDef, GridRenderCellParams } from '@mui/x-data-grid';
+import MoreVertIcon from '@mui/icons-material/MoreVert';
 import AddIcon from '@mui/icons-material/Add';
+import SearchIcon from '@mui/icons-material/Search';
 import { useTranslation } from 'react-i18next';
 import {
   useGetCenterTypesQuery,
@@ -30,47 +30,99 @@ import {
 import { CenterTypeModal } from './components/CenterTypeModal';
 import { useToast } from '../../../contexts/ToastContext';
 import { useConfirm } from '../../../contexts/confirmContext';
+import { useTabManager } from '../../../components/tabs/useTabManager';
 
 export const CenterTypesPage = () => {
   const { t } = useTranslation('shared');
   const { t: tAccounting } = useTranslation('accounting');
   const { organizationId } = useParams<{ organizationId: string }>();
   const orgId = parseInt(organizationId || '0', 10);
+  const navigate = useNavigate();
   const { showSuccess, showError } = useToast();
   const confirm = useConfirm();
+  const { openTab } = useTabManager();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingCenterType, setEditingCenterType] = useState<CenterType | null>(null);
+  const [globalSearch, setGlobalSearch] = useState('');
+
+  const [menuAnchorEl, setMenuAnchorEl] = useState<null | HTMLElement>(null);
+  const [selectedForMenu, setSelectedForMenu] = useState<CenterType | null>(null);
 
   const { data: centerTypes, isLoading, error, refetch } = useGetCenterTypesQuery(orgId, { skip: !orgId });
   const [deleteCenterType] = useDeleteCenterTypeMutation();
+
+  // Filter and sort by first_code
+  const filteredRows = useMemo(() => {
+    if (!centerTypes) return [];
+    let rows = centerTypes;
+
+    if (globalSearch.trim()) {
+      const searchTerm = globalSearch.toLowerCase();
+      rows = rows.filter((ct) =>
+        ct.name.toLowerCase().includes(searchTerm) ||
+        ct.first_code.toLowerCase().includes(searchTerm) ||
+        ct.last_code.toLowerCase().includes(searchTerm)
+      );
+    }
+
+    return rows.slice().sort((a, b) => a.first_code.localeCompare(b.first_code));
+  }, [centerTypes, globalSearch]);
 
   const handleAdd = () => {
     setEditingCenterType(null);
     setIsModalOpen(true);
   };
 
-  const handleEdit = (centerType: CenterType) => {
+  const handleRowClick = (centerType: CenterType) => {
     setEditingCenterType(centerType);
     setIsModalOpen(true);
   };
 
-  const handleDelete = async (centerType: CenterType) => {
+  const handleMenuOpen = (e: React.MouseEvent<HTMLElement>, centerType: CenterType) => {
+    e.stopPropagation();
+    setMenuAnchorEl(e.currentTarget);
+    setSelectedForMenu(centerType);
+  };
+
+  const handleMenuClose = () => {
+    setMenuAnchorEl(null);
+    setSelectedForMenu(null);
+  };
+
+  const handleDelete = async () => {
+    if (!selectedForMenu) return;
+
     const confirmed = await confirm({
       title: tAccounting('deleteCenterTypeTitle'),
-      message: tAccounting('deleteCenterTypeMessage', { name: centerType.name }),
+      message: tAccounting('deleteCenterTypeMessage', { name: selectedForMenu.name }),
       confirmText: t('commonActions.delete'),
       confirmColor: 'error',
     });
 
+    handleMenuClose();
+
     if (!confirmed) return;
 
     try {
-      await deleteCenterType({ organizationId: orgId, id: centerType.id }).unwrap();
+      await deleteCenterType({ organizationId: orgId, id: selectedForMenu.id }).unwrap();
       showSuccess(tAccounting('centerTypeDeleted'));
     } catch (err: any) {
       showError(err?.data?.errors?.[0] || tAccounting('centerTypeDeleteFailed'));
     }
+  };
+
+  const handleHistory = () => {
+    if (!selectedForMenu) return;
+    const path = `/app/organizations/${orgId}/record-history?type=Accounting::CenterType&id=${selectedForMenu.id}`;
+    const name = selectedForMenu.name;
+
+    handleMenuClose();
+
+    setTimeout(() => {
+      openTab('record-history', `History: ${name}`, path);
+      navigate(path);
+    }, 0);
   };
 
   const handleModalClose = () => {
@@ -78,9 +130,97 @@ export const CenterTypesPage = () => {
     setEditingCenterType(null);
   };
 
+  const columns: GridColDef<CenterType>[] = [
+    {
+      field: 'name',
+      headerName: t('name'),
+      width: 250,
+      disableColumnMenu: true,
+      renderCell: (params: GridRenderCellParams<CenterType>) => (
+        <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 1 }}>
+          <Typography variant="body2" fontWeight={500}>
+            {params.row.name}
+          </Typography>
+        </Box>
+      ),
+    },
+    {
+      field: 'first_code',
+      headerName: tAccounting('firstCode'),
+      width: 130,
+      disableColumnMenu: true,
+      renderCell: (params: GridRenderCellParams<CenterType>) => (
+        <Chip label={params.row.first_code} size="small" variant="outlined" />
+      ),
+    },
+    {
+      field: 'last_code',
+      headerName: tAccounting('lastCode'),
+      width: 130,
+      disableColumnMenu: true,
+      renderCell: (params: GridRenderCellParams<CenterType>) => (
+        <Chip label={params.row.last_code} size="small" variant="outlined" />
+      ),
+    },
+    {
+      field: 'auto_increment',
+      headerName: tAccounting('autoIncrement'),
+      width: 140,
+      disableColumnMenu: true,
+      renderCell: (params: GridRenderCellParams<CenterType>) => (
+        <Chip
+          label={params.row.auto_increment ? t('yes') : t('no')}
+          size="small"
+          color={params.row.auto_increment ? 'success' : 'default'}
+        />
+      ),
+    },
+    {
+      field: 'metadata',
+      headerName: tAccounting('metadataFields'),
+      width: 280,
+      disableColumnMenu: true,
+      sortable: false,
+      renderCell: (params: GridRenderCellParams<CenterType>) => {
+        const fields = params.row.metadata || [];
+        if (fields.length === 0) {
+          return <Typography variant="caption" color="text.secondary">—</Typography>;
+        }
+        return (
+          <Stack direction="row" gap={0.5} flexWrap="wrap">
+            {fields.map((field) => (
+              <Chip
+                key={field.id}
+                label={`${field.id} (${field.type})`}
+                size="small"
+                variant="outlined"
+                sx={{ fontSize: '0.7rem' }}
+              />
+            ))}
+          </Stack>
+        );
+      },
+    },
+    {
+      field: 'actions',
+      headerName: t('actions'),
+      width: 80,
+      sortable: false,
+      disableColumnMenu: true,
+      renderCell: (params: GridRenderCellParams<CenterType>) => (
+        <IconButton
+          size="small"
+          onClick={(e) => handleMenuOpen(e, params.row)}
+        >
+          <MoreVertIcon fontSize="small" />
+        </IconButton>
+      ),
+    },
+  ];
+
   if (isLoading) {
     return (
-      <Container maxWidth="lg" sx={{ py: 4 }}>
+      <Container maxWidth="xl" sx={{ py: 4 }}>
         <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
           <CircularProgress />
         </Box>
@@ -90,7 +230,7 @@ export const CenterTypesPage = () => {
 
   if (error) {
     return (
-      <Container maxWidth="lg" sx={{ py: 4 }}>
+      <Container maxWidth="xl" sx={{ py: 4 }}>
         <Alert
           severity="error"
           action={
@@ -106,8 +246,8 @@ export const CenterTypesPage = () => {
   }
 
   return (
-    <Container maxWidth="lg" sx={{ py: 3 }}>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+    <Container maxWidth="xl" sx={{ height: '100%', display: 'flex', flexDirection: 'column', py: 2 }}>
+      <Box sx={{ mb: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexShrink: 0 }}>
         <Box>
           <Typography variant="h4" gutterBottom>
             {tAccounting('centerTypes')}
@@ -126,71 +266,63 @@ export const CenterTypesPage = () => {
           <Typography color="text.secondary">{tAccounting('noCenterTypes')}</Typography>
         </Paper>
       ) : (
-        <TableContainer component={Paper}>
-          <Table>
-            <TableHead>
-              <TableRow>
-                <TableCell>{t('name')}</TableCell>
-                <TableCell>{tAccounting('firstCode')}</TableCell>
-                <TableCell>{tAccounting('lastCode')}</TableCell>
-                <TableCell>{tAccounting('autoIncrement')}</TableCell>
-                <TableCell>{tAccounting('metadataFields')}</TableCell>
-                <TableCell align="right">{t('actions')}</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {centerTypes.map((ct) => (
-                <TableRow key={ct.id} hover>
-                  <TableCell>
-                    <Typography variant="body2" fontWeight={500}>
-                      {ct.name}
-                    </Typography>
-                  </TableCell>
-                  <TableCell>
-                    <Chip label={ct.first_code} size="small" variant="outlined" />
-                  </TableCell>
-                  <TableCell>
-                    <Chip label={ct.last_code} size="small" variant="outlined" />
-                  </TableCell>
-                  <TableCell>
-                    <Chip
-                      label={ct.auto_increment ? t('yes') : t('no')}
-                      size="small"
-                      color={ct.auto_increment ? 'success' : 'default'}
-                    />
-                  </TableCell>
-                  <TableCell>
-                    <Stack direction="row" gap={0.5} flexWrap="wrap">
-                      {(ct.metadata || []).map((field) => (
-                        <Chip
-                          key={field.id}
-                          label={`${field.id} (${field.type})`}
-                          size="small"
-                          variant="outlined"
-                          sx={{ fontSize: '0.7rem' }}
-                        />
-                      ))}
-                      {(!ct.metadata || ct.metadata.length === 0) && (
-                        <Typography variant="caption" color="text.secondary">
-                          —
-                        </Typography>
-                      )}
-                    </Stack>
-                  </TableCell>
-                  <TableCell align="right">
-                    <IconButton size="small" onClick={() => handleEdit(ct)}>
-                      <EditIcon fontSize="small" />
-                    </IconButton>
-                    <IconButton size="small" color="error" onClick={() => handleDelete(ct)}>
-                      <DeleteIcon fontSize="small" />
-                    </IconButton>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
+        <Paper sx={{ p: 2, flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+          <Box sx={{ mb: 2 }}>
+            <TextField
+              fullWidth
+              variant="outlined"
+              placeholder={tAccounting('searchCenterTypes')}
+              value={globalSearch}
+              onChange={(e) => setGlobalSearch(e.target.value)}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchIcon />
+                  </InputAdornment>
+                ),
+              }}
+              size="small"
+            />
+          </Box>
+
+          <DataGrid
+            rows={filteredRows}
+            columns={columns}
+            hideFooterPagination
+            hideFooter
+            disableRowSelectionOnClick
+            disableColumnMenu
+            onRowClick={(params) => handleRowClick(params.row)}
+            initialState={{
+              sorting: {
+                sortModel: [{ field: 'first_code', sort: 'asc' }],
+              },
+            }}
+            sx={{
+              flex: 1,
+              '& .MuiDataGrid-cell:focus': { outline: 'none' },
+              '& .MuiDataGrid-row:hover': { cursor: 'pointer' },
+              '& .MuiDataGrid-columnHeaderTitle': { fontWeight: 'bold' },
+              '& .MuiDataGrid-cell': { paddingInlineEnd: 0 },
+            }}
+          />
+        </Paper>
       )}
+
+      <Menu
+        anchorEl={menuAnchorEl}
+        open={Boolean(menuAnchorEl)}
+        onClose={handleMenuClose}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+        transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+      >
+        <MenuItem onClick={handleHistory}>
+          {t('changeLog')}
+        </MenuItem>
+        <MenuItem onClick={handleDelete} sx={{ color: 'error.main' }}>
+          {t('commonActions.delete')}
+        </MenuItem>
+      </Menu>
 
       <CenterTypeModal
         open={isModalOpen}
@@ -200,4 +332,4 @@ export const CenterTypesPage = () => {
       />
     </Container>
   );
-};
+}

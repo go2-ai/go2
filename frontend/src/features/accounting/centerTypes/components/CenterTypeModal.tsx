@@ -198,6 +198,7 @@ export const CenterTypeModal = ({ open, onClose, organizationId, centerType }: C
             onChange={handleMetadataChange}
             organizationId={organizationId}
             isSaved={isEditMode}
+            savedFieldIds={isEditMode ? new Set(centerType?.metadata?.map((m) => m.id) || []) : undefined}
             onRegisterValidate={(validateFn) => {
               validateMetadataRef.current = validateFn;
             }}

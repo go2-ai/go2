@@ -34,7 +34,7 @@ interface MetadataFieldsEditorProps {
   isSaved?: boolean;
   maxFields?: number;
   disabled?: boolean;
-  /** Callback to register a validate function that returns true if valid */
+  savedFieldIds?: Set<string>;
   onRegisterValidate?: (validate: () => boolean) => void;
 }
 
@@ -67,6 +67,7 @@ export function MetadataFieldsEditor({
   isSaved = false,
   maxFields,
   disabled = false,
+  savedFieldIds,
   onRegisterValidate,
 }: MetadataFieldsEditorProps) {
   const { t } = useTranslation('shared');
@@ -221,7 +222,7 @@ export function MetadataFieldsEditor({
                       size="small"
                       fullWidth
                       required
-                      disabled={disabled}
+                      disabled={disabled || (isSaved && !!field.id && savedFieldIds?.has(field.id))}
                       error={!!errors[index]}
                       helperText={errors[index] || t(tKey('snakeCaseHint'))}
                       placeholder="swift_code"
