@@ -119,6 +119,11 @@ fa:
           blank: "نمی‌تواند خالی باشد"
           first_greater_than_last: "نمی‌تواند بزرگتر از کد پایانی باشد"
           overlap: "بازه کد با یک نوع مرکز موجود هم‌پوشانی دارد"
+    accounting/center:
+      errors:
+        code_out_of_range: "باید بین %{first} و %{last} باشد"
+        code_length_mismatch: "باید دقیقاً %{length} کاراکتر باشد"
+        code_already_taken: "قبلاً برای این نوع مرکز ثبت شده است"
     member:
       status:
         archived: بایگانی شده

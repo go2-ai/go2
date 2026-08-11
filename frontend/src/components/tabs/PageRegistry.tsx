@@ -11,6 +11,7 @@ import { PermissionHistoryPage } from '../../features/permissions/PermissionHist
 import { OrganizationSettingsPage } from '../../features/organizations/OrganizationSettingsPage';
 import { AccountingSettingsPage } from '../../features/accounting/settings/AccountingSettingsPage';
 import { CenterTypesPage } from '../../features/accounting/centerTypes/CenterTypesPage';
+import { CentersPage } from '../../features/accounting/centers/CentersPage';
 import { TabIdContext } from './TabIdContext';
 import { Box, Typography } from '@mui/material';
 
@@ -26,6 +27,7 @@ export const PAGE_REGISTRY: Record<string, React.ComponentType> = {
   'organization-settings': OrganizationSettingsPage,
   'accounting-settings': AccountingSettingsPage,
   'center-types': CenterTypesPage,
+  centers: CentersPage,
 };
 
 export function PageContent({ pageId, tabId }: { pageId: string; tabId?: string }) {

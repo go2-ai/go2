@@ -31,6 +31,7 @@ import { CenterTypeModal } from './components/CenterTypeModal';
 import { useToast } from '../../../contexts/ToastContext';
 import { useConfirm } from '../../../contexts/confirmContext';
 import { useTabManager } from '../../../components/tabs/useTabManager';
+import { Tooltip } from '@mui/material';
 
 export const CenterTypesPage = () => {
   const { t } = useTranslation('shared');
@@ -136,31 +137,18 @@ export const CenterTypesPage = () => {
       headerName: t('name'),
       width: 250,
       disableColumnMenu: true,
-      renderCell: (params: GridRenderCellParams<CenterType>) => (
-        <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 1 }}>
-          <Typography variant="body2" fontWeight={500}>
-            {params.row.name}
-          </Typography>
-        </Box>
-      ),
     },
     {
       field: 'first_code',
       headerName: tAccounting('firstCode'),
       width: 130,
       disableColumnMenu: true,
-      renderCell: (params: GridRenderCellParams<CenterType>) => (
-        <Chip label={params.row.first_code} size="small" variant="outlined" />
-      ),
     },
     {
       field: 'last_code',
       headerName: tAccounting('lastCode'),
       width: 130,
       disableColumnMenu: true,
-      renderCell: (params: GridRenderCellParams<CenterType>) => (
-        <Chip label={params.row.last_code} size="small" variant="outlined" />
-      ),
     },
     {
       field: 'auto_increment',
@@ -176,28 +164,26 @@ export const CenterTypesPage = () => {
       ),
     },
     {
-      field: 'metadata',
-      headerName: tAccounting('metadataFields'),
-      width: 280,
-      disableColumnMenu: true,
+      field: 'centers_count',
+      headerName: tAccounting('centers'),
+      width: 100,
       sortable: false,
+      disableColumnMenu: true,
       renderCell: (params: GridRenderCellParams<CenterType>) => {
-        const fields = params.row.metadata || [];
-        if (fields.length === 0) {
-          return <Typography variant="caption" color="text.secondary">—</Typography>;
-        }
+        const count = params.row.centers_count || 0;
         return (
-          <Stack direction="row" gap={0.5} flexWrap="wrap">
-            {fields.map((field) => (
-              <Chip
-                key={field.id}
-                label={`${field.id} (${field.type})`}
-                size="small"
-                variant="outlined"
-                sx={{ fontSize: '0.7rem' }}
-              />
-            ))}
-          </Stack>
+          <Chip
+            label={count}
+            size="small"
+            color="primary"
+            onClick={(e) => {
+              e.stopPropagation();
+              const path = `/app/organizations/${orgId}/accounting/centers?center_type_id=${params.row.id}`;
+              openTab('centers', `${params.row.name} Centers`, path);
+              navigate(path);
+            }}
+            sx={{ cursor: 'pointer' }}
+          />
         );
       },
     },
@@ -319,9 +305,17 @@ export const CenterTypesPage = () => {
         <MenuItem onClick={handleHistory}>
           {t('changeLog')}
         </MenuItem>
-        <MenuItem onClick={handleDelete} sx={{ color: 'error.main' }}>
-          {t('commonActions.delete')}
-        </MenuItem>
+        <Tooltip title={selectedForMenu && (selectedForMenu.centers_count || 0) > 0 ? tAccounting('cannotDeleteWithCenters') : ''}>
+          <span>
+            <MenuItem
+              onClick={handleDelete}
+              disabled={selectedForMenu ? (selectedForMenu.centers_count || 0) > 0 : false}
+              sx={{ color: (selectedForMenu && (selectedForMenu.centers_count || 0) > 0) ? undefined : 'error.main' }}
+            >
+              {t('commonActions.delete')}
+            </MenuItem>
+          </span>
+        </Tooltip>
       </Menu>
 
       <CenterTypeModal

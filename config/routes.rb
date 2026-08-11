@@ -107,6 +107,7 @@ Rails.application.routes.draw do
       resource :settings, only: [ :show, :update ]
       resources :currencies, only: [ :index, :create, :update, :destroy ]
       resources :center_types, only: [ :index, :create, :update, :destroy ]
+      resources :centers, only: [ :index, :show, :create, :update, :destroy ]
     end
   end
 

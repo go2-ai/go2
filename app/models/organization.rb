@@ -34,6 +34,7 @@ class Organization < ApplicationRecord
 
   has_many :currencies, class_name: "Accounting::Currency", dependent: :destroy
   has_many :center_types, class_name: "Accounting::CenterType", dependent: :destroy
+  has_many :centers, through: :center_types
   has_one :accounting_setting, class_name: "Accounting::Setting", dependent: :destroy
 
   # Validations

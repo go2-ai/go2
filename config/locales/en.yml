@@ -119,6 +119,13 @@ en:
           blank: "cannot be blank"
           first_greater_than_last: "cannot be greater than last code"
           overlap: "code range overlaps with an existing center type"
+          centers_out_of_range: "Cannot change code range: the following center codes would be out of range: %{codes}"
+    accounting/center:
+      errors:
+        code_out_of_range: "must be between %{first} and %{last}"
+        code_length_mismatch: "must be exactly %{length} characters"
+        code_already_taken: "has already been taken for this center type"
+        centers_out_of_range: "امکان تغییر بازه کد وجود ندارد: کدهای مراکز زیر خارج از بازه خواهند بود: %{codes}"
     member:
       status:
         archived: archived

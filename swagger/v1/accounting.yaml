@@ -15,6 +15,8 @@ tags:
   description: Organization-level currency management
 - name: Center Types
   description: Organization-level center types
+- name: Centers
+  description: Organization-level centers
 paths:
   "/organizations/{organization_id}/accounting/center_types":
     parameters:
@@ -290,6 +292,356 @@ paths:
                   updated_at:
                     type: string
                     example: '2026-02-20 10:52:46.787878000 +0000'
+  "/organizations/{organization_id}/accounting/centers":
+    parameters:
+    - name: organization_id
+      in: path
+      description: Organization ID
+      required: true
+      schema:
+        type: integer
+    get:
+      summary: Get all organization centers
+      tags:
+      - Centers
+      parameters:
+      - name: center_type_id
+        in: query
+        required: false
+        description: Filter by center type (includes metadata)
+        schema:
+          type: integer
+      responses:
+        '200':
+          description: Returns centers filtered by center type (with metadata)
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                      example: 1
+                    code:
+                      type: string
+                      example: '000025'
+                    name:
+                      type: string
+                      example: Main Warehouse
+                    centerable_type:
+                      type:
+                      - string
+                      - nil
+                      example:
+                    centerable_id:
+                      type:
+                      - integer
+                      - nil
+                      example:
+                    t:
+                      type: object
+                      example:
+                        name:
+                          en: Main Warehouse
+                          fa: انبار اصلی
+                    center_type:
+                      type: object
+                      example:
+                        id: 1
+                        first_code: '000001'
+                        last_code: '000050'
+                        auto_increment: true
+                        name: Warehouses
+                        t:
+                          name:
+                            en: Warehouses
+                            fa: انبارها
+                    metadata:
+                      type: object
+                      example:
+                        swift_code: AABBCC
+                        age: 25
+    post:
+      summary: Creating a new center
+      tags:
+      - Centers
+      parameters: []
+      responses:
+        '200':
+          description: Auto-assigns next available code when auto_increment is enabled
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    example: 1
+                  code:
+                    type: string
+                    example: '000025'
+                  name:
+                    type: string
+                    example: Main Warehouse
+                  centerable_type:
+                    type:
+                    - string
+                    - nil
+                    example:
+                  centerable_id:
+                    type:
+                    - integer
+                    - nil
+                    example:
+                  t:
+                    type: object
+                    example:
+                      name:
+                        en: Main Warehouse
+                        fa: انبار اصلی
+                  center_type:
+                    type: object
+                    example:
+                      id: 1
+                      first_code: '000001'
+                      last_code: '000050'
+                      auto_increment: true
+                      name: Warehouses
+                      t:
+                        name:
+                          en: Warehouses
+                          fa: انبارها
+                  metadata:
+                    type: object
+                    example:
+                      swift_code: AABBCC
+                      age: 25
+        '403':
+          description: Not authorized
+        '422':
+          description: Invalid request
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                center_type_id:
+                  type: integer
+                  example: 1
+                code:
+                  type: string
+                  example: '000010'
+                metadata:
+                  type: object
+                  example:
+                    swift_code: AABBCC
+                    age: 25
+                name_en:
+                  type: string
+                  example: Branch Office
+                name_fa:
+                  type: string
+                  example: دفتر شعبه
+  "/organizations/{organization_id}/accounting/centers/{id}":
+    parameters:
+    - name: organization_id
+      in: path
+      description: Organization ID
+      required: true
+      schema:
+        type: integer
+    - name: id
+      in: path
+      description: Center ID
+      required: true
+      schema:
+        type: integer
+    get:
+      summary: Get the center (with metadata)
+      tags:
+      - Centers
+      responses:
+        '200':
+          description: Loaded successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    example: 1
+                  code:
+                    type: string
+                    example: '000025'
+                  name:
+                    type: string
+                    example: Main Warehouse
+                  centerable_type:
+                    type:
+                    - string
+                    - nil
+                    example:
+                  centerable_id:
+                    type:
+                    - integer
+                    - nil
+                    example:
+                  t:
+                    type: object
+                    example:
+                      name:
+                        en: Main Warehouse
+                        fa: انبار اصلی
+                  center_type:
+                    type: object
+                    example:
+                      id: 1
+                      first_code: '000001'
+                      last_code: '000050'
+                      auto_increment: true
+                      name: Warehouses
+                      t:
+                        name:
+                          en: Warehouses
+                          fa: انبارها
+                  metadata:
+                    type: object
+                    example:
+                      swift_code: AABBCC
+                      age: 25
+        '404':
+          description: Not found
+    patch:
+      summary: Updates the center
+      tags:
+      - Centers
+      parameters: []
+      responses:
+        '200':
+          description: Updates the center successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    example: 1
+                  code:
+                    type: string
+                    example: '000025'
+                  name:
+                    type: string
+                    example: Main Warehouse
+                  centerable_type:
+                    type:
+                    - string
+                    - nil
+                    example:
+                  centerable_id:
+                    type:
+                    - integer
+                    - nil
+                    example:
+                  t:
+                    type: object
+                    example:
+                      name:
+                        en: Main Warehouse
+                        fa: انبار اصلی
+                  center_type:
+                    type: object
+                    example:
+                      id: 1
+                      first_code: '000001'
+                      last_code: '000050'
+                      auto_increment: true
+                      name: Warehouses
+                      t:
+                        name:
+                          en: Warehouses
+                          fa: انبارها
+                  metadata:
+                    type: object
+                    example:
+                      swift_code: AABBCC
+                      age: 25
+        '403':
+          description: Not authorized
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                code:
+                  type: string
+                  example: '000005'
+                metadata:
+                  type: object
+                  example:
+                    swift_code: UPDATED
+                name_en:
+                  type: string
+                  example: Updated Name
+    delete:
+      summary: Deletes the center
+      tags:
+      - Centers
+      responses:
+        '200':
+          description: Deletes the center successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    example: 1
+                  code:
+                    type: string
+                    example: '000025'
+                  name:
+                    type: string
+                    example: Main Warehouse
+                  centerable_type:
+                    type:
+                    - string
+                    - nil
+                    example:
+                  centerable_id:
+                    type:
+                    - integer
+                    - nil
+                    example:
+                  t:
+                    type: object
+                    example:
+                      name:
+                        en: Main Warehouse
+                        fa: انبار اصلی
+                  center_type:
+                    type: object
+                    example:
+                      id: 1
+                      first_code: '000001'
+                      last_code: '000050'
+                      auto_increment: true
+                      name: Warehouses
+                      t:
+                        name:
+                          en: Warehouses
+                          fa: انبارها
+                  metadata:
+                    type: object
+                    example:
+                      swift_code: AABBCC
+                      age: 25
   "/organizations/{organization_id}/accounting/currencies":
     parameters:
     - name: organization_id

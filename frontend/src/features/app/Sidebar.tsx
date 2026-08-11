@@ -20,6 +20,7 @@ import {
   Group,
   Lock,
   Settings,
+  AccountBalance,
 } from '@mui/icons-material';
 import AccountTree from '@mui/icons-material/AccountTree';
 
@@ -89,6 +90,12 @@ export function Sidebar() {
       title: 'Center Types',
       icon: <AccountTree />,
       path: '/accounting/center-types',
+    },
+    {
+      pageId: 'centers',
+      title: 'Centers',
+      icon: <AccountBalance />,
+      path: '/accounting/centers',
     },
   ];
 

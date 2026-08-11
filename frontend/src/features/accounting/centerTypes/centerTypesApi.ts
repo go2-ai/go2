@@ -16,6 +16,7 @@ export interface CenterType {
   auto_increment: boolean;
   metadata: CenterTypeMetadata[];
   name: string;
+  centers_count: number,
   t?: {
     name?: Record<string, string>;
   };

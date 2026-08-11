@@ -4,7 +4,13 @@ module Accounting
     before_action :authorize_user!, only: %i[create update destroy]
 
     def index
-      render json: CenterTypeBlueprint.render(current_organization.center_types), status: :ok
+      center_types = current_organization.center_types
+        .left_joins(:centers)
+        .group(:id)
+        .select("center_types.*, COUNT(centers.id) AS centers_count")
+        .order(:id)
+
+      render json: CenterTypeBlueprint.render(center_types, view: :index), status: :ok
     end
 
     def create

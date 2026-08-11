@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_08_11_074112) do
+ActiveRecord::Schema[8.0].define(version: 2026_08_11_122347) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -118,11 +118,12 @@ ActiveRecord::Schema[8.0].define(version: 2026_08_11_074112) do
   create_table "centers", force: :cascade do |t|
     t.bigint "center_type_id", null: false
     t.string "code", null: false
-    t.jsonb "name"
+    t.jsonb "name", default: {}, null: false
     t.string "centerable_type"
     t.integer "centerable_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.jsonb "metadata", default: {}, null: false
     t.index ["center_type_id"], name: "index_centers_on_center_type_id"
     t.index ["code"], name: "index_centers_on_code"
     t.index ["name"], name: "index_centers_on_name", using: :gin

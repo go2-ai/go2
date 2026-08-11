@@ -8,12 +8,16 @@ module Accounting
 
     belongs_to :organization
 
+    has_many :centers, class_name: "Accounting::Center"
+
     validates_non_empty_translation :name, locales: ->(ct) { [ ct.organization&.locale ] }
     validates_uniqueness_of_translated :name, scope: :organization_id
 
     validates :first_code, :last_code, presence: true
     validate :first_code_not_greater_than_last_code
     validate :no_overlapping_code_ranges
+    validate :no_centers_outside_range, on: :update
+
 
     private
 
@@ -39,6 +43,23 @@ module Accounting
       return unless overlapping.exists?
 
       errors.add(:base, model_t("errors.codes.overlap"))
+    end
+
+    def no_centers_outside_range
+      return if first_code.blank? || last_code.blank?
+      return unless first_code_changed? || last_code_changed?
+
+      first_int = first_code.to_i
+      last_int = last_code.to_i
+
+      out_of_range = centers.where.not(
+        "CAST(code AS integer) BETWEEN ? AND ?", first_int, last_int
+      )
+
+      if out_of_range.exists?
+        codes = out_of_range.pluck(:code).join(", ")
+        errors.add(:base, model_t("errors.centers_out_of_range", codes: codes))
+      end
     end
   end
 end

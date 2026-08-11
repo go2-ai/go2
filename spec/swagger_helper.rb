@@ -19,7 +19,8 @@ RSpec.configure do |config|
       tags: [
         { name: 'Settings', description: 'Organization-level accounting configuration' },
         { name: 'Currencies', description: 'Organization-level currency management' },
-        { name: 'Center Types', description: 'Organization-level center types' }
+        { name: 'Center Types', description: 'Organization-level center types' },
+        { name: 'Centers', description: 'Organization-level centers' }
       ]
     }
   }
