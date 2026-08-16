@@ -113,6 +113,19 @@ fa:
           join: به  %{organization_name} وارد شوید
         you_are_invited: شما به سازمان %{organization_name} دعوت شده اید
   models:
+    accounting/account_category:
+      identifiers:
+        CA: "دارایی‌های جاری"
+        LA: "دارایی‌های بلندمدت"
+        CL: "بدهی‌های جاری"
+        LL: "بدهی‌های بلندمدت"
+        OE: "حقوق صاحبان سهام"
+        RE: "درآمدها"
+        EX: "هزینه‌ها"
+        CO: "حساب‌های کنترلی"
+        ME: "حساب‌های انتظامی"
+      only_other_type: "امکان ایجاد حساب های ترازنامه ای و سود و زیانی وجود ندارد."
+      cant_delete_system_categories: "امکان حذف طبقه بندی های سیستمی وجود ندارد"
     accounting/center_type:
       errors:
         codes:

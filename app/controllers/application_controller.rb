@@ -19,6 +19,10 @@ class ApplicationController < ActionController::Base
     super(record, query)
   end
 
+  def pundit_user
+    UserContext.new(current_user, current_organization)
+  end
+
   protected
 
   def configure_permitted_parameters

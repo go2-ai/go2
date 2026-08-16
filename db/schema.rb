@@ -10,18 +10,20 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_08_11_122347) do
+ActiveRecord::Schema[8.0].define(version: 2026_08_16_115632) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
   create_table "account_categories", force: :cascade do |t|
     t.string "code", null: false
-    t.jsonb "name"
+    t.jsonb "name", default: {}, null: false
     t.integer "type", null: false
     t.bigint "organization_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "identifier"
     t.index ["code"], name: "index_account_categories_on_code"
+    t.index ["identifier"], name: "index_account_categories_on_identifier"
     t.index ["name"], name: "index_account_categories_on_name", using: :gin
     t.index ["organization_id"], name: "index_account_categories_on_organization_id"
   end

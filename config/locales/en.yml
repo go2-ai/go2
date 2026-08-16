@@ -113,6 +113,19 @@ en:
           join: Join %{organization_name}
         you_are_invited: You're invited to join %{organization_name}
   models:
+    accounting/account_category:
+      identifiers:
+        CA: "Current Assets"
+        LA: "Long-term Assets"
+        CL: "Current Liabilities"
+        LL: "Long-term Liabilities"
+        OE: "Owners' Equity"
+        RE: "Revenues"
+        EX: "Expenses"
+        CO: "Control Accounts"
+        ME: "Memorandum Accounts"
+      only_other_type: "Can't create balance sheet or income statement categories."
+      cant_delete_system_categories: System account categories cannot be deleted
     accounting/center_type:
       errors:
         codes:

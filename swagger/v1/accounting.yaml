@@ -17,7 +17,235 @@ tags:
   description: Organization-level center types
 - name: Centers
   description: Organization-level centers
+- name: Account Categories
+  description: Organization-level account categories
 paths:
+  "/organizations/{organization_id}/accounting/account_categories":
+    parameters:
+    - name: organization_id
+      in: path
+      description: Organization ID
+      required: true
+      schema:
+        type: integer
+    get:
+      summary: Get all organization account categories
+      tags:
+      - Account Categories
+      responses:
+        '200':
+          description: Loaded successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                      example: 1
+                    code:
+                      type: string
+                      example: '50'
+                    identifier:
+                      type:
+                      - string
+                      - nil
+                      example:
+                    type:
+                      type: string
+                      example: other
+                    name:
+                      type: string
+                      example: Custom Category
+                    t:
+                      type: object
+                      example:
+                        name:
+                          en: Custom Category
+                          fa: دسته سفارشی
+                    ledgers_count:
+                      type: integer
+                      example: 0
+                      description: Only in index view
+        '403':
+          description: Not authorized
+    post:
+      summary: Creating a new account category
+      tags:
+      - Account Categories
+      parameters: []
+      responses:
+        '200':
+          description: Creates the new account category successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    example: 1
+                  code:
+                    type: string
+                    example: '50'
+                  identifier:
+                    type:
+                    - string
+                    - nil
+                    example:
+                  type:
+                    type: string
+                    example: other
+                  name:
+                    type: string
+                    example: Custom Category
+                  t:
+                    type: object
+                    example:
+                      name:
+                        en: Custom Category
+                        fa: دسته سفارشی
+                  ledgers_count:
+                    type: integer
+                    example: 0
+                    description: Only in index view
+        '403':
+          description: Not authorized
+        '422':
+          description: Invalid request
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                code:
+                  type: string
+                  example: '50'
+                name_en:
+                  type: string
+                  example: Custom Category
+                name_fa:
+                  type: string
+                  example: دسته سفارشی
+  "/organizations/{organization_id}/accounting/account_categories/{id}":
+    parameters:
+    - name: organization_id
+      in: path
+      description: Organization ID
+      required: true
+      schema:
+        type: integer
+    - name: id
+      in: path
+      description: Account Category ID
+      required: true
+      schema:
+        type: integer
+    get:
+      summary: Shows account category
+      tags:
+      - Account Categories
+      responses:
+        '200':
+          description: Returns the account category successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    example: 1
+                  code:
+                    type: string
+                    example: '50'
+                  identifier:
+                    type:
+                    - string
+                    - nil
+                    example:
+                  type:
+                    type: string
+                    example: other
+                  name:
+                    type: string
+                    example: Custom Category
+                  t:
+                    type: object
+                    example:
+                      name:
+                        en: Custom Category
+                        fa: دسته سفارشی
+                  ledgers_count:
+                    type: integer
+                    example: 0
+                    description: Only in index view
+        '403':
+          description: Not authorized
+    patch:
+      summary: Updates the account category
+      tags:
+      - Account Categories
+      parameters: []
+      responses:
+        '200':
+          description: Updates the account category successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    example: 1
+                  code:
+                    type: string
+                    example: '50'
+                  identifier:
+                    type:
+                    - string
+                    - nil
+                    example:
+                  type:
+                    type: string
+                    example: other
+                  name:
+                    type: string
+                    example: Custom Category
+                  t:
+                    type: object
+                    example:
+                      name:
+                        en: Custom Category
+                        fa: دسته سفارشی
+                  ledgers_count:
+                    type: integer
+                    example: 0
+                    description: Only in index view
+        '403':
+          description: Not authorized
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                code:
+                  type: string
+                  example: '51'
+                name_en:
+                  type: string
+                  example: Updated Category
+    delete:
+      summary: Deletes the account category
+      tags:
+      - Account Categories
+      responses:
+        '200':
+          description: Deletes the account category successfully
   "/organizations/{organization_id}/accounting/center_types":
     parameters:
     - name: organization_id

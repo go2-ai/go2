@@ -10,7 +10,6 @@ class Organization < ApplicationRecord
   # Remove default_scope and use explicit scopes for better control
   scope :active, -> { unarchived }
 
-  # Will enable PaperTrail later
   has_paper_trail
 
   # Active Storage attachment
@@ -36,6 +35,7 @@ class Organization < ApplicationRecord
   has_many :center_types, class_name: "Accounting::CenterType", dependent: :destroy
   has_many :centers, through: :center_types
   has_one :accounting_setting, class_name: "Accounting::Setting", dependent: :destroy
+  has_many :account_categories, class_name: "Accounting::AccountCategory", dependent: :destroy
 
   # Validations
   validate :no_circular_references
@@ -48,6 +48,7 @@ class Organization < ApplicationRecord
     create_accounting_setting!
     currency = currencies.create!(name: "US Dollar", abr: "USD", decimal_digits: 2) if currencies.empty?
     accounting_setting.update!(main_currency: currency)
+    create_system_account_categories!
   end
 
   # Methods
@@ -83,6 +84,18 @@ class Organization < ApplicationRecord
 
   def available_locales
     active_locales | [ locale ]
+  end
+
+  def create_system_account_categories!
+    Accounting::AccountCategory.system_categories.each do |cat|
+      category = Accounting::AccountCategory.create(
+        organization: self,
+        name: cat[:name],
+        code: cat[:code],
+        type: cat[:type],
+        identifier: cat[:identifier]
+      )
+    end
   end
 
   # private
