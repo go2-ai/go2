@@ -21,7 +21,8 @@ RSpec.configure do |config|
         { name: 'Currencies', description: 'Organization-level currency management' },
         { name: 'Center Types', description: 'Organization-level center types' },
         { name: 'Centers', description: 'Organization-level centers' },
-        { name: 'Account Categories', description: 'Organization-level account categories' }
+        { name: 'Account Categories', description: 'Organization-level account categories' },
+        { name: 'Ledgers', description: 'Accounting Ledgers' }
       ]
     }
   }

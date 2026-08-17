@@ -124,8 +124,10 @@ en:
         EX: "Expenses"
         CO: "Control Accounts"
         ME: "Memorandum Accounts"
-      only_other_type: "Can't create balance sheet or income statement categories."
-      cant_delete_system_categories: System account categories cannot be deleted
+      errors:
+        only_other_type: "Can't create balance sheet or income statement categories."
+        cant_delete_system_categories: System account categories cannot be deleted.
+        code_length_mismatch: "must be exactly %{length} characters"
     accounting/center_type:
       errors:
         codes:
@@ -139,6 +141,9 @@ en:
         code_length_mismatch: "must be exactly %{length} characters"
         code_already_taken: "has already been taken for this center type"
         centers_out_of_range: "امکان تغییر بازه کد وجود ندارد: کدهای مراکز زیر خارج از بازه خواهند بود: %{codes}"
+    accounting/ledger:
+      errors:
+        code_length_mismatch: "must be exactly %{length} characters"
     member:
       status:
         archived: archived

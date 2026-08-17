@@ -124,8 +124,10 @@ fa:
         EX: "هزینه‌ها"
         CO: "حساب‌های کنترلی"
         ME: "حساب‌های انتظامی"
-      only_other_type: "امکان ایجاد حساب های ترازنامه ای و سود و زیانی وجود ندارد."
-      cant_delete_system_categories: "امکان حذف طبقه بندی های سیستمی وجود ندارد"
+      errors:
+        only_other_type: "امکان ایجاد حساب های ترازنامه ای و سود و زیانی وجود ندارد."
+        cant_delete_system_categories: "امکان حذف طبقه بندی های سیستمی وجود ندارد"
+        code_length_mismatch: "باید دقیقاً %{length} کاراکتر باشد"
     accounting/center_type:
       errors:
         codes:
@@ -137,6 +139,9 @@ fa:
         code_out_of_range: "باید بین %{first} و %{last} باشد"
         code_length_mismatch: "باید دقیقاً %{length} کاراکتر باشد"
         code_already_taken: "قبلاً برای این نوع مرکز ثبت شده است"
+    accounting/ledger:
+      errors:
+        code_length_mismatch: "باید دقیقاً %{length} کاراکتر باشد"
     member:
       status:
         archived: بایگانی شده

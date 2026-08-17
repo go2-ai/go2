@@ -19,6 +19,8 @@ tags:
   description: Organization-level centers
 - name: Account Categories
   description: Organization-level account categories
+- name: Ledgers
+  description: Accounting Ledgers
 paths:
   "/organizations/{organization_id}/accounting/account_categories":
     parameters:
@@ -1055,6 +1057,268 @@ paths:
                   updated_at:
                     type: string
                     example: '2026-02-20 10:52:46.787878000 +0000'
+  "/organizations/{organization_id}/accounting/ledgers":
+    parameters:
+    - name: organization_id
+      in: path
+      description: Organization ID
+      required: true
+      schema:
+        type: integer
+    get:
+      summary: Get all organization ledgers
+      tags:
+      - Ledgers
+      responses:
+        '200':
+          description: Loaded successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                      example: 1
+                    code:
+                      type: string
+                      example: '10'
+                    name:
+                      type: string
+                      example: Cash
+                    unexpected_balance:
+                      type: string
+                      example: accept
+                    is_monetary:
+                      type: boolean
+                      example: false
+                    contra_for_id:
+                      type:
+                      - integer
+                      - nil
+                      example:
+                    t:
+                      type: object
+                      example:
+                        name:
+                          en: Cash
+                          fa: نقد
+                    account_category:
+                      type: object
+                      example:
+                        id: 1
+                        code: '1'
+                        identifier: CA
+        '403':
+          description: Not authorized
+    post:
+      summary: Creating a new ledger
+      tags:
+      - Ledgers
+      parameters: []
+      responses:
+        '200':
+          description: Creates the new ledger successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    example: 1
+                  code:
+                    type: string
+                    example: '10'
+                  name:
+                    type: string
+                    example: Cash
+                  unexpected_balance:
+                    type: string
+                    example: accept
+                  is_monetary:
+                    type: boolean
+                    example: false
+                  contra_for_id:
+                    type:
+                    - integer
+                    - nil
+                    example:
+                  t:
+                    type: object
+                    example:
+                      name:
+                        en: Cash
+                        fa: نقد
+                  account_category:
+                    type: object
+                    example:
+                      id: 1
+                      code: '1'
+                      identifier: CA
+        '403':
+          description: Not authorized
+        '422':
+          description: Invalid request
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                account_category_id:
+                  type: integer
+                  example: 1
+                code:
+                  type: string
+                  example: '12'
+                name_en:
+                  type: string
+                  example: Accounts Receivable
+                name_fa:
+                  type: string
+                  example: حساب های دریافتنی
+                unexpected_balance:
+                  type: string
+                  example: accept
+                is_monetary:
+                  type: boolean
+                  example: false
+  "/organizations/{organization_id}/accounting/ledgers/{id}":
+    parameters:
+    - name: organization_id
+      in: path
+      description: Organization ID
+      required: true
+      schema:
+        type: integer
+    - name: id
+      in: path
+      description: Ledger ID
+      required: true
+      schema:
+        type: integer
+    get:
+      summary: Get the ledger
+      tags:
+      - Ledgers
+      responses:
+        '200':
+          description: Loaded successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    example: 1
+                  code:
+                    type: string
+                    example: '10'
+                  name:
+                    type: string
+                    example: Cash
+                  unexpected_balance:
+                    type: string
+                    example: accept
+                  is_monetary:
+                    type: boolean
+                    example: false
+                  contra_for_id:
+                    type:
+                    - integer
+                    - nil
+                    example:
+                  t:
+                    type: object
+                    example:
+                      name:
+                        en: Cash
+                        fa: نقد
+                  account_category:
+                    type: object
+                    example:
+                      id: 1
+                      code: '1'
+                      identifier: CA
+        '403':
+          description: Not authorized
+        '404':
+          description: Not found
+    patch:
+      summary: Updates the ledger
+      tags:
+      - Ledgers
+      parameters: []
+      responses:
+        '200':
+          description: Updates the ledger successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    example: 1
+                  code:
+                    type: string
+                    example: '10'
+                  name:
+                    type: string
+                    example: Cash
+                  unexpected_balance:
+                    type: string
+                    example: accept
+                  is_monetary:
+                    type: boolean
+                    example: false
+                  contra_for_id:
+                    type:
+                    - integer
+                    - nil
+                    example:
+                  t:
+                    type: object
+                    example:
+                      name:
+                        en: Cash
+                        fa: نقد
+                  account_category:
+                    type: object
+                    example:
+                      id: 1
+                      code: '1'
+                      identifier: CA
+        '403':
+          description: Not authorized
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                code:
+                  type: string
+                  example: '13'
+                name_en:
+                  type: string
+                  example: Updated Ledger
+                is_monetary:
+                  type: boolean
+                  example: true
+    delete:
+      summary: Deletes the ledger
+      tags:
+      - Ledgers
+      responses:
+        '200':
+          description: Deletes the ledger successfully
+        '403':
+          description: Not authorized
   "/organizations/{organization_id}/accounting/settings":
     parameters:
     - name: organization_id

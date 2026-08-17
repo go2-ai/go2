@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_08_16_115632) do
+ActiveRecord::Schema[8.0].define(version: 2026_08_16_194312) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -271,8 +271,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_08_16_115632) do
   create_table "ledgers", force: :cascade do |t|
     t.bigint "account_category_id", null: false
     t.string "code", null: false
-    t.jsonb "name"
-    t.integer "balance_type", null: false
+    t.jsonb "name", default: {}, null: false
     t.bigint "contra_for_id"
     t.integer "unexpected_balance", null: false
     t.boolean "is_monetary"

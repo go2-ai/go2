@@ -7,6 +7,7 @@ module Accounting
     translates :name
 
     belongs_to :organization
+    delegate :accounting_setting, to: :organization
 
     has_many :ledgers, dependent: :destroy
     has_many :accounts, through: :ledgers
@@ -18,6 +19,7 @@ module Accounting
     before_destroy :prevent_system_deletion, if: -> { identifier.present? }
 
     validate :validate_user_category_type, on: :create
+    validate :code_length_matches
 
     def self.system_categories
       [
@@ -36,7 +38,7 @@ module Accounting
     private
 
     def prevent_system_deletion
-      errors.add(:base, "System account categories cannot be deleted")
+      errors.add(:base, "errors.cant_delete_system_categories")
       throw(:abort)
     end
 
@@ -54,7 +56,16 @@ module Accounting
 
       return if is_other
 
-      errors.add(:base, model_t("only_other_type"))
+      errors.add(:base, model_t("errors.only_other_type"))
+    end
+
+    def code_length_matches
+      expected_length = accounting_setting.account_category_length
+      return if expected_length.blank?
+
+      unless code.length == expected_length
+        errors.add(:code, model_t("errors.code_length_mismatch", length: expected_length))
+      end
     end
   end
 end

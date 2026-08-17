@@ -109,7 +109,7 @@ Rails.application.routes.draw do
       resources :center_types, only: [ :index, :create, :update, :destroy ]
       resources :centers, only: [ :index, :show, :create, :update, :destroy ]
       resources :account_categories, only: [ :index, :show, :create, :update, :destroy ]
-
+      resources :ledgers, only: [ :index, :show, :create, :update, :destroy ]
     end
   end
 
