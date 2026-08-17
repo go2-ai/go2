@@ -128,6 +128,9 @@ en:
         only_other_type: "Can't create balance sheet or income statement categories."
         cant_delete_system_categories: System account categories cannot be deleted.
         code_length_mismatch: "must be exactly %{length} characters"
+    accounting/account:
+      errors:
+        code_length_mismatch: "must be exactly %{length} characters"
     accounting/center_type:
       errors:
         codes:

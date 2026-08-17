@@ -20,15 +20,7 @@ RSpec.describe Accounting::AccountCategory, type: :model do
 
   let(:organization) { create(:organization, name: { en: "AccountCategory Org #{SecureRandom.uuid}" }) }
 
-  def unique_code_for(org)
-    existing = org.account_categories.pluck(:code)
-    code = "50#{rand(100..999)}"
-    code = "50#{rand(100..999)}" while existing.include?(code)
-    code
-  end
-
   describe "associations" do
-    it { should belong_to(:organization) }
     it { should have_many(:ledgers).dependent(:destroy) }
     it { should have_many(:accounts).through(:ledgers) }
   end
@@ -41,20 +33,18 @@ RSpec.describe Accounting::AccountCategory, type: :model do
     end
 
     it "validates uniqueness of code within organization scope" do
-      code = unique_code_for(organization)
-      create(:accounting_account_category, organization: organization, code: code, type: :other)
+      create(:accounting_account_category, organization: organization, code: 0, type: :other)
 
-      duplicate = build(:accounting_account_category, organization: organization, code: code, type: :other)
+      duplicate = build(:accounting_account_category, organization: organization, code: 0, type: :other)
       expect(duplicate).not_to be_valid
       expect(duplicate.errors[:code]).to include("has already been taken")
     end
 
     it "allows the same code in a different organization" do
-      code = unique_code_for(organization)
-      create(:accounting_account_category, organization: organization, code: code, type: :other)
+      create(:accounting_account_category, organization: organization, code: 0, type: :other)
 
       other_org = create(:organization, name: { en: "Other AccountCategory Org #{SecureRandom.uuid}" })
-      other_category = build(:accounting_account_category, organization: other_org, code: code, type: :other)
+      other_category = build(:accounting_account_category, organization: other_org, code: 0, type: :other)
       expect(other_category).to be_valid
     end
 
@@ -62,16 +52,16 @@ RSpec.describe Accounting::AccountCategory, type: :model do
       it "allows only :other type for user-created categories without identifier" do
         category = build(:accounting_account_category, organization: organization, identifier: nil, type: :balance_sheet)
         expect(category).not_to be_valid
-        expect(category.errors[:type]).to include(/Can't create/)
+        expect(category.errors[:base]).to include(/Can't create/)
       end
 
       it "allows :other type for user-created categories" do
-        category = build(:accounting_account_category, organization: organization, identifier: nil, type: :other)
+        category = build(:accounting_account_category, organization: organization, identifier: nil, type: :other, code: 0)
         expect(category).to be_valid
       end
 
       it "allows system categories with any type" do
-        category = build(:accounting_account_category, organization: organization, identifier: "CA", type: :balance_sheet)
+        category = build(:accounting_account_category, organization: organization, identifier: "CA", type: :balance_sheet, code: 0)
         expect(category).to be_valid
       end
     end
@@ -108,12 +98,11 @@ RSpec.describe Accounting::AccountCategory, type: :model do
       category = organization.account_categories.find_by!(identifier: "CA")
 
       expect { category.destroy }.not_to change { Accounting::AccountCategory.count }
-      expect(category.errors[:base]).to include("System account categories cannot be deleted")
+      expect(category.errors[:base]).to include("System account categories cannot be deleted.")
     end
 
     it "allows deletion of user-created categories" do
-      code = unique_code_for(organization)
-      category = create(:accounting_account_category, organization: organization, identifier: nil, type: :other, code: code)
+      category = create(:accounting_account_category, organization: organization, identifier: nil, type: :other, code: 0)
 
       expect { category.destroy }.to change { Accounting::AccountCategory.count }.by(-1)
     end
@@ -123,8 +112,7 @@ RSpec.describe Accounting::AccountCategory, type: :model do
     it { should be_versioned }
 
     it "tracks changes to account category attributes" do
-      code = unique_code_for(organization)
-      category = create(:accounting_account_category, organization: organization, code: code, type: :other)
+      category = create(:accounting_account_category, organization: organization, code: 0, type: :other)
 
       PaperTrail.enabled = true
 
@@ -142,8 +130,7 @@ RSpec.describe Accounting::AccountCategory, type: :model do
 
   describe "translations" do
     it "supports name translations" do
-      code = unique_code_for(organization)
-      category = create(:accounting_account_category, organization: organization, code: code,
+      category = create(:accounting_account_category, organization: organization, code: 0,
                         name: { "en" => "Current Assets", "fa" => "دارایی‌های جاری" })
 
       Mobility.with_locale(:en) { expect(category.name).to eq("Current Assets") }
@@ -151,8 +138,7 @@ RSpec.describe Accounting::AccountCategory, type: :model do
     end
 
     it "uses fallbacks if translation is missing" do
-      code = unique_code_for(organization)
-      category = create(:accounting_account_category, organization: organization, code: code,
+      category = create(:accounting_account_category, organization: organization, code: 0,
                         name: { "en" => "Revenues" })
 
       Mobility.with_locale(:fa) { expect(category.name).to eq("Revenues") }

@@ -128,6 +128,9 @@ fa:
         only_other_type: "امکان ایجاد حساب های ترازنامه ای و سود و زیانی وجود ندارد."
         cant_delete_system_categories: "امکان حذف طبقه بندی های سیستمی وجود ندارد"
         code_length_mismatch: "باید دقیقاً %{length} کاراکتر باشد"
+    accounting/account:
+      errors:
+        code_length_mismatch: "باید دقیقاً %{length} کاراکتر باشد"
     accounting/center_type:
       errors:
         codes:

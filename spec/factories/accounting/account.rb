@@ -1,10 +1,9 @@
 # spec/factories/accounting/ledger.rb
 FactoryBot.define do
-  factory :accounting_ledger, class: "Accounting::Ledger" do
+  factory :accounting_account, class: "Accounting::Account" do
     name { nil }
     contra_for_id { nil }
-    unexpected_balance { :accept }
-    is_monetary { false }
+    accepts_other_currencies { false }
 
     after(:build) do |ledger, evaluator|
       name_value = evaluator.name
@@ -14,7 +13,7 @@ FactoryBot.define do
       elsif name_value.is_a?(Hash)
         ledger.write_attribute(:name, name_value)
       else
-        ledger.name_en = "Test Ledger"
+        ledger.name_en = "Test Account"
       end
     end
   end

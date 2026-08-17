@@ -38,7 +38,7 @@ module Accounting
     private
 
     def prevent_system_deletion
-      errors.add(:base, "errors.cant_delete_system_categories")
+      errors.add(:base, model_t("errors.cant_delete_system_categories"))
       throw(:abort)
     end
 
@@ -63,7 +63,7 @@ module Accounting
       expected_length = accounting_setting.account_category_length
       return if expected_length.blank?
 
-      unless code.length == expected_length
+      unless code.to_s.length == expected_length
         errors.add(:code, model_t("errors.code_length_mismatch", length: expected_length))
       end
     end

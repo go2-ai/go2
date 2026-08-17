@@ -185,7 +185,7 @@ class ApplicationController < ActionController::Base
   end
 
   def current_organization
-    Organization.find(params[:organization_id])
+    Organization.find_by_id(params[:organization_id])
   end
 
   def current_member

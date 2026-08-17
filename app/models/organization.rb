@@ -33,9 +33,11 @@ class Organization < ApplicationRecord
 
   has_many :currencies, class_name: "Accounting::Currency", dependent: :destroy
   has_many :center_types, class_name: "Accounting::CenterType", dependent: :destroy
-  has_many :centers, through: :center_types
+  has_many :centers, through: :center_types, class_name: "Accounting::Center"
   has_one :accounting_setting, class_name: "Accounting::Setting", dependent: :destroy
   has_many :account_categories, class_name: "Accounting::AccountCategory", dependent: :destroy
+  has_many :ledgers, through: :account_categories, class_name: "Accounting::Ledger"
+  has_many :accounts, through: :ledgers, class_name: "Accounting::Account"
 
   # Validations
   validate :no_circular_references

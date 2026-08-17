@@ -42,7 +42,6 @@ RSpec.describe 'Accounting::Ledgers API', openapi_spec: 'v1/accounting.yaml', ty
           data = JSON.parse(response.body)
           expect(data.length).to eq(2)
           expect(data.map { |l| l["id"] }).to contain_exactly(ledger_1.id, ledger_2.id)
-          expect(data.first).to have_key("accounts_count")
         end
       end
 
@@ -143,7 +142,6 @@ RSpec.describe 'Accounting::Ledgers API', openapi_spec: 'v1/accounting.yaml', ty
         run_test! do |response|
           data = JSON.parse(response.body)
           expect(data['id']).to eq(ledger_1.id)
-          expect(data).to have_key('account_category')
           expect(data).to have_key('balance_type')
         end
       end

@@ -21,6 +21,8 @@ tags:
   description: Organization-level account categories
 - name: Ledgers
   description: Accounting Ledgers
+- name: Accounts
+  description: Accounts
 paths:
   "/organizations/{organization_id}/accounting/account_categories":
     parameters:
@@ -248,6 +250,411 @@ paths:
       responses:
         '200':
           description: Deletes the account category successfully
+  "/organizations/{organization_id}/accounting/accounts":
+    parameters:
+    - name: organization_id
+      in: path
+      description: Organization ID
+      required: true
+      schema:
+        type: integer
+    get:
+      summary: Get all organization accounts
+      tags:
+      - Accounts
+      responses:
+        '200':
+          description: Loaded successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                      example: 1
+                    code:
+                      type: string
+                      example: '03'
+                    name:
+                      type: string
+                      example: Cash Account
+                    contra_for_id:
+                      type:
+                      - integer
+                      - nil
+                      example:
+                    accepts_other_currencies:
+                      type: boolean
+                      example: false
+                    t:
+                      type: object
+                      example:
+                        name:
+                          en: Cash Account
+                          fa: حساب نقد
+                    allowed_center_types_1:
+                      type:
+                      - array
+                      - nil
+                      example:
+                    allowed_center_types_2:
+                      type:
+                      - array
+                      - nil
+                      example:
+                    allowed_center_types_3:
+                      type:
+                      - array
+                      - nil
+                      example:
+                    allowed_center_types_4:
+                      type:
+                      - array
+                      - nil
+                      example:
+                    allowed_center_types_5:
+                      type:
+                      - array
+                      - nil
+                      example:
+                    allowed_center_types_6:
+                      type:
+                      - array
+                      - nil
+                      example:
+        '403':
+          description: Not authorized
+    post:
+      summary: Creating a new account
+      tags:
+      - Accounts
+      parameters: []
+      responses:
+        '200':
+          description: Creates the new account successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    example: 1
+                  code:
+                    type: string
+                    example: '03'
+                  name:
+                    type: string
+                    example: Cash Account
+                  contra_for_id:
+                    type:
+                    - integer
+                    - nil
+                    example:
+                  accepts_other_currencies:
+                    type: boolean
+                    example: false
+                  t:
+                    type: object
+                    example:
+                      name:
+                        en: Cash Account
+                        fa: حساب نقد
+                  allowed_center_types_1:
+                    type:
+                    - array
+                    - nil
+                    example:
+                  allowed_center_types_2:
+                    type:
+                    - array
+                    - nil
+                    example:
+                  allowed_center_types_3:
+                    type:
+                    - array
+                    - nil
+                    example:
+                  allowed_center_types_4:
+                    type:
+                    - array
+                    - nil
+                    example:
+                  allowed_center_types_5:
+                    type:
+                    - array
+                    - nil
+                    example:
+                  allowed_center_types_6:
+                    type:
+                    - array
+                    - nil
+                    example:
+        '403':
+          description: Not authorized
+        '422':
+          description: Invalid request
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                ledger_id:
+                  type: integer
+                  example: 1
+                code:
+                  type: string
+                  example: '12'
+                name_en:
+                  type: string
+                  example: Accounts Receivable
+                name_fa:
+                  type: string
+                  example: حساب های دریافتنی
+                accepts_other_currencies:
+                  type: boolean
+                  example: false
+  "/organizations/{organization_id}/accounting/accounts/{id}":
+    parameters:
+    - name: organization_id
+      in: path
+      description: Organization ID
+      required: true
+      schema:
+        type: integer
+    - name: id
+      in: path
+      description: Account ID
+      required: true
+      schema:
+        type: integer
+    get:
+      summary: Get the account
+      tags:
+      - Accounts
+      responses:
+        '200':
+          description: Loaded successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    example: 1
+                  code:
+                    type: string
+                    example: '03'
+                  name:
+                    type: string
+                    example: Cash Account
+                  contra_for_id:
+                    type:
+                    - integer
+                    - nil
+                    example:
+                  accepts_other_currencies:
+                    type: boolean
+                    example: false
+                  t:
+                    type: object
+                    example:
+                      name:
+                        en: Cash Account
+                        fa: حساب نقد
+                  allowed_center_types_1:
+                    type:
+                    - array
+                    - nil
+                    example:
+                  allowed_center_types_2:
+                    type:
+                    - array
+                    - nil
+                    example:
+                  allowed_center_types_3:
+                    type:
+                    - array
+                    - nil
+                    example:
+                  allowed_center_types_4:
+                    type:
+                    - array
+                    - nil
+                    example:
+                  allowed_center_types_5:
+                    type:
+                    - array
+                    - nil
+                    example:
+                  allowed_center_types_6:
+                    type:
+                    - array
+                    - nil
+                    example:
+        '403':
+          description: Not authorized
+        '404':
+          description: Account belongs to another organization
+    patch:
+      summary: Updates the account
+      tags:
+      - Accounts
+      parameters: []
+      responses:
+        '200':
+          description: Updates the account successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    example: 1
+                  code:
+                    type: string
+                    example: '03'
+                  name:
+                    type: string
+                    example: Cash Account
+                  contra_for_id:
+                    type:
+                    - integer
+                    - nil
+                    example:
+                  accepts_other_currencies:
+                    type: boolean
+                    example: false
+                  t:
+                    type: object
+                    example:
+                      name:
+                        en: Cash Account
+                        fa: حساب نقد
+                  allowed_center_types_1:
+                    type:
+                    - array
+                    - nil
+                    example:
+                  allowed_center_types_2:
+                    type:
+                    - array
+                    - nil
+                    example:
+                  allowed_center_types_3:
+                    type:
+                    - array
+                    - nil
+                    example:
+                  allowed_center_types_4:
+                    type:
+                    - array
+                    - nil
+                    example:
+                  allowed_center_types_5:
+                    type:
+                    - array
+                    - nil
+                    example:
+                  allowed_center_types_6:
+                    type:
+                    - array
+                    - nil
+                    example:
+        '403':
+          description: Not authorized
+        '404':
+          description: Account belongs to another organization
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                code:
+                  type: string
+                  example: '13'
+                name_en:
+                  type: string
+                  example: Updated Account
+                accepts_other_currencies:
+                  type: boolean
+                  example: true
+    delete:
+      summary: Deletes the account
+      tags:
+      - Accounts
+      responses:
+        '200':
+          description: Deletes the account successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    example: 1
+                  code:
+                    type: string
+                    example: '03'
+                  name:
+                    type: string
+                    example: Cash Account
+                  contra_for_id:
+                    type:
+                    - integer
+                    - nil
+                    example:
+                  accepts_other_currencies:
+                    type: boolean
+                    example: false
+                  t:
+                    type: object
+                    example:
+                      name:
+                        en: Cash Account
+                        fa: حساب نقد
+                  allowed_center_types_1:
+                    type:
+                    - array
+                    - nil
+                    example:
+                  allowed_center_types_2:
+                    type:
+                    - array
+                    - nil
+                    example:
+                  allowed_center_types_3:
+                    type:
+                    - array
+                    - nil
+                    example:
+                  allowed_center_types_4:
+                    type:
+                    - array
+                    - nil
+                    example:
+                  allowed_center_types_5:
+                    type:
+                    - array
+                    - nil
+                    example:
+                  allowed_center_types_6:
+                    type:
+                    - array
+                    - nil
+                    example:
+        '403':
+          description: Not authorized
+        '404':
+          description: Account belongs to another organization
   "/organizations/{organization_id}/accounting/center_types":
     parameters:
     - name: organization_id

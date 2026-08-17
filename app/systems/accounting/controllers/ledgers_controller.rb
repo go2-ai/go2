@@ -3,10 +3,9 @@ module Accounting
   class LedgersController < ApplicationController
     def index
       authorize Accounting::Ledger
-      ledgers = current_organization.account_categories
-        .flat_map(&:ledgers)
+      ledgers = current_organization.ledgers
 
-      render json: LedgerBlueprint.render(ledgers, view: :index), status: :ok
+      render json: LedgerBlueprint.render(ledgers), status: :ok
     end
 
     def show

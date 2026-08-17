@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_08_16_194312) do
+ActiveRecord::Schema[8.0].define(version: 2026_08_17_083658) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -49,7 +49,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_08_16_194312) do
   create_table "accounts", force: :cascade do |t|
     t.bigint "ledger_id", null: false
     t.string "code", null: false
-    t.jsonb "name"
+    t.jsonb "name", default: {}, null: false
     t.bigint "contra_for_id"
     t.boolean "accepts_other_currencies", null: false
     t.integer "allowed_center_types_1", array: true

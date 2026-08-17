@@ -70,7 +70,7 @@ RSpec.describe 'Accounting::AccountCategories API', openapi_spec: 'v1/accounting
       response '200', 'Creates the new account category successfully' do
         schema type: :object, properties: account_category_attributes
         let(:organization_id) { organization.id }
-        let(:params) { { code: '50', name_en: 'Custom Category', name_fa: 'دسته سفارشی', type: :other } }
+        let(:params) { { code: '0', name_en: 'Custom Category', name_fa: 'دسته سفارشی', type: :other } }
 
         before do
           create(:permission, code: Permission::ACCOUNTING_MANAGE_ACCOUNTS, grantee: member, organization: organization)
@@ -79,7 +79,7 @@ RSpec.describe 'Accounting::AccountCategories API', openapi_spec: 'v1/accounting
         run_test! do |response|
           data = JSON.parse(response.body)
           expect(data['id']).to be > 0
-          expect(data['code']).to eq('50')
+          expect(data['code']).to eq('0')
           expect(data['identifier']).to be_nil
         end
       end
@@ -163,7 +163,7 @@ RSpec.describe 'Accounting::AccountCategories API', openapi_spec: 'v1/accounting
         schema type: :object, properties: account_category_attributes
         let(:organization_id) { organization.id }
         let(:id) { system_category.id }
-        let(:params) { { code: '51' } }
+        let(:params) { { code: '0' } }
 
         before do
           create(:permission, code: Permission::ACCOUNTING_MANAGE_ACCOUNTS, grantee: member, organization: organization)
@@ -172,7 +172,7 @@ RSpec.describe 'Accounting::AccountCategories API', openapi_spec: 'v1/accounting
         run_test! do |response|
           data = JSON.parse(response.body)
           expect(data['id']).to eq(system_category.id)
-          expect(data['code']).to eq('51')
+          expect(data['code']).to eq('0')
         end
       end
 
@@ -197,7 +197,7 @@ RSpec.describe 'Accounting::AccountCategories API', openapi_spec: 'v1/accounting
         let(:organization_id) { organization.id }
         let!(:user_category) do
           create(:accounting_account_category, organization: organization,
-                 code: "50#{rand(100..999)}", name: { en: 'Custom Category' }, type: :other)
+                 code: "0", name: { en: 'Custom Category' }, type: :other)
         end
         let(:id) { user_category.id }
 

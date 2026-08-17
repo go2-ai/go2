@@ -29,6 +29,8 @@ class OrganizationsController < ApplicationController
       if @organization.save
         setCurrentUserAsAdmin
         render json: @organization.as_json(only: [ :id, :name ]), status: :ok
+      else
+        render json: { errors: @organization.errors.full_messages }, status: :unprocessable_content
       end
     else
 
