@@ -1,5 +1,18 @@
 require 'simplecov'
-SimpleCov.start
+SimpleCov.start 'rails' do
+  track_files '{app,lib}/**/*.rb'
+  add_filter '/spec/'
+  add_group 'Accounting',   'app/systems/accounting'
+
+  add_group 'Models',       'app/models'
+  add_group 'Controllers',  'app/controllers'
+  add_group 'Mailers',      'app/mailers'
+  add_group 'Helpers',      'app/helpers'
+  add_group 'Policies',     'app/policies'
+  add_group 'Serializers',  'app/serializers'
+
+  # Your app has a nested "systems" namespace (e.g. app/systems/accounting/*)
+end
 
 RSpec.configure do |config|
   config.expect_with :rspec do |expectations|

@@ -38,7 +38,6 @@ RSpec.describe 'Accounting::AccountCategories API', openapi_spec: 'v1/accounting
           data = JSON.parse(response.body)
           expect(data.length).to eq(9) # 9 system categories
           expect(data.map { |c| c["identifier"] }).to include("CA")
-          expect(data.first).to have_key("ledgers_count")
         end
       end
 

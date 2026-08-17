@@ -11,6 +11,9 @@ import { accountingSettingsApi } from '../features/accounting/settings/settingsA
 import { accountingCurrenciesApi } from '../features/accounting/currencies/currenciesApi';
 import { accountingCenterTypesApi } from '../features/accounting/centerTypes/centerTypesApi';
 import { accountingCentersApi } from '../features/accounting/centers/centersApi';
+import { accountingAccountCategoriesApi } from '../features/accounting/accountCategories/accountCategoriesApi';
+import { accountingLedgersApi } from '../features/accounting/ledgers/ledgersApi';
+import { accountingAccountsApi } from '../features/accounting/accounts/accountsApi';
 
 import organizationsReducer from '../features/organizations/organizationsSlice';
 import authReducer from '../features/auth/authSlice';
@@ -29,6 +32,9 @@ export const store = configureStore({
     [accountingCurrenciesApi.reducerPath]: accountingCurrenciesApi.reducer,
     [accountingCenterTypesApi.reducerPath]: accountingCenterTypesApi.reducer,
     [accountingCentersApi.reducerPath]: accountingCentersApi.reducer,
+    [accountingAccountCategoriesApi.reducerPath]: accountingAccountCategoriesApi.reducer,
+    [accountingLedgersApi.reducerPath]: accountingLedgersApi.reducer,
+    [accountingAccountsApi.reducerPath]: accountingAccountsApi.reducer,
     organizations: organizationsReducer,
     auth: authReducer,
   },
@@ -46,6 +52,9 @@ export const store = configureStore({
       accountingCurrenciesApi.middleware,
       accountingCenterTypesApi.middleware,
       accountingCentersApi.middleware,
+      accountingAccountCategoriesApi.middleware,
+      accountingLedgersApi.middleware,
+      accountingAccountsApi.middleware,
     ),
 });
 

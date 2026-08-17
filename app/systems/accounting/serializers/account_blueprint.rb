@@ -2,7 +2,7 @@
 module Accounting
   class AccountBlueprint < Blueprinter::Base
     identifier :id
-    fields :code, :contra_for_id, :name
+    fields :code, :contra_for_id, :name, :ledger_id
     field :translations_hash, name: :t
 
     view :show do

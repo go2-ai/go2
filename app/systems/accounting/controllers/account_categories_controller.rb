@@ -5,7 +5,7 @@ module Accounting
       authorize Accounting::AccountCategory
       account_categories = current_organization.account_categories
 
-      render json: AccountCategoryBlueprint.render(account_categories, view: :index), status: :ok
+      render json: AccountCategoryBlueprint.render(account_categories), status: :ok
     end
 
     def show

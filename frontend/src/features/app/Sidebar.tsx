@@ -97,6 +97,12 @@ export function Sidebar() {
       icon: <AccountBalance />,
       path: '/accounting/centers',
     },
+    {
+      pageId: 'chart-of-accounts',
+      title: 'Chart of Accounts',
+      icon: <AccountTree />,
+      path: '/accounting/chart-of-accounts',
+    },
   ];
 
   return (

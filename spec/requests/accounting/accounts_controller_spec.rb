@@ -17,7 +17,7 @@ RSpec.describe "Accounting::Accounts API", openapi_spec: "v1/accounting.yaml", t
     allowed_center_types_6: { type: %i[array nil], example: nil }
   }
 
-  let(:organization) { create(:organization, active_locales: [:fa]) }
+  let(:organization) { create(:organization, active_locales: [ :fa ]) }
   let(:user) { create(:user) }
   let(:member) { create(:member, organization: organization, user: user) }
   let(:account_category) { organization.account_categories.find_by!(identifier: "CA") }

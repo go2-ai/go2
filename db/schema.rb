@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_08_17_083658) do
+ActiveRecord::Schema[8.0].define(version: 2026_08_17_182910) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -60,8 +60,8 @@ ActiveRecord::Schema[8.0].define(version: 2026_08_17_083658) do
     t.integer "allowed_center_types_6", array: true
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["code"], name: "index_accounts_on_code", unique: true
     t.index ["contra_for_id"], name: "index_accounts_on_contra_for_id"
+    t.index ["ledger_id", "code"], name: "index_accounts_on_ledger_id_and_code", unique: true
     t.index ["ledger_id"], name: "index_accounts_on_ledger_id"
   end
 
@@ -274,11 +274,11 @@ ActiveRecord::Schema[8.0].define(version: 2026_08_17_083658) do
     t.jsonb "name", default: {}, null: false
     t.bigint "contra_for_id"
     t.integer "unexpected_balance", null: false
-    t.boolean "is_monetary"
+    t.boolean "is_monetary", default: false, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.index ["account_category_id", "code"], name: "index_ledgers_on_account_category_id_and_code", unique: true
     t.index ["account_category_id"], name: "index_ledgers_on_account_category_id"
-    t.index ["code"], name: "index_ledgers_on_code", unique: true
     t.index ["contra_for_id"], name: "index_ledgers_on_contra_for_id"
   end
 

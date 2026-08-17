@@ -28,6 +28,8 @@ export function getTabPath(tab: Tab, organizationId: string): string {
         return `/app/organizations/${organizationId}/accounting/center-types`;
       case 'centers':
         return `/app/organizations/${organizationId}/accounting/centers`;
+      case 'chart-of-accounts':
+        return `/app/organizations/${organizationId}/accounting/chart-of-accounts`;
       default:
         return `/app/organizations/${organizationId}`;
     }

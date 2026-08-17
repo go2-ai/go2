@@ -20,6 +20,7 @@ import { OrganizationSettingsPage } from './features/organizations/OrganizationS
 import { AccountingSettingsPage } from './features/accounting/settings/AccountingSettingsPage';
 import { CenterTypesPage } from './features/accounting/centerTypes/CenterTypesPage';
 import { CentersPage } from './features/accounting/centers/CentersPage';
+import { ChartOfAccountsPage } from './features/accounting/chartOfAccounts/ChartOfAccountsPage';
 
 function App() {
   return (
@@ -48,6 +49,7 @@ function App() {
               <Route path=":organizationId/accounting/settings" element={<AccountingSettingsPage />} />
               <Route path=":organizationId/accounting/center-types" element={<CenterTypesPage />} />
               <Route path=":organizationId/accounting/centers" element={<CentersPage />} />
+              <Route path=":organizationId/accounting/chart-of-accounts" element={<ChartOfAccountsPage />} />
             </Route>
           </Route>
           
