@@ -203,6 +203,182 @@ paths:
       responses:
         '200':
           description: Deletes the department successfully
+  "/organizations/{organization_id}/fiscal_years":
+    parameters:
+    - name: organization_id
+      in: path
+      description: Organization ID
+      required: true
+      schema:
+        type: integer
+    get:
+      summary: Get all organization fiscal years
+      tags:
+      - FiscalYears
+      responses:
+        '200':
+          description: Loaded successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                      example: 1
+                    name:
+                      type: string
+                      example: Fiscal Year 2024
+                    start_date:
+                      type: string
+                      example: '2024-01-01'
+                    finish_date:
+                      type: string
+                      example: '2024-12-31'
+                    t:
+                      type: object
+                      example:
+                        name:
+                          en: Fiscal Year 2024
+                          fa: سال مالی 2024
+        '403':
+          description: Not authorized
+    post:
+      summary: Creating a new fiscal year
+      tags:
+      - FiscalYears
+      parameters: []
+      responses:
+        '200':
+          description: Creates the new fiscal year successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    example: 1
+                  name:
+                    type: string
+                    example: Fiscal Year 2024
+                  start_date:
+                    type: string
+                    example: '2024-01-01'
+                  finish_date:
+                    type: string
+                    example: '2024-12-31'
+                  t:
+                    type: object
+                    example:
+                      name:
+                        en: Fiscal Year 2024
+                        fa: سال مالی 2024
+        '422':
+          description: Invalid request
+        '403':
+          description: Not authorized
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name_en:
+                  type: string
+                  example: Fiscal Year 2025
+                name_fa:
+                  type: string
+                  example: سال مالی 2025
+                start_date:
+                  type: string
+                  example: '2025-01-01'
+                finish_date:
+                  type: string
+                  example: '2025-12-31'
+              required:
+              - start_date
+              - finish_date
+  "/organizations/{organization_id}/fiscal_years/{id}":
+    parameters:
+    - name: organization_id
+      in: path
+      description: Organization ID
+      required: true
+      schema:
+        type: integer
+    - name: id
+      in: path
+      description: Fiscal Year ID
+      required: true
+      schema:
+        type: integer
+    patch:
+      summary: Updates the fiscal year
+      tags:
+      - FiscalYears
+      parameters: []
+      responses:
+        '200':
+          description: Updates the fiscal year successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    example: 1
+                  name:
+                    type: string
+                    example: Fiscal Year 2024
+                  start_date:
+                    type: string
+                    example: '2024-01-01'
+                  finish_date:
+                    type: string
+                    example: '2024-12-31'
+                  t:
+                    type: object
+                    example:
+                      name:
+                        en: Fiscal Year 2024
+                        fa: سال مالی 2024
+        '404':
+          description: Fiscal year not found
+        '403':
+          description: Not authorized
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name_en:
+                  type: string
+                  example: Updated Fiscal Year
+                name_fa:
+                  type: string
+                  example: سال مالی به‌روز شده
+                start_date:
+                  type: string
+                  example: '2024-01-01'
+                finish_date:
+                  type: string
+                  example: '2024-12-31'
+    delete:
+      summary: Deletes the fiscal year
+      tags:
+      - FiscalYears
+      responses:
+        '200':
+          description: Deletes the fiscal year successfully
+        '404':
+          description: Fiscal year not found
+        '403':
+          description: Not authorized
   "/organizations/{organization_id}/groups":
     parameters:
     - name: organization_id

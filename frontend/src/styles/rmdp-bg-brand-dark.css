@@ -1,0 +1,57 @@
+/*
+ * Custom dark-mode background theme for react-multi-date-picker.
+ * Mirrors the structure of the library's own
+ * styles/backgrounds/bg-dark.css, but uses the app's actual dark
+ * background (#14141F) instead of the library's hardcoded #312f2f
+ * (that file has no CSS variable to override, so we replace it
+ * outright rather than fight it with !important).
+ *
+ * Usage:
+ *   import "./rmdp-bg-brand-dark.css";
+ *   <DatePicker className="rmdp-brand bg-brand-dark" />
+ */
+
+.bg-brand-dark.rmdp-wrapper,
+.bg-brand-dark .rmdp-month-picker,
+.bg-brand-dark .rmdp-year-picker,
+.bg-brand-dark .rmdp-time-picker div input,
+.rmdp-container .bg-brand-dark.ep-arrow::after {
+  background-color: #14141F;
+  color: #F8FAFC;
+}
+
+.bg-brand-dark .rmdp-day:not(.rmdp-deactive),
+.bg-brand-dark .rmdp-time-picker div .rmdp-am,
+.bg-brand-dark .rmdp-header-values,
+.bg-brand-dark .rmdp-panel-header {
+  color: #F8FAFC;
+}
+
+.bg-brand-dark .rmdp-day.rmdp-range {
+  color: white;
+}
+
+.bg-brand-dark .rmdp-panel-body li {
+  color: #F8FAFC;
+}
+
+.bg-brand-dark .rmdp-day.rmdp-deactive,
+.bg-brand-dark .rmdp-day.rmdp-disabled {
+  color: #64748B;
+}
+
+.rmdp-container .bg-brand-dark.ep-arrow[direction="top"] {
+  border-bottom: 1px solid #14141F;
+}
+
+.rmdp-container .bg-brand-dark.ep-arrow[direction="left"] {
+  border-right: 1px solid #14141F;
+}
+
+.rmdp-container .bg-brand-dark.ep-arrow[direction="right"] {
+  border-left: 1px solid #14141F;
+}
+
+.rmdp-container .bg-brand-dark.ep-arrow[direction="bottom"] {
+  border-top: 1px solid #14141F;
+}

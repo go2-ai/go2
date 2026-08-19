@@ -147,12 +147,21 @@ en:
     accounting/ledger:
       errors:
         code_length_mismatch: "must be exactly %{length} characters"
+    fiscal_year:
+      errors:
+        start_date_not_after_finish_date: "must be before or equal to finish date"
+        gap_or_overlap: "must be exactly one day after the previous fiscal year's finish date (%{previous_finish_date})"
+        gap_or_overlap_with_next: "must be exactly one day before the next fiscal year's start date (%{next_start_date})"
+        overlap_with_existing: "overlaps with an existing fiscal year"
     member:
       status:
         archived: archived
         invited: invited
         joined: joined
         not_invited: not invited
+    organization:
+      errors:
+        at_least_one_calendar_type: "at least one calendar type must be selected"
     permission:
       organization_admin: Administrate Organization
       manage_members: Add, remove, or update organization members

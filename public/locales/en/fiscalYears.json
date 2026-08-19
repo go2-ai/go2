@@ -1,0 +1,13 @@
+{
+  "en": {
+    "addFiscalYear": "Add Fiscal Year",
+    "deleteMessage": "Are you sure you want to delete fiscal year {{name}}?",
+    "deleteTitle": "Delete Fiscal Year",
+    "editFiscalYear": "Edit Fiscal Year",
+    "finishDate": "Finish Date",
+    "fiscalYears": "Fiscal Years",
+    "fiscalYearsDescription": "Manage your organization's fiscal years",
+    "noFiscalYears": "No fiscal years found",
+    "startDate": "Start Date"
+  }
+}

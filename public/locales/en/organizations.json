@@ -1,8 +1,13 @@
 {
   "en": {
     "activeLocales": "Additional Locales",
+    "calendarTypes": "Calendar Types",
+    "calendarTypesHint": "At least one calendar type must be selected.",
     "createOrganization": "Create Organization",
     "createYourOrganization": "Create Your Organization",
+    "defaultCalendarType": "Default Calendar Type",
+    "defaultCalendarTypeHint": "The first calendar type in the list is used as default",
+    "defaultCalendarTypeSingleHint": "Only one calendar type selected",
     "loadingOrganizations": "Loading your organizations...",
     "onboardingSubtitle": "Let's get started by creating your trial organization",
     "organizationCreationFailed": "Failed to create organization. Please try again.",

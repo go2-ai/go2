@@ -145,12 +145,21 @@ fa:
     accounting/ledger:
       errors:
         code_length_mismatch: "باید دقیقاً %{length} کاراکتر باشد"
+    fiscal_year:
+      errors:
+        start_date_not_after_finish_date: "باید قبل یا برابر تاریخ پایان باشد"
+        gap_or_overlap: "باید دقیقاً یک روز بعد از تاریخ پایان سال مالی قبلی باشد (%{previous_finish_date})"
+        gap_or_overlap_with_next: "باید دقیقاً یک روز قبل از تاریخ شروع سال مالی بعدی باشد (%{next_start_date})"
+        overlap_with_existing: "با سال مالی موجود تداخل دارد"
     member:
       status:
         archived: بایگانی شده
         invited: دعوت شده
         joined: پیوسته
         not_invited: دعوت نشده
+    organization:
+      errors:
+        at_least_one_calendar_type: "حداقل یک نوع تقویم باید انتخاب شود"
     permission:
       organization_admin: مدیریت سازمان
       manage_members: ایجاد، حذف و ویرایش اعضا

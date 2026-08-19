@@ -204,4 +204,17 @@ class ApplicationController < ActionController::Base
     locale = current_user&.locale || I18n.default_locale
     I18n.with_locale(locale, &action)
   end
+
+  def self.controller_translation_scope(scope_key = nil)
+    @controller_translation_scope = scope_key if scope_key
+    @controller_translation_scope || "controllers.#{controller_name}"
+  end
+
+  def self.controller_t(key, **options)
+    I18n.t("#{controller_translation_scope}.#{key}", **options)
+  end
+
+  def controller_t(key, **options)
+    self.class.controller_t(key, **options)
+  end
 end

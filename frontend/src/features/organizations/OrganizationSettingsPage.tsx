@@ -29,6 +29,12 @@ import {
   flattenTranslations,
   type LocaleMap,
 } from '../../utils/translationHelper';
+import type { CalendarType } from '../../components/shared/BaseDatePicker';
+
+const CALENDAR_TYPE_OPTIONS = [
+  { code: 'gregorian', label: 'Gregorian' },
+  { code: 'shamsi', label: 'Shamsi' },
+] as const;
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -65,12 +71,13 @@ export const OrganizationSettingsPage = () => {
     name: LocaleMap;
     locale: LocaleCode;
     active_locales: LocaleCode[];
+    calendar_types: CalendarType[];
   }>({
     name: {},
     locale: 'en',
     active_locales: [],
+    calendar_types: ['gregorian'],
   });
-
   // Populate form when organization data loads
   useEffect(() => {
     if (organization && isReady) {
@@ -78,6 +85,9 @@ export const OrganizationSettingsPage = () => {
         name: buildLocaleMap(organization.t?.name, allLocales),
         locale: (organization.locale || 'en') as LocaleCode,
         active_locales: (organization.active_locales || []) as LocaleCode[],
+        calendar_types: (organization.calendar_types?.length
+          ? organization.calendar_types
+          : ['gregorian']) as CalendarType[],
       });
     }
   }, [organization, isReady, allLocales.join(',')]);
@@ -94,6 +104,7 @@ export const OrganizationSettingsPage = () => {
         ...flattenTranslations({ name: formData.name }, ['name']),
         locale: formData.locale,
         active_locales: formData.active_locales,
+        calendar_types: formData.calendar_types,
       };
 
       await updateOrganization({ id: orgId, data: payload }).unwrap();
@@ -110,7 +121,9 @@ export const OrganizationSettingsPage = () => {
         JSON.stringify(buildLocaleMap(organization.t?.name, allLocales)) ||
       formData.locale !== (organization.locale || 'en') ||
       JSON.stringify(formData.active_locales.slice().sort()) !==
-        JSON.stringify((organization.active_locales || []).slice().sort())
+        JSON.stringify((organization.active_locales || []).slice().sort()) ||
+      JSON.stringify(formData.calendar_types.slice()) !==
+        JSON.stringify((organization.calendar_types || ['gregorian']).slice())
     );
   }, [formData, organization, isReady, allLocales]);
 
@@ -127,6 +140,15 @@ export const OrganizationSettingsPage = () => {
   const selectedActiveLocales = useMemo(
     () => locales.filter((loc) => formData.active_locales.includes(loc.code)),
     [formData.active_locales]
+  );
+
+  // Currently selected calendar type objects (for Autocomplete)
+  const selectedCalendarTypes = useMemo(
+    () =>
+      CALENDAR_TYPE_OPTIONS.filter((cal) =>
+        formData.calendar_types.includes(cal.code)
+      ),
+    [formData.calendar_types]
   );
 
   if (isOrgLoading || !isReady) {
@@ -237,6 +259,88 @@ export const OrganizationSettingsPage = () => {
                   }
                   fullWidth
                 />
+
+                {/* Calendar Types multi-select */}
+                <Autocomplete
+                  multiple
+                  options={CALENDAR_TYPE_OPTIONS}
+                  getOptionLabel={(option) => option.label}
+                  value={selectedCalendarTypes}
+                  onChange={(_, newValue) => {
+                    const newTypes = newValue.map((cal) => cal.code);
+                    if (newTypes.length === 0) {
+                      return;
+                    }
+                    const ordered: CalendarType[] = [
+                      ...formData.calendar_types.filter((t) =>
+                        newTypes.includes(t)
+                      ),
+                      ...newTypes.filter(
+                        (t) => !formData.calendar_types.includes(t)
+                      ),
+                    ];
+                    setFormData((prev) => ({
+                      ...prev,
+                      calendar_types: ordered,
+                    }));
+                  }}
+                  isOptionEqualToValue={(option, value) => option.code === value.code}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label={tOrgs('calendarTypes')}
+                      size="small"
+                      helperText={tOrgs('calendarTypesHint')}
+                    />
+                  )}
+                  renderTags={(value, getTagProps) =>
+                    value.map((option, index) => {
+                      const { key, ...tagProps } = getTagProps({ index });
+                      return (
+                        <Chip
+                          key={option.code}
+                          label={option.label}
+                          size="small"
+                          {...tagProps}
+                        />
+                      );
+                    })
+                  }
+                  fullWidth
+                />
+
+                {/* Default Calendar Type dropdown */}
+                <TextField
+                  select
+                  label={tOrgs('defaultCalendarType')}
+                  value={formData.calendar_types[0] || 'gregorian'}
+                  onChange={(e) => {
+                    const newDefault = e.target.value as CalendarType;
+                    setFormData((prev) => ({
+                      ...prev,
+                      calendar_types: [
+                        newDefault,
+                        ...prev.calendar_types.filter((t) => t !== newDefault),
+                      ],
+                    }));
+                  }}
+                  fullWidth
+                  size="small"
+                  disabled={formData.calendar_types.length <= 1}
+                  helperText={
+                    formData.calendar_types.length <= 1
+                      ? tOrgs('defaultCalendarTypeSingleHint')
+                      : tOrgs('defaultCalendarTypeHint')
+                  }
+                >
+                  {CALENDAR_TYPE_OPTIONS.filter((cal) =>
+                    formData.calendar_types.includes(cal.code)
+                  ).map((cal) => (
+                    <MenuItem key={cal.code} value={cal.code}>
+                      {cal.label}
+                    </MenuItem>
+                  ))}
+                </TextField>
               </Box>
             </TabPanel>
           </Box>

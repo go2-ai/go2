@@ -1,8 +1,13 @@
 {
   "fa": {
     "activeLocales": "سایر زبان های فعال",
+    "calendarTypes": "انواع تقویم",
+    "calendarTypesHint": "حداقل یک نوع تقویم باید انتخاب شود. اولین مورد پیش‌فرض است.",
     "createOrganization": "ایجاد سازمان",
     "createYourOrganization": "ایجاد سازمان شما",
+    "defaultCalendarType": "تقویم پیش‌فرض",
+    "defaultCalendarTypeHint": "اولین تقویم در لیست به عنوان پیش‌فرض استفاده می‌شود",
+    "defaultCalendarTypeSingleHint": "فقط یک نوع تقویم انتخاب شده است",
     "loadingOrganizations": "در حال بارگذاری سازمان‌های شما...",
     "onboardingSubtitle": "بیایید با ایجاد سازمان آزمایشی خود شروع کنیم",
     "organizationCreationFailed": "ایجاد سازمان ناموفق بود. لطفا دوباره تلاش کنید.",

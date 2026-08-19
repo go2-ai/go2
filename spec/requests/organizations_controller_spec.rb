@@ -1,5 +1,6 @@
 require 'swagger_helper'
 
+# Tech debt: Add calendar_types to API docs
 RSpec.describe 'Organizations API', type: :request do
   let!(:user) { create(:user) }
   before { sign_in(user) }

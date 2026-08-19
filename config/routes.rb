@@ -86,6 +86,8 @@ Rails.application.routes.draw do
       end
     end
 
+    resources :fiscal_years, only: [ :index, :create, :update, :destroy ]
+
     resources :versions, only: [ :index ]
 
     resources :conversations do

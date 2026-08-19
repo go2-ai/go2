@@ -23,6 +23,7 @@ import {
   AccountBalance,
 } from '@mui/icons-material';
 import AccountTree from '@mui/icons-material/AccountTree';
+import CalendarMonth from '@mui/icons-material/CalendarMonth';
 
 const drawerWidth = 280;
 
@@ -72,6 +73,12 @@ export function Sidebar() {
       title: 'Permissions',
       icon: <Lock />,
       path: '/permissions',
+    },
+    {
+      pageId: 'fiscal-years',
+      title: 'Fiscal Years',
+      icon: <CalendarMonth />,
+      path: '/fiscal-years',
     },
     {
       pageId: 'organization-settings',

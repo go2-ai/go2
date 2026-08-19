@@ -8,6 +8,7 @@ export interface Organization {
   locale: string;
   active_locales: string[];
   parent_id: number | null;
+  calendar_types: string[];
   t: {
       name: TranslatedField;
   };

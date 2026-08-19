@@ -33,6 +33,7 @@
     "react-color": "^2.19.3",
     "react-dom": "^19.1.1",
     "react-i18next": "^17.0.4",
+    "react-multi-date-picker": "^4.5.2",
     "react-redux": "^9.2.0",
     "react-resizable-panels": "^4.12.3",
     "react-router-dom": "^7.9.5",

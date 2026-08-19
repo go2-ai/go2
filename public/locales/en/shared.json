@@ -52,6 +52,7 @@
     "signOut": "Sign out",
     "signUp": "Sign up",
     "timezone": "Time zone",
+    "today": "Today",
     "validations": {
       "invalidFormat": "Format is not valid",
       "required": "Required"

@@ -1,5 +1,5 @@
 class ChangeAccountsNameNotNullAndDefault < ActiveRecord::Migration[8.0]
-   def up
+  def up
     change_column_null :accounts, :name, false
     change_column_default :accounts, :name, {}
   end

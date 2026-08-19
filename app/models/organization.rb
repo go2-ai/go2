@@ -30,6 +30,7 @@ class Organization < ApplicationRecord
   has_many :members, dependent: :destroy
   has_many :users, through: :members
   has_many :permissions, dependent: :destroy
+  has_many :fiscal_years, dependent: :destroy
 
   has_many :currencies, class_name: "Accounting::Currency", dependent: :destroy
   has_many :center_types, class_name: "Accounting::CenterType", dependent: :destroy
@@ -43,6 +44,9 @@ class Organization < ApplicationRecord
   validate :no_circular_references
   validates_non_empty_translation :name, locales: ->(org) { [ org.locale ] }
   validates_uniqueness_of_translated :name, scope: :parent, if: -> { parent_id.present? }
+  validate :at_least_one_calendar_type
+
+
 
   after_create :create_default_accounting_setting!
 
@@ -100,6 +104,10 @@ class Organization < ApplicationRecord
     end
   end
 
+  def default_calendar_type
+    calendar_types.first
+  end
+
   # private
 
   def archive_children
@@ -127,6 +135,12 @@ class Organization < ApplicationRecord
         break
       end
       current_parent = current_parent.parent
+    end
+  end
+
+  def at_least_one_calendar_type
+    if calendar_types.blank?
+      errors.add(:calendar_types, model_t("errors.at_least_one_calendar_type"))
     end
   end
 end

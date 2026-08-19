@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_08_17_182910) do
+ActiveRecord::Schema[8.0].define(version: 2026_08_19_105539) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -177,7 +177,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_08_17_182910) do
   end
 
   create_table "fiscal_years", force: :cascade do |t|
-    t.jsonb "name"
+    t.jsonb "name", default: {}, null: false
     t.date "start_date"
     t.date "finish_date"
     t.bigint "organization_id", null: false
@@ -338,6 +338,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_08_17_182910) do
     t.string "locale", default: "en", null: false
     t.string "active_locales", default: [], null: false, array: true
     t.string "inactive_locales", default: [], null: false, array: true
+    t.string "calendar_types", default: ["gregorian"], null: false, array: true
     t.index ["archived_at"], name: "index_organizations_on_archived_at"
     t.index ["name"], name: "index_organizations_on_name", using: :gin
     t.index ["parent_id"], name: "index_organizations_on_parent_id"

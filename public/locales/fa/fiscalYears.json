@@ -1,0 +1,13 @@
+{
+  "fa": {
+    "addFiscalYear": "افزودن سال مالی",
+    "deleteMessage": "آیا از حذف سال مالی {{name}} مطمئن هستید؟",
+    "deleteTitle": "حذف سال مالی",
+    "editFiscalYear": "ویرایش سال مالی",
+    "finishDate": "تاریخ پایان",
+    "fiscalYears": "سال‌های مالی",
+    "fiscalYearsDescription": "مدیریت سال‌های مالی سازمان",
+    "noFiscalYears": "سال مالی یافت نشد",
+    "startDate": "تاریخ شروع"
+  }
+}

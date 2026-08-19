@@ -21,6 +21,7 @@ import { AccountingSettingsPage } from './features/accounting/settings/Accountin
 import { CenterTypesPage } from './features/accounting/centerTypes/CenterTypesPage';
 import { CentersPage } from './features/accounting/centers/CentersPage';
 import { ChartOfAccountsPage } from './features/accounting/chartOfAccounts/ChartOfAccountsPage';
+import { FiscalYearsPage } from './features/fiscalYears/FiscalYearsPage';
 
 function App() {
   return (
@@ -45,6 +46,7 @@ function App() {
               <Route path=":organizationId/record-history" element={<RecordHistoryPage />} />
               <Route path=":organizationId/permission-history" element={<PermissionHistoryPage />} />
               <Route path=":organizationId/permissions" element={<PermissionsPage />} />
+              <Route path=":organizationId/fiscal-years" element={<FiscalYearsPage />} />
               <Route path=":organizationId/settings" element={<OrganizationSettingsPage />} />
               <Route path=":organizationId/accounting/settings" element={<AccountingSettingsPage />} />
               <Route path=":organizationId/accounting/center-types" element={<CenterTypesPage />} />

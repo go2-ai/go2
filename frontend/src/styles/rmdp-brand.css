@@ -1,0 +1,95 @@
+/*
+ * Custom "rmdp-brand" color theme for react-multi-date-picker.
+ * Structured exactly like the library's own built-in theme files
+ * (styles/colors/purple.css) so it stays compatible with future
+ * library updates instead of fighting internal implementation classes.
+ *
+ * Usage:
+ *   import "./rmdp-brand.css";
+ *   <DatePicker className="rmdp-brand" />
+ *
+ * Combine with the library's own dark background stylesheet for dark mode:
+ *   import "react-multi-date-picker/styles/backgrounds/bg-dark.css";
+ *   <DatePicker className="rmdp-brand bg-dark" />
+ */
+
+:root {
+  --rmdp-primary-rmdp-brand: #4F46E5;
+  --rmdp-secondary-rmdp-brand: #6366F1;
+  --rmdp-shadow-rmdp-brand: #4338CA;
+  --rmdp-today-rmdp-brand: #A5B4FC;
+  --rmdp-hover-rmdp-brand: #818CF8;
+  --rmdp-deselect-rmdp-brand: #C7D2FE;
+}
+
+.rmdp-brand .rmdp-wrapper {
+  border: 1px solid var(--rmdp-secondary-rmdp-brand);
+  box-shadow: 0 0 5px var(--rmdp-secondary-rmdp-brand);
+}
+
+.rmdp-brand .rmdp-panel-body li {
+  background-color: var(--rmdp-primary-rmdp-brand);
+  box-shadow: 0 0 2px var(--rmdp-secondary-rmdp-brand);
+}
+
+.rmdp-brand .rmdp-week-day {
+  color: var(--rmdp-primary-rmdp-brand);
+}
+
+.rmdp-brand .rmdp-day.rmdp-deactive {
+  color: var(--rmdp-secondary-rmdp-brand);
+}
+
+.rmdp-brand .rmdp-range {
+  background-color: var(--rmdp-primary-rmdp-brand);
+  box-shadow: 0 0 3px var(--rmdp-shadow-rmdp-brand);
+}
+
+.rmdp-brand .rmdp-arrow {
+  border: solid var(--rmdp-primary-rmdp-brand);
+  border-width: 0 2px 2px 0;
+}
+
+.rmdp-brand .rmdp-arrow-container:hover {
+  background-color: var(--rmdp-primary-rmdp-brand);
+  box-shadow: 0 0 3px var(--rmdp-secondary-rmdp-brand);
+}
+
+.rmdp-brand .rmdp-panel-body::-webkit-scrollbar-thumb {
+  background: var(--rmdp-primary-rmdp-brand);
+}
+
+.rmdp-brand .rmdp-day.rmdp-today span {
+  background-color: var(--rmdp-today-rmdp-brand);
+}
+
+.rmdp-brand .rmdp-rtl .rmdp-panel {
+  border-left: unset;
+  border-right: 1px solid var(--rmdp-secondary-rmdp-brand);
+}
+
+.rmdp-brand .rmdp-day.rmdp-selected span:not(.highlight) {
+  background-color: var(--rmdp-primary-rmdp-brand);
+  box-shadow: 0 0 3px var(--rmdp-shadow-rmdp-brand);
+}
+
+.rmdp-brand .rmdp-day:not(.rmdp-day-hidden) span:hover {
+  background-color: var(--rmdp-hover-rmdp-brand) !important;
+}
+
+.rmdp-brand .b-deselect {
+  color: var(--rmdp-deselect-rmdp-brand);
+  background-color: white;
+}
+
+.rmdp-brand .rmdp-action-button {
+  color: var(--rmdp-primary-rmdp-brand);
+}
+
+.rmdp-brand .rmdp-button:not(.rmdp-action-button) {
+  background-color: var(--rmdp-primary-rmdp-brand);
+}
+
+.rmdp-brand .rmdp-button:not(.rmdp-action-button):hover {
+  background-color: var(--rmdp-deselect-rmdp-brand);
+}

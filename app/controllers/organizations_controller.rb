@@ -73,7 +73,7 @@ class OrganizationsController < ApplicationController
   end
 
   def permitted_params
-    params.permit(:locale, *t_params(:name), active_locales: [])
+    params.permit(:locale, *t_params(:name), active_locales: [], calendar_types: [])
   end
 
   def setCurrentUserAsAdmin
