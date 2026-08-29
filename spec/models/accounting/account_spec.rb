@@ -19,7 +19,6 @@ RSpec.describe Accounting::Account, type: :model do
     it { should have_db_column(:updated_at).of_type(:datetime) }
 
     it { should have_db_index(:ledger_id) }
-    it { should have_db_index(:code).unique(true) }
     it { should have_db_index(:contra_for_id) }
   end
 

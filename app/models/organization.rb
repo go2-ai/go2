@@ -39,6 +39,7 @@ class Organization < ApplicationRecord
   has_many :account_categories, class_name: "Accounting::AccountCategory", dependent: :destroy
   has_many :ledgers, through: :account_categories, class_name: "Accounting::Ledger"
   has_many :accounts, through: :ledgers, class_name: "Accounting::Account"
+  has_many :journal_entries, class_name: "Accounting::JournalEntry", dependent: :destroy
 
   # Validations
   validate :no_circular_references

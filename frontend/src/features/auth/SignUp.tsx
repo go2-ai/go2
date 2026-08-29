@@ -68,7 +68,6 @@ export const SignUp = () => {
     try {
       const { password_confirmation, ...userData } = formData;
       let result = await signUp(userData).unwrap();
-      console.log(result);
       if (result.confirmed_at != null) {
         dispatch(setUser({ 
           id: result.id, 

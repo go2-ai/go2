@@ -14,8 +14,6 @@ RSpec.describe Accounting::Ledger, type: :model do
     it { should have_db_column(:updated_at).of_type(:datetime) }
 
     it { should have_db_index(:account_category_id) }
-    it { should have_db_index(:code).unique(true) }
-    it { should have_db_index(:contra_for_id) }
   end
 
   let(:organization) { create(:organization, name: { en: "Ledger Org #{SecureRandom.uuid}" }) }

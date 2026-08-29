@@ -22,6 +22,7 @@ import { CenterTypesPage } from './features/accounting/centerTypes/CenterTypesPa
 import { CentersPage } from './features/accounting/centers/CentersPage';
 import { ChartOfAccountsPage } from './features/accounting/chartOfAccounts/ChartOfAccountsPage';
 import { FiscalYearsPage } from './features/fiscalYears/FiscalYearsPage';
+import { JournalEntryPage } from './features/accounting/journalEntries/JournalEntryPage';
 
 function App() {
   return (
@@ -52,6 +53,7 @@ function App() {
               <Route path=":organizationId/accounting/center-types" element={<CenterTypesPage />} />
               <Route path=":organizationId/accounting/centers" element={<CentersPage />} />
               <Route path=":organizationId/accounting/chart-of-accounts" element={<ChartOfAccountsPage />} />
+              <Route path=":organizationId/accounting/journal-entry" element={<JournalEntryPage />} />
             </Route>
           </Route>
           

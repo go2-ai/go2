@@ -14,6 +14,7 @@ import { CenterTypesPage } from '../../features/accounting/centerTypes/CenterTyp
 import { CentersPage } from '../../features/accounting/centers/CentersPage';
 import { ChartOfAccountsPage } from '../../features/accounting/chartOfAccounts/ChartOfAccountsPage';
 import { FiscalYearsPage } from '../../features/fiscalYears/FiscalYearsPage';
+import { JournalEntryPage } from '../../features/accounting/journalEntries/JournalEntryPage';
 import { TabIdContext } from './TabIdContext';
 import { Box, Typography } from '@mui/material';
 
@@ -32,6 +33,7 @@ export const PAGE_REGISTRY: Record<string, React.ComponentType> = {
   centers: CentersPage,
   'chart-of-accounts': ChartOfAccountsPage,
   'fiscal-years': FiscalYearsPage,
+  'journal-entry': JournalEntryPage,
 };
 
 export function PageContent({ pageId, tabId }: { pageId: string; tabId?: string }) {

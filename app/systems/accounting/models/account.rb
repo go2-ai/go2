@@ -14,6 +14,10 @@ module Accounting
     validates :code, presence: true, uniqueness: { scope: :ledger_id }
     validate :code_length_matches
 
+    def full_code
+      "#{account_category.code}#{ledger.code}#{code}"
+    end
+
     private
 
     def code_length_matches

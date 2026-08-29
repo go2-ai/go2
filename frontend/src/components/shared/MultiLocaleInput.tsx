@@ -1,3 +1,4 @@
+// frontend/src/components/shared/MultiLocaleInput.tsx
 import React, { useState } from "react";
 import {
   Box,
@@ -41,6 +42,12 @@ interface TranslatableInputProps {
   error?: boolean;
   helperText?: string;
   fullWidth?: boolean;
+  /**
+   * Compact mode for dense grid cells. Removes the label, helper text,
+   * underline, and vertical padding so the control fits a ~36-40px row
+   * while preserving the translation modal behavior.
+   */
+  dense?: boolean;
 }
 
 function localeLabel(code: string): string {
@@ -56,7 +63,6 @@ function filledCount(map: LocaleMap, locales: string[]): number {
   return locales.filter((l) => !!map[l]?.trim()).length;
 }
 
-
 const MultiLocaleInput: React.FC<TranslatableInputProps> = ({
   field,
   locale,
@@ -69,6 +75,7 @@ const MultiLocaleInput: React.FC<TranslatableInputProps> = ({
   error = false,
   helperText,
   fullWidth = true,
+  dense = false,
 }) => {
   const label = field.charAt(0).toUpperCase() + field.slice(1);
   const { t } = useTranslation('shared');
@@ -102,24 +109,43 @@ const MultiLocaleInput: React.FC<TranslatableInputProps> = ({
     setModalOpen(false);
   };
 
-
-
   return (
     <>
       <TextField
-        label={label}
+        label={dense ? undefined : label}
         value={value[primaryLocale] ?? ""}
         onChange={handlePrimaryChange}
         placeholder={placeholder}
         disabled={disabled}
-        required={required}
+        required={!dense && required}
         error={error}
-        helperText={helperText}
+        helperText={dense ? undefined : helperText}
         fullWidth={fullWidth}
-        size="small"
+        size={dense ? undefined : "small"}
+        variant={dense ? "standard" : "outlined"}
+        sx={
+          dense
+            ? {
+                height: '100%',
+                '& .MuiInputBase-root': {
+                  height: '100%',
+                  py: 0,
+                  backgroundColor: disabled ? 'action.disabledBackground' : 'transparent',
+                },
+                '& .MuiInputBase-input': {
+                  height: '100%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  py: 0,
+                  px: 0,
+                },
+              }
+            : undefined
+        }
         InputProps={
           hasOtherLocales
             ? {
+                ...(dense && { disableUnderline: true }),
                 endAdornment: (
                   <InputAdornment position="end">
                     <Tooltip title="Add translations" placement="top">
@@ -132,7 +158,7 @@ const MultiLocaleInput: React.FC<TranslatableInputProps> = ({
                           sx={{
                             transition: "background 0.15s",
                             "&:hover": {
-                              background: (t) => alpha(t.palette.primary.main, 0.08),
+                              background: (theme) => alpha(theme.palette.primary.main, 0.08),
                             },
                           }}
                         >
@@ -143,7 +169,9 @@ const MultiLocaleInput: React.FC<TranslatableInputProps> = ({
                   </InputAdornment>
                 ),
               }
-            : undefined
+            : dense
+              ? { disableUnderline: true }
+              : undefined
         }
       />
 
@@ -172,7 +200,7 @@ const MultiLocaleInput: React.FC<TranslatableInputProps> = ({
             <TranslateIcon color="primary" fontSize="small" />
             <Box flex={1}>
               <Typography variant="subtitle1" fontWeight={700} lineHeight={1.2}>
-                {t('components.MultiLocaleInput.title', {field: label}) }
+                {t('components.MultiLocaleInput.title', { field: label })}
               </Typography>
             </Box>
             <IconButton size="small" onClick={closeModal} sx={{ ml: "auto" }}>
@@ -212,7 +240,7 @@ const MultiLocaleInput: React.FC<TranslatableInputProps> = ({
                       label={loc.toUpperCase()}
                       size="small"
                       variant="outlined"
-                      sx={{ fontWeight: 700, letterSpacing: 0.5 }}
+                      sx={{ fontWeight:700, letterSpacing: 0.5 }}
                     />
                     <Typography variant="caption" color="text.secondary">
                       {localeLabel(loc)}
@@ -231,14 +259,14 @@ const MultiLocaleInput: React.FC<TranslatableInputProps> = ({
 
           <DialogActions sx={{ px: 3, py: 2, gap: 1 }}>
             <Button onClick={closeModal}>
-              { t('commonActions.cancel')}
+              {t('commonActions.cancel')}
             </Button>
             <Button
               variant="contained"
               disableElevation
               onClick={handleSave}
             >
-              { t('commonActions.confirm')}
+              {t('commonActions.confirm')}
             </Button>
           </DialogActions>
         </Dialog>
@@ -248,22 +276,3 @@ const MultiLocaleInput: React.FC<TranslatableInputProps> = ({
 };
 
 export default MultiLocaleInput;
-
-// ─── Usage example (can be deleted) ─────────────────────────────────────────
-// 
-// import MultiLocaleInput from "./MultiLocaleInput";
-// 
-// function MyForm() {
-//   const [description, setDescription] = useState<Record<string, string>>({});
-//
-//   return (
-//     <MultiLocaleInput
-//       field="description"
-//       locale="en"
-//       otherLocales={["fa", "es"]}
-//       value={description}
-//       onChange={setDescription}
-//       required
-//     />
-//   );
-// }

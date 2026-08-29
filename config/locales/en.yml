@@ -144,6 +144,18 @@ en:
         code_length_mismatch: "must be exactly %{length} characters"
         code_already_taken: "has already been taken for this center type"
         centers_out_of_range: "امکان تغییر بازه کد وجود ندارد: کدهای مراکز زیر خارج از بازه خواهند بود: %{codes}"
+    accounting/journal_entry:
+      errors:
+        date_outside_fiscal_year: "must be within the fiscal year (%{start_date} to %{finish_date})"
+        items_required: "at least one item is required"
+        unbalanced: "debit and credit totals must be equal"
+    accounting/journal_entry_item:
+      errors:
+        account_required: "account must be selected"
+        center_required: "center must be selected"
+        debit_xor_credit: "only one of debit or credit can be filled"
+        debit_or_credit_required: "debit or credit must be filled"
+        currency_amount_mismatch: "must equal (debit - credit) / rate"
     accounting/ledger:
       errors:
         code_length_mismatch: "must be exactly %{length} characters"
@@ -181,6 +193,12 @@ en:
       accounting_view_settings: View accounting settings
       manage_settings: Change accounting settings
       view_settings: View accounting settings
+      accounting_manage_journal_entries: Manage journal entries
+      accounting_view_journal_entries: View journal entries
+      accounting_approve_journal_entries: Approve journal entries
+      manage_journal_entries: Add, update, or delete journal entries
+      view_journal_entries: View journal entries
+      approve_journal_entries: Approve or unapprove journal entries
   onboarding:
     description: Your organization is where you'll manage your team, projects, and resources. You can always change this later.
     error_message: There was an error creating your organization. Please try again.

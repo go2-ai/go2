@@ -12,7 +12,7 @@ module Accounting
       account = find_account
       authorize account
 
-      render json: AccountBlueprint.render(account, view: :show), status: :ok
+      render json: AccountBlueprint.render(account), status: :ok
     end
 
     def create
@@ -20,7 +20,7 @@ module Accounting
       authorize account
 
       if account.save
-        render json: AccountBlueprint.render(account, view: :show), status: :ok
+        render json: AccountBlueprint.render(account), status: :ok
       else
         render json: { errors: account.errors.full_messages }, status: :unprocessable_content
       end
@@ -31,7 +31,7 @@ module Accounting
       authorize account
 
       if account.update(permitted_params)
-        render json: AccountBlueprint.render(account, view: :show), status: :ok
+        render json: AccountBlueprint.render(account), status: :ok
       else
         render json: { errors: account.errors.full_messages }, status: :unprocessable_content
       end
@@ -42,7 +42,7 @@ module Accounting
       authorize account
 
       if account.destroy
-        render json: AccountBlueprint.render(account, view: :show), status: :ok
+        render json: AccountBlueprint.render(account), status: :ok
       else
         render json: { errors: account.errors.full_messages }, status: :unprocessable_content
       end

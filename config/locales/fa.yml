@@ -142,6 +142,18 @@ fa:
         code_out_of_range: "باید بین %{first} و %{last} باشد"
         code_length_mismatch: "باید دقیقاً %{length} کاراکتر باشد"
         code_already_taken: "قبلاً برای این نوع مرکز ثبت شده است"
+    accounting/journal_entry:
+      errors:
+        date_outside_fiscal_year: "باید در بازه سال مالی باشد (%{start_date} تا %{finish_date})"
+        items_required: "حداقل یک ردیف الزامی است"
+        unbalanced: "جمع بدهکار و بستانکار باید برابر باشد"
+    accounting/journal_entry_item:
+      errors:
+        account_required: "انتخاب حساب الزامی است"
+        center_required: "انتخاب مرکز الزامی است"
+        debit_xor_credit: "فقط یکی از بدهکار یا بستانکار می‌تواند مقدار داشته باشد"
+        debit_or_credit_required: "بدهکار یا بستانکار باید مقدار داشته باشد"
+        currency_amount_mismatch: "باید برابر با (بدهکار - بستانکار) تقسیم بر نرخ باشد"
     accounting/ledger:
       errors:
         code_length_mismatch: "باید دقیقاً %{length} کاراکتر باشد"
@@ -175,6 +187,14 @@ fa:
       manage_accounts: ایجاد، حذف و ویرایش حساب های حسابداری
       accounting_view_accounts: مشاهده حساب های حسابداری
       view_accounts: مشاهده حساب های حسابداری
+      accounting_manage_settings: مدیریت تنظیمات حسابداری
+      accounting_view_settings: مشاهده تنظیمات حسابداری
+      accounting_manage_journal_entries: مدیریت اسناد حسابداری
+      accounting_view_journal_entries: مشاهده اسناد حسابداری
+      accounting_approve_journal_entries: تایید اسناد حسابداری
+      manage_journal_entries: ایجاد، ویرایش یا حذف اسناد حسابداری
+      view_journal_entries: مشاهده اسناد حسابداری
+      approve_journal_entries: تایید یا لغو تایید اسناد حسابداری
   onboarding:
     description: سازمان شما جایی است که تیم، پروژه‌ها و منابع خود را مدیریت خواهید کرد. همیشه می‌توانید این را بعداً تغییر دهید.
     error_message: خطایی در ایجاد سازمان شما رخ داد. لطفاً دوباره تلاش کنید.

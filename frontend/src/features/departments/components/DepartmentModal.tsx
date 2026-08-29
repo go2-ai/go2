@@ -98,7 +98,6 @@ export const DepartmentModal = ({ open, onClose, organizationId, department }: D
   };
 
   const handleSave = async () => {
-    console.log(validateForm());
     if (!validateForm()) return;
 
     const payload = flattenTranslations(formData, ['name', 'description']);

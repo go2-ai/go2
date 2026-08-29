@@ -26,6 +26,9 @@ class Permission < ApplicationRecord
   ACCOUNTING_VIEW_CENTERS = "Accounting.view_centers".freeze
   ACCOUNTING_MANAGE_ACCOUNTS = "Accounting.manage_accounts".freeze
   ACCOUNTING_VIEW_ACCOUNTS = "Accounting.view_accounts".freeze
+  ACCOUNTING_MANAGE_JOURNAL_ENTRIES = "Accounting.manage_journal_entries".freeze
+  ACCOUNTING_VIEW_JOURNAL_ENTRIES = "Accounting.view_journal_entries".freeze
+  ACCOUNTING_APPROVE_JOURNAL_ENTRIES = "Accounting.approve_journal_entries".freeze
 
   def self.grantable_permissions
     [
@@ -86,6 +89,30 @@ class Permission < ApplicationRecord
         name: model_t("accounting_view_accounts"),
         abilities: [
           model_t("view_accounts")
+        ],
+        tags: %w[accounting]
+      },
+      {
+        code: ACCOUNTING_MANAGE_JOURNAL_ENTRIES,
+        name: model_t("accounting_manage_journal_entries"),
+        abilities: [
+          model_t("manage_journal_entries")
+        ],
+        tags: %w[accounting]
+      },
+      {
+        code: ACCOUNTING_VIEW_JOURNAL_ENTRIES,
+        name: model_t("accounting_view_journal_entries"),
+        abilities: [
+          model_t("view_journal_entries")
+        ],
+        tags: %w[accounting]
+      },
+      {
+        code: ACCOUNTING_APPROVE_JOURNAL_ENTRIES,
+        name: model_t("accounting_approve_journal_entries"),
+        abilities: [
+          model_t("approve_journal_entries")
         ],
         tags: %w[accounting]
       }

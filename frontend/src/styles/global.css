@@ -5,3 +5,13 @@
   font-style: normal;
   font-display: swap;
 }
+
+@keyframes cell-blink {
+  0% { background-color: #fef08a; }
+  50% { background-color: transparent; }
+  100% { background-color: #fef08a; }
+}
+
+.cell-blink {
+  animation: cell-blink 0.5s ease-in-out 4;
+}

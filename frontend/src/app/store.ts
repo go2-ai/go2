@@ -15,6 +15,7 @@ import { accountingAccountCategoriesApi } from '../features/accounting/accountCa
 import { accountingLedgersApi } from '../features/accounting/ledgers/ledgersApi';
 import { accountingAccountsApi } from '../features/accounting/accounts/accountsApi';
 import { fiscalYearsApi } from '../features/fiscalYears/fiscalYearsApi';
+import { journalEntriesApi } from '../features/accounting/journalEntries/journalEntriesApi';
 
 import organizationsReducer from '../features/organizations/organizationsSlice';
 import authReducer from '../features/auth/authSlice';
@@ -37,6 +38,7 @@ export const store = configureStore({
     [accountingLedgersApi.reducerPath]: accountingLedgersApi.reducer,
     [accountingAccountsApi.reducerPath]: accountingAccountsApi.reducer,
     [fiscalYearsApi.reducerPath]: fiscalYearsApi.reducer,
+    [journalEntriesApi.reducerPath]: journalEntriesApi.reducer,
     organizations: organizationsReducer,
     auth: authReducer,
   },
@@ -58,6 +60,7 @@ export const store = configureStore({
       accountingLedgersApi.middleware,
       accountingAccountsApi.middleware,
       fiscalYearsApi.middleware,
+      journalEntriesApi.middleware,
     ),
 });
 

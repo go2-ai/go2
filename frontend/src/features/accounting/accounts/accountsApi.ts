@@ -4,6 +4,7 @@ import { baseQueryWithCsrf } from '../../../app/baseQuery';
 export interface Account {
   id: number;
   code: string;
+  full_code: string;
   name: string;
   ledger_id: number;
   contra_for_id: number | null;

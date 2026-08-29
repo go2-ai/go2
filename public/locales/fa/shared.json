@@ -5,6 +5,7 @@
     "changeLog": "تاریخچه تغییرات",
     "color": "رنگ",
     "commonActions": {
+      "addNewRow": "اضافه کردن ردیف جدید",
       "archive": "بایگانی",
       "cancel": "انصراف",
       "confirm": "تایید",

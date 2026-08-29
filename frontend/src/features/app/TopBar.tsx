@@ -13,6 +13,8 @@ import {
   Tooltip,
   alpha,
   styled,
+  Select,
+  FormControl,
 } from '@mui/material';
 import {
   Notifications as NotificationsIcon,
@@ -22,13 +24,14 @@ import {
   Logout as LogoutIcon,
   Menu as MenuIcon,
 } from '@mui/icons-material';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../contexts/ThemeContext';
 import { clearOrganizations } from '../organizations/organizationsSlice';
 import { clearUser } from '../auth/authSlice';
 import { useSignOutMutation } from '../auth/authApi';
+import { useActiveFiscalYear } from '../../hooks/useActiveFiscalYear';
 import type { RootState } from '../../app/store';
 import SettingsIcon from '@mui/icons-material/Settings';
 import { SettingsModal } from '../me/SettingsModal';
@@ -93,6 +96,11 @@ export const TopBar = () => {
   const [signOut] = useSignOutMutation();
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
+  // Fiscal year selector
+  const { organizationId } = useParams<{ organizationId: string }>();
+  const orgId = parseInt(organizationId || '0', 10);
+  const { fiscalYears, activeFiscalYearId, setActiveFiscalYear } = useActiveFiscalYear(orgId);
+
   const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
   };
@@ -115,7 +123,6 @@ export const TopBar = () => {
     } catch (error) {
       console.error('Sign out failed:', error);
     } finally {
-      // Always clear local state, even if API call fails
       dispatch(clearOrganizations());
       dispatch(clearUser());
       navigate('/app/signin');
@@ -134,7 +141,7 @@ export const TopBar = () => {
       }}
     >
       <Toolbar>
-        {/* Mobile menu button - hidden on desktop */}
+        {/* Mobile menu button */}
         <IconButton
           edge="start"
           color="inherit"
@@ -144,7 +151,7 @@ export const TopBar = () => {
           <MenuIcon />
         </IconButton>
 
-        {/* Logo - visible on mobile */}
+        {/* Logo - mobile */}
         <Typography
           variant="h6"
           sx={{
@@ -159,7 +166,7 @@ export const TopBar = () => {
           GO3
         </Typography>
 
-        {/* Organization name - visible on desktop */}
+        {/* Organization name - desktop */}
         <Typography
           variant="subtitle1"
           sx={{
@@ -167,10 +174,34 @@ export const TopBar = () => {
             display: { xs: 'none', md: 'block' },
             color: 'text.secondary',
             fontWeight: 500,
+            whiteSpace: 'nowrap',
           }}
         >
           {currentOrganization?.name}
         </Typography>
+
+        {/* Fiscal Year Selector */}
+        {activeFiscalYearId !== null && fiscalYears.length > 0 && (
+          <FormControl size="small" sx={{ minWidth: 140, ml: 2 }}>
+            <Select
+              value={activeFiscalYearId}
+              onChange={(e) => setActiveFiscalYear(Number(e.target.value))}
+              displayEmpty
+              sx={{
+                fontSize: '0.875rem',
+                '& .MuiOutlinedInput-notchedOutline': {
+                  borderColor: 'divider',
+                },
+              }}
+            >
+              {fiscalYears.map((fy) => (
+                <MenuItem key={fy.id} value={fy.id}>
+                  {fy.name}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        )}
 
         {/* Search bar - centered */}
         <Box sx={{ flexGrow: 1, display: 'flex', justifyContent: 'center' }}>

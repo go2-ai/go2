@@ -24,6 +24,7 @@ import {
 } from '@mui/icons-material';
 import AccountTree from '@mui/icons-material/AccountTree';
 import CalendarMonth from '@mui/icons-material/CalendarMonth';
+import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
 
 const drawerWidth = 280;
 
@@ -109,6 +110,12 @@ export function Sidebar() {
       title: 'Chart of Accounts',
       icon: <AccountTree />,
       path: '/accounting/chart-of-accounts',
+    },
+    {
+      pageId: 'journal-entry',
+      title: 'Journal Entry',
+      icon: <ReceiptLongIcon />,
+      path: '/accounting/journal-entry',
     },
   ];
 

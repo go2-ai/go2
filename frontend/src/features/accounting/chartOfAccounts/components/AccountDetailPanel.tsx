@@ -55,13 +55,6 @@ export const AccountDetailPanel = ({
     );
   }
 
-  // ─── DEBUG ──────────────────────────────────────────────────────────────
-  console.log('=== AccountDetailPanel Debug ===');
-  console.log('Node type:', node.type);
-  console.log('Node raw:', node.raw);
-  console.log('centerTypes prop:', centerTypes);
-  console.log('centerLevels:', centerLevels);
-
   const canDelete = !(node.type === 'category' && node.isSystem);
 
   const findNodeById = (type: string, sourceId: number): ChartOfAccountsNode | null => {

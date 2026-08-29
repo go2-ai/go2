@@ -23,7 +23,8 @@ RSpec.configure do |config|
         { name: 'Centers', description: 'Organization-level centers' },
         { name: 'Account Categories', description: 'Organization-level account categories' },
         { name: 'Ledgers', description: 'Accounting Ledgers' },
-        { name: 'Accounts', description: 'Accounts' }
+        { name: 'Accounts', description: 'Accounts' },
+        { name: 'Journal Entries', description: 'Journal Entries' }
       ]
     }
   }

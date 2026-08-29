@@ -21,6 +21,7 @@ import ClearIcon from '@mui/icons-material/Clear';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 import type { RootState } from '../../app/store';
+import { useTheme } from '@mui/material/styles';
 
 export type CalendarType = 'gregorian' | 'shamsi';
 
@@ -220,6 +221,9 @@ export const BaseDatePicker = ({
   const isDark = useIsDarkMode();
   const pickerClassName = `rmdp-brand${isDark ? ' bg-brand-dark' : ''}`;
 
+  const theme = useTheme();
+  const isRtl = theme.direction === 'rtl';
+
   // Re-sync active calendar when calendarList changes
   useEffect(() => {
     if (!calendarList.includes(activeCalendar)) {
@@ -388,7 +392,7 @@ export const BaseDatePicker = ({
             helperText={helperText}
             disabled={disabled}
             required={required}
-            dir="ltr"
+            dir={isRtl ? "rtl" : "ltr"}
             placeholder={activeCalendar === 'shamsi' ? 'YYYY/MM/DD' : 'YYYY-MM-DD'}
             InputProps={{
               endAdornment: (

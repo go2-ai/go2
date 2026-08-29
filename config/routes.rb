@@ -113,6 +113,12 @@ Rails.application.routes.draw do
       resources :account_categories, only: [ :index, :show, :create, :update, :destroy ]
       resources :ledgers, only: [ :index, :show, :create, :update, :destroy ]
       resources :accounts, only: [ :index, :show, :create, :update, :destroy ]
+      resources :journal_entries, only: [ :index, :show, :create, :update, :destroy ] do
+        member do
+          patch :approve
+          patch :unapprove
+        end
+      end
     end
   end
 

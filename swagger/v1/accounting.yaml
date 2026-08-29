@@ -23,6 +23,8 @@ tags:
   description: Accounting Ledgers
 - name: Accounts
   description: Accounts
+- name: Journal Entries
+  description: Journal Entries
 paths:
   "/organizations/{organization_id}/accounting/account_categories":
     parameters:
@@ -1464,6 +1466,1483 @@ paths:
                   updated_at:
                     type: string
                     example: '2026-02-20 10:52:46.787878000 +0000'
+  "/organizations/{organization_id}/accounting/journal_entries":
+    parameters:
+    - name: organization_id
+      in: path
+      description: Organization ID
+      required: true
+      schema:
+        type: integer
+    get:
+      summary: Get all journal entries
+      tags:
+      - Journal Entries
+      parameters:
+      - name: fiscal_year_id
+        in: query
+        description: Filter by fiscal year
+        required: false
+        schema:
+          type: integer
+      responses:
+        '200':
+          description: Loaded successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                      example: 1
+                    date:
+                      type: string
+                      format: date
+                      example: '2024-06-15'
+                    effective_date:
+                      type: string
+                      format: date
+                      example: '2024-06-15'
+                    fiscal_year_id:
+                      type: integer
+                      example: 1
+                    'no':
+                      type: string
+                      example: '1'
+                    ref:
+                      type: string
+                      example: '1'
+                    daily_no:
+                      type: integer
+                      example: 1
+                    state:
+                      type: string
+                      enum:
+                      - draft
+                      - booked
+                      - approved
+                      example: draft
+                    entry_type:
+                      type: string
+                      enum:
+                      - normal
+                      - beginning
+                      - ending
+                      example: normal
+                    debit:
+                      type: number
+                      format: float
+                      example: 100.0
+                    credit:
+                      type: number
+                      format: float
+                      example: 100.0
+                    organization_id:
+                      type: integer
+                      example: 1
+                    creator_id:
+                      type:
+                      - integer
+                      - nil
+                      example: 1
+                    t:
+                      type: object
+                      example:
+                        description:
+                          en: Opening Entry
+                          fa: سند افتتاحیه
+                    items:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          id:
+                            type: integer
+                            example: 1
+                          row:
+                            type: integer
+                            example: 1
+                          account_id:
+                            type:
+                            - integer
+                            - nil
+                            example: 1
+                          center1_id:
+                            type:
+                            - integer
+                            - nil
+                            example:
+                          center2_id:
+                            type:
+                            - integer
+                            - nil
+                            example:
+                          center3_id:
+                            type:
+                            - integer
+                            - nil
+                            example:
+                          center4_id:
+                            type:
+                            - integer
+                            - nil
+                            example:
+                          center5_id:
+                            type:
+                            - integer
+                            - nil
+                            example:
+                          center6_id:
+                            type:
+                            - integer
+                            - nil
+                            example:
+                          debit:
+                            type: number
+                            format: float
+                            example: 100.0
+                          credit:
+                            type: number
+                            format: float
+                            example: 0.0
+                          currency_id:
+                            type: integer
+                            example: 1
+                          rate:
+                            type: number
+                            format: float
+                            example: 1.0
+                          currency_amount:
+                            type: number
+                            format: float
+                            example: 100.0
+                          account_code:
+                            type: string
+                            example: '01'
+                          account_name:
+                            type: string
+                            example: Cash
+                          t:
+                            type: object
+                            example:
+                              description:
+                                en: Cash debit
+                                fa: بدهکار نقدی
+                        required:
+                        - id
+                        - row
+                        - account_id
+                        - debit
+                        - credit
+                        - currency_id
+                        - rate
+                        - currency_amount
+                  required:
+                  - id
+                  - date
+                  - effective_date
+                  - fiscal_year_id
+                  - 'no'
+                  - ref
+                  - daily_no
+                  - state
+                  - entry_type
+                  - debit
+                  - credit
+                  - organization_id
+        '403':
+          description: Not authorized
+    post:
+      summary: Create a journal entry
+      tags:
+      - Journal Entries
+      parameters: []
+      responses:
+        '200':
+          description: Created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    example: 1
+                  date:
+                    type: string
+                    format: date
+                    example: '2024-06-15'
+                  effective_date:
+                    type: string
+                    format: date
+                    example: '2024-06-15'
+                  fiscal_year_id:
+                    type: integer
+                    example: 1
+                  'no':
+                    type: string
+                    example: '1'
+                  ref:
+                    type: string
+                    example: '1'
+                  daily_no:
+                    type: integer
+                    example: 1
+                  state:
+                    type: string
+                    enum:
+                    - draft
+                    - booked
+                    - approved
+                    example: draft
+                  entry_type:
+                    type: string
+                    enum:
+                    - normal
+                    - beginning
+                    - ending
+                    example: normal
+                  debit:
+                    type: number
+                    format: float
+                    example: 100.0
+                  credit:
+                    type: number
+                    format: float
+                    example: 100.0
+                  organization_id:
+                    type: integer
+                    example: 1
+                  creator_id:
+                    type:
+                    - integer
+                    - nil
+                    example: 1
+                  t:
+                    type: object
+                    example:
+                      description:
+                        en: Opening Entry
+                        fa: سند افتتاحیه
+                  items:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                          example: 1
+                        row:
+                          type: integer
+                          example: 1
+                        account_id:
+                          type:
+                          - integer
+                          - nil
+                          example: 1
+                        center1_id:
+                          type:
+                          - integer
+                          - nil
+                          example:
+                        center2_id:
+                          type:
+                          - integer
+                          - nil
+                          example:
+                        center3_id:
+                          type:
+                          - integer
+                          - nil
+                          example:
+                        center4_id:
+                          type:
+                          - integer
+                          - nil
+                          example:
+                        center5_id:
+                          type:
+                          - integer
+                          - nil
+                          example:
+                        center6_id:
+                          type:
+                          - integer
+                          - nil
+                          example:
+                        debit:
+                          type: number
+                          format: float
+                          example: 100.0
+                        credit:
+                          type: number
+                          format: float
+                          example: 0.0
+                        currency_id:
+                          type: integer
+                          example: 1
+                        rate:
+                          type: number
+                          format: float
+                          example: 1.0
+                        currency_amount:
+                          type: number
+                          format: float
+                          example: 100.0
+                        account_code:
+                          type: string
+                          example: '01'
+                        account_name:
+                          type: string
+                          example: Cash
+                        t:
+                          type: object
+                          example:
+                            description:
+                              en: Cash debit
+                              fa: بدهکار نقدی
+                      required:
+                      - id
+                      - row
+                      - account_id
+                      - debit
+                      - credit
+                      - currency_id
+                      - rate
+                      - currency_amount
+                required:
+                - id
+                - date
+                - effective_date
+                - fiscal_year_id
+                - 'no'
+                - ref
+                - daily_no
+                - state
+                - entry_type
+                - debit
+                - credit
+                - organization_id
+        '422':
+          description: Invalid request
+        '403':
+          description: Not authorized
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                date:
+                  type: string
+                  format: date
+                  example: '2024-06-15'
+                effective_date:
+                  type: string
+                  format: date
+                  example: '2024-06-15'
+                fiscal_year_id:
+                  type: integer
+                  example: 1
+                state:
+                  type: string
+                  enum:
+                  - draft
+                  - booked
+                  example: draft
+                entry_type:
+                  type: string
+                  enum:
+                  - normal
+                  example: normal
+                description_en:
+                  type: string
+                  example: Opening Entry
+                description_fa:
+                  type: string
+                  example: سند افتتاحیه
+                items_attributes:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                        example: 1
+                        description: Required for updates
+                      row:
+                        type: integer
+                        example: 1
+                      account_id:
+                        type: integer
+                        example: 1
+                      center1_id:
+                        type:
+                        - integer
+                        - nil
+                        example:
+                      center2_id:
+                        type:
+                        - integer
+                        - nil
+                        example:
+                      center3_id:
+                        type:
+                        - integer
+                        - nil
+                        example:
+                      center4_id:
+                        type:
+                        - integer
+                        - nil
+                        example:
+                      center5_id:
+                        type:
+                        - integer
+                        - nil
+                        example:
+                      center6_id:
+                        type:
+                        - integer
+                        - nil
+                        example:
+                      debit:
+                        type: number
+                        example: 100.0
+                      credit:
+                        type: number
+                        example: 0.0
+                      currency_id:
+                        type: integer
+                        example: 1
+                      rate:
+                        type: number
+                        example: 1.0
+                      currency_amount:
+                        type: number
+                        example: 100.0
+                      description_en:
+                        type: string
+                        example: Cash debit
+                      description_fa:
+                        type: string
+                        example: بدهکار نقدی
+                      _destroy:
+                        type: boolean
+                        example: false
+                        description: Set true to delete this item
+              required:
+              - date
+              - fiscal_year_id
+  "/organizations/{organization_id}/accounting/journal_entries/{id}":
+    parameters:
+    - name: organization_id
+      in: path
+      description: Organization ID
+      required: true
+      schema:
+        type: integer
+    - name: id
+      in: path
+      description: Journal Entry ID
+      required: true
+      schema:
+        type: integer
+    get:
+      summary: Show a journal entry
+      tags:
+      - Journal Entries
+      responses:
+        '200':
+          description: Loaded successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    example: 1
+                  date:
+                    type: string
+                    format: date
+                    example: '2024-06-15'
+                  effective_date:
+                    type: string
+                    format: date
+                    example: '2024-06-15'
+                  fiscal_year_id:
+                    type: integer
+                    example: 1
+                  'no':
+                    type: string
+                    example: '1'
+                  ref:
+                    type: string
+                    example: '1'
+                  daily_no:
+                    type: integer
+                    example: 1
+                  state:
+                    type: string
+                    enum:
+                    - draft
+                    - booked
+                    - approved
+                    example: draft
+                  entry_type:
+                    type: string
+                    enum:
+                    - normal
+                    - beginning
+                    - ending
+                    example: normal
+                  debit:
+                    type: number
+                    format: float
+                    example: 100.0
+                  credit:
+                    type: number
+                    format: float
+                    example: 100.0
+                  organization_id:
+                    type: integer
+                    example: 1
+                  creator_id:
+                    type:
+                    - integer
+                    - nil
+                    example: 1
+                  t:
+                    type: object
+                    example:
+                      description:
+                        en: Opening Entry
+                        fa: سند افتتاحیه
+                  items:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                          example: 1
+                        row:
+                          type: integer
+                          example: 1
+                        account_id:
+                          type:
+                          - integer
+                          - nil
+                          example: 1
+                        center1_id:
+                          type:
+                          - integer
+                          - nil
+                          example:
+                        center2_id:
+                          type:
+                          - integer
+                          - nil
+                          example:
+                        center3_id:
+                          type:
+                          - integer
+                          - nil
+                          example:
+                        center4_id:
+                          type:
+                          - integer
+                          - nil
+                          example:
+                        center5_id:
+                          type:
+                          - integer
+                          - nil
+                          example:
+                        center6_id:
+                          type:
+                          - integer
+                          - nil
+                          example:
+                        debit:
+                          type: number
+                          format: float
+                          example: 100.0
+                        credit:
+                          type: number
+                          format: float
+                          example: 0.0
+                        currency_id:
+                          type: integer
+                          example: 1
+                        rate:
+                          type: number
+                          format: float
+                          example: 1.0
+                        currency_amount:
+                          type: number
+                          format: float
+                          example: 100.0
+                        account_code:
+                          type: string
+                          example: '01'
+                        account_name:
+                          type: string
+                          example: Cash
+                        t:
+                          type: object
+                          example:
+                            description:
+                              en: Cash debit
+                              fa: بدهکار نقدی
+                      required:
+                      - id
+                      - row
+                      - account_id
+                      - debit
+                      - credit
+                      - currency_id
+                      - rate
+                      - currency_amount
+                required:
+                - id
+                - date
+                - effective_date
+                - fiscal_year_id
+                - 'no'
+                - ref
+                - daily_no
+                - state
+                - entry_type
+                - debit
+                - credit
+                - organization_id
+        '404':
+          description: Not found
+        '403':
+          description: Not authorized
+    patch:
+      summary: Update a journal entry
+      tags:
+      - Journal Entries
+      parameters: []
+      responses:
+        '200':
+          description: Updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    example: 1
+                  date:
+                    type: string
+                    format: date
+                    example: '2024-06-15'
+                  effective_date:
+                    type: string
+                    format: date
+                    example: '2024-06-15'
+                  fiscal_year_id:
+                    type: integer
+                    example: 1
+                  'no':
+                    type: string
+                    example: '1'
+                  ref:
+                    type: string
+                    example: '1'
+                  daily_no:
+                    type: integer
+                    example: 1
+                  state:
+                    type: string
+                    enum:
+                    - draft
+                    - booked
+                    - approved
+                    example: draft
+                  entry_type:
+                    type: string
+                    enum:
+                    - normal
+                    - beginning
+                    - ending
+                    example: normal
+                  debit:
+                    type: number
+                    format: float
+                    example: 100.0
+                  credit:
+                    type: number
+                    format: float
+                    example: 100.0
+                  organization_id:
+                    type: integer
+                    example: 1
+                  creator_id:
+                    type:
+                    - integer
+                    - nil
+                    example: 1
+                  t:
+                    type: object
+                    example:
+                      description:
+                        en: Opening Entry
+                        fa: سند افتتاحیه
+                  items:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                          example: 1
+                        row:
+                          type: integer
+                          example: 1
+                        account_id:
+                          type:
+                          - integer
+                          - nil
+                          example: 1
+                        center1_id:
+                          type:
+                          - integer
+                          - nil
+                          example:
+                        center2_id:
+                          type:
+                          - integer
+                          - nil
+                          example:
+                        center3_id:
+                          type:
+                          - integer
+                          - nil
+                          example:
+                        center4_id:
+                          type:
+                          - integer
+                          - nil
+                          example:
+                        center5_id:
+                          type:
+                          - integer
+                          - nil
+                          example:
+                        center6_id:
+                          type:
+                          - integer
+                          - nil
+                          example:
+                        debit:
+                          type: number
+                          format: float
+                          example: 100.0
+                        credit:
+                          type: number
+                          format: float
+                          example: 0.0
+                        currency_id:
+                          type: integer
+                          example: 1
+                        rate:
+                          type: number
+                          format: float
+                          example: 1.0
+                        currency_amount:
+                          type: number
+                          format: float
+                          example: 100.0
+                        account_code:
+                          type: string
+                          example: '01'
+                        account_name:
+                          type: string
+                          example: Cash
+                        t:
+                          type: object
+                          example:
+                            description:
+                              en: Cash debit
+                              fa: بدهکار نقدی
+                      required:
+                      - id
+                      - row
+                      - account_id
+                      - debit
+                      - credit
+                      - currency_id
+                      - rate
+                      - currency_amount
+                required:
+                - id
+                - date
+                - effective_date
+                - fiscal_year_id
+                - 'no'
+                - ref
+                - daily_no
+                - state
+                - entry_type
+                - debit
+                - credit
+                - organization_id
+        '404':
+          description: Not found
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                date:
+                  type: string
+                  format: date
+                  example: '2024-06-15'
+                effective_date:
+                  type: string
+                  format: date
+                  example: '2024-06-15'
+                fiscal_year_id:
+                  type: integer
+                  example: 1
+                state:
+                  type: string
+                  enum:
+                  - draft
+                  - booked
+                  example: draft
+                entry_type:
+                  type: string
+                  enum:
+                  - normal
+                  example: normal
+                description_en:
+                  type: string
+                  example: Opening Entry
+                description_fa:
+                  type: string
+                  example: سند افتتاحیه
+                items_attributes:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                        example: 1
+                        description: Required for updates
+                      row:
+                        type: integer
+                        example: 1
+                      account_id:
+                        type: integer
+                        example: 1
+                      center1_id:
+                        type:
+                        - integer
+                        - nil
+                        example:
+                      center2_id:
+                        type:
+                        - integer
+                        - nil
+                        example:
+                      center3_id:
+                        type:
+                        - integer
+                        - nil
+                        example:
+                      center4_id:
+                        type:
+                        - integer
+                        - nil
+                        example:
+                      center5_id:
+                        type:
+                        - integer
+                        - nil
+                        example:
+                      center6_id:
+                        type:
+                        - integer
+                        - nil
+                        example:
+                      debit:
+                        type: number
+                        example: 100.0
+                      credit:
+                        type: number
+                        example: 0.0
+                      currency_id:
+                        type: integer
+                        example: 1
+                      rate:
+                        type: number
+                        example: 1.0
+                      currency_amount:
+                        type: number
+                        example: 100.0
+                      description_en:
+                        type: string
+                        example: Cash debit
+                      description_fa:
+                        type: string
+                        example: بدهکار نقدی
+                      _destroy:
+                        type: boolean
+                        example: false
+                        description: Set true to delete this item
+              required:
+              - date
+              - fiscal_year_id
+    delete:
+      summary: Delete a journal entry
+      tags:
+      - Journal Entries
+      responses:
+        '200':
+          description: Deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    example: 1
+                  date:
+                    type: string
+                    format: date
+                    example: '2024-06-15'
+                  effective_date:
+                    type: string
+                    format: date
+                    example: '2024-06-15'
+                  fiscal_year_id:
+                    type: integer
+                    example: 1
+                  'no':
+                    type: string
+                    example: '1'
+                  ref:
+                    type: string
+                    example: '1'
+                  daily_no:
+                    type: integer
+                    example: 1
+                  state:
+                    type: string
+                    enum:
+                    - draft
+                    - booked
+                    - approved
+                    example: draft
+                  entry_type:
+                    type: string
+                    enum:
+                    - normal
+                    - beginning
+                    - ending
+                    example: normal
+                  debit:
+                    type: number
+                    format: float
+                    example: 100.0
+                  credit:
+                    type: number
+                    format: float
+                    example: 100.0
+                  organization_id:
+                    type: integer
+                    example: 1
+                  creator_id:
+                    type:
+                    - integer
+                    - nil
+                    example: 1
+                  t:
+                    type: object
+                    example:
+                      description:
+                        en: Opening Entry
+                        fa: سند افتتاحیه
+                  items:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                          example: 1
+                        row:
+                          type: integer
+                          example: 1
+                        account_id:
+                          type:
+                          - integer
+                          - nil
+                          example: 1
+                        center1_id:
+                          type:
+                          - integer
+                          - nil
+                          example:
+                        center2_id:
+                          type:
+                          - integer
+                          - nil
+                          example:
+                        center3_id:
+                          type:
+                          - integer
+                          - nil
+                          example:
+                        center4_id:
+                          type:
+                          - integer
+                          - nil
+                          example:
+                        center5_id:
+                          type:
+                          - integer
+                          - nil
+                          example:
+                        center6_id:
+                          type:
+                          - integer
+                          - nil
+                          example:
+                        debit:
+                          type: number
+                          format: float
+                          example: 100.0
+                        credit:
+                          type: number
+                          format: float
+                          example: 0.0
+                        currency_id:
+                          type: integer
+                          example: 1
+                        rate:
+                          type: number
+                          format: float
+                          example: 1.0
+                        currency_amount:
+                          type: number
+                          format: float
+                          example: 100.0
+                        account_code:
+                          type: string
+                          example: '01'
+                        account_name:
+                          type: string
+                          example: Cash
+                        t:
+                          type: object
+                          example:
+                            description:
+                              en: Cash debit
+                              fa: بدهکار نقدی
+                      required:
+                      - id
+                      - row
+                      - account_id
+                      - debit
+                      - credit
+                      - currency_id
+                      - rate
+                      - currency_amount
+                required:
+                - id
+                - date
+                - effective_date
+                - fiscal_year_id
+                - 'no'
+                - ref
+                - daily_no
+                - state
+                - entry_type
+                - debit
+                - credit
+                - organization_id
+  "/organizations/{organization_id}/accounting/journal_entries/{id}/approve":
+    parameters:
+    - name: organization_id
+      in: path
+      description: Organization ID
+      required: true
+      schema:
+        type: integer
+    - name: id
+      in: path
+      description: Journal Entry ID
+      required: true
+      schema:
+        type: integer
+    patch:
+      summary: Approve a journal entry
+      tags:
+      - Journal Entries
+      responses:
+        '200':
+          description: Approved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    example: 1
+                  date:
+                    type: string
+                    format: date
+                    example: '2024-06-15'
+                  effective_date:
+                    type: string
+                    format: date
+                    example: '2024-06-15'
+                  fiscal_year_id:
+                    type: integer
+                    example: 1
+                  'no':
+                    type: string
+                    example: '1'
+                  ref:
+                    type: string
+                    example: '1'
+                  daily_no:
+                    type: integer
+                    example: 1
+                  state:
+                    type: string
+                    enum:
+                    - draft
+                    - booked
+                    - approved
+                    example: draft
+                  entry_type:
+                    type: string
+                    enum:
+                    - normal
+                    - beginning
+                    - ending
+                    example: normal
+                  debit:
+                    type: number
+                    format: float
+                    example: 100.0
+                  credit:
+                    type: number
+                    format: float
+                    example: 100.0
+                  organization_id:
+                    type: integer
+                    example: 1
+                  creator_id:
+                    type:
+                    - integer
+                    - nil
+                    example: 1
+                  t:
+                    type: object
+                    example:
+                      description:
+                        en: Opening Entry
+                        fa: سند افتتاحیه
+                  items:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                          example: 1
+                        row:
+                          type: integer
+                          example: 1
+                        account_id:
+                          type:
+                          - integer
+                          - nil
+                          example: 1
+                        center1_id:
+                          type:
+                          - integer
+                          - nil
+                          example:
+                        center2_id:
+                          type:
+                          - integer
+                          - nil
+                          example:
+                        center3_id:
+                          type:
+                          - integer
+                          - nil
+                          example:
+                        center4_id:
+                          type:
+                          - integer
+                          - nil
+                          example:
+                        center5_id:
+                          type:
+                          - integer
+                          - nil
+                          example:
+                        center6_id:
+                          type:
+                          - integer
+                          - nil
+                          example:
+                        debit:
+                          type: number
+                          format: float
+                          example: 100.0
+                        credit:
+                          type: number
+                          format: float
+                          example: 0.0
+                        currency_id:
+                          type: integer
+                          example: 1
+                        rate:
+                          type: number
+                          format: float
+                          example: 1.0
+                        currency_amount:
+                          type: number
+                          format: float
+                          example: 100.0
+                        account_code:
+                          type: string
+                          example: '01'
+                        account_name:
+                          type: string
+                          example: Cash
+                        t:
+                          type: object
+                          example:
+                            description:
+                              en: Cash debit
+                              fa: بدهکار نقدی
+                      required:
+                      - id
+                      - row
+                      - account_id
+                      - debit
+                      - credit
+                      - currency_id
+                      - rate
+                      - currency_amount
+                required:
+                - id
+                - date
+                - effective_date
+                - fiscal_year_id
+                - 'no'
+                - ref
+                - daily_no
+                - state
+                - entry_type
+                - debit
+                - credit
+                - organization_id
+  "/organizations/{organization_id}/accounting/journal_entries/{id}/unapprove":
+    parameters:
+    - name: organization_id
+      in: path
+      description: Organization ID
+      required: true
+      schema:
+        type: integer
+    - name: id
+      in: path
+      description: Journal Entry ID
+      required: true
+      schema:
+        type: integer
+    patch:
+      summary: Unapprove a journal entry
+      tags:
+      - Journal Entries
+      responses:
+        '200':
+          description: Unapproved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    example: 1
+                  date:
+                    type: string
+                    format: date
+                    example: '2024-06-15'
+                  effective_date:
+                    type: string
+                    format: date
+                    example: '2024-06-15'
+                  fiscal_year_id:
+                    type: integer
+                    example: 1
+                  'no':
+                    type: string
+                    example: '1'
+                  ref:
+                    type: string
+                    example: '1'
+                  daily_no:
+                    type: integer
+                    example: 1
+                  state:
+                    type: string
+                    enum:
+                    - draft
+                    - booked
+                    - approved
+                    example: draft
+                  entry_type:
+                    type: string
+                    enum:
+                    - normal
+                    - beginning
+                    - ending
+                    example: normal
+                  debit:
+                    type: number
+                    format: float
+                    example: 100.0
+                  credit:
+                    type: number
+                    format: float
+                    example: 100.0
+                  organization_id:
+                    type: integer
+                    example: 1
+                  creator_id:
+                    type:
+                    - integer
+                    - nil
+                    example: 1
+                  t:
+                    type: object
+                    example:
+                      description:
+                        en: Opening Entry
+                        fa: سند افتتاحیه
+                  items:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                          example: 1
+                        row:
+                          type: integer
+                          example: 1
+                        account_id:
+                          type:
+                          - integer
+                          - nil
+                          example: 1
+                        center1_id:
+                          type:
+                          - integer
+                          - nil
+                          example:
+                        center2_id:
+                          type:
+                          - integer
+                          - nil
+                          example:
+                        center3_id:
+                          type:
+                          - integer
+                          - nil
+                          example:
+                        center4_id:
+                          type:
+                          - integer
+                          - nil
+                          example:
+                        center5_id:
+                          type:
+                          - integer
+                          - nil
+                          example:
+                        center6_id:
+                          type:
+                          - integer
+                          - nil
+                          example:
+                        debit:
+                          type: number
+                          format: float
+                          example: 100.0
+                        credit:
+                          type: number
+                          format: float
+                          example: 0.0
+                        currency_id:
+                          type: integer
+                          example: 1
+                        rate:
+                          type: number
+                          format: float
+                          example: 1.0
+                        currency_amount:
+                          type: number
+                          format: float
+                          example: 100.0
+                        account_code:
+                          type: string
+                          example: '01'
+                        account_name:
+                          type: string
+                          example: Cash
+                        t:
+                          type: object
+                          example:
+                            description:
+                              en: Cash debit
+                              fa: بدهکار نقدی
+                      required:
+                      - id
+                      - row
+                      - account_id
+                      - debit
+                      - credit
+                      - currency_id
+                      - rate
+                      - currency_amount
+                required:
+                - id
+                - date
+                - effective_date
+                - fiscal_year_id
+                - 'no'
+                - ref
+                - daily_no
+                - state
+                - entry_type
+                - debit
+                - credit
+                - organization_id
   "/organizations/{organization_id}/accounting/ledgers":
     parameters:
     - name: organization_id

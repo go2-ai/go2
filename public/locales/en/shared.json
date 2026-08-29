@@ -5,6 +5,7 @@
     "changeLog": "Change Log",
     "color": "Color",
     "commonActions": {
+      "addNewRow": "Add Row",
       "archive": "Archive",
       "cancel": "Cancel",
       "confirm": "Confirm",

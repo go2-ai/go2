@@ -129,13 +129,26 @@ export function ExtendedDataGrid({
       {...dataGridProps}
       sx={{
         '& .MuiDataGrid-columnHeader': {
-          // let our two-row layout use the full cell height instead of
-          // being vertically centered by the grid's default alignment
           alignItems: 'stretch',
         },
         '& .MuiDataGrid-columnHeaderTitleContainer': {
           alignItems: 'stretch',
           height: '100%',
+        },
+        // NEW: give the title/filter area the remaining space...
+        '& .MuiDataGrid-columnHeaderTitleContainerContent': {
+          flex: '1 1 auto',
+          minWidth: 0,        // lets its own ellipsis/overflow rules work instead of forcing growth
+          overflow: 'hidden',
+        },
+        // ...and pin the sort icon to a small, fixed-size slot
+        '& .MuiDataGrid-iconButtonContainer': {
+          flex: '0 0 auto',
+          visibility: 'visible',
+          width: 'auto',
+        },
+        '& .MuiDataGrid-sortIcon': {
+          opacity: 'inherit !important',
         },
         ...dataGridProps.sx,
       }}
@@ -160,6 +173,8 @@ function HeaderWithSearch({
   onChange: (field: string, value: string) => void;
   onClear: (field: string) => void;
 }) {
+  const isActive = Boolean(value);
+
   return (
     <Box
       sx={{
@@ -196,11 +211,14 @@ function HeaderWithSearch({
           px: 0.75,
           borderRadius: 1,
           border: '1px solid',
-          borderColor: (theme) => alpha(theme.palette.text.primary, 0.15),
-          bgcolor: (theme) => alpha(theme.palette.text.primary, 0.03),
+          borderColor: (theme) =>
+            isActive ? alpha(theme.palette.primary.main, 0.9) : alpha(theme.palette.text.primary, 0.15),
+          bgcolor: (theme) =>
+            isActive ? alpha(theme.palette.primary.main, 0.2) : alpha(theme.palette.text.primary, 0.03),
           transition: 'border-color 0.15s ease, background-color 0.15s ease',
           '&:hover': {
-            borderColor: (theme) => alpha(theme.palette.text.primary, 0.28),
+            borderColor: (theme) =>
+              isActive ? theme.palette.primary.main : alpha(theme.palette.text.primary, 0.28),
           },
           '&:focus-within': {
             borderColor: 'primary.main',
@@ -209,7 +227,13 @@ function HeaderWithSearch({
           },
         }}
       >
-        <SearchRoundedIcon sx={{ fontSize: 15, color: 'text.disabled', flexShrink: 0 }} />
+        <SearchRoundedIcon
+          sx={{
+            fontSize: 15,
+            color: isActive ? 'primary.main' : 'text.disabled',
+            flexShrink: 0,
+          }}
+        />
         <InputBase
           value={value}
           onChange={(e) => onChange(field, e.target.value)}

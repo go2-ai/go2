@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_08_19_105539) do
+ActiveRecord::Schema[8.0].define(version: 2026_08_21_182120) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -91,17 +91,6 @@ ActiveRecord::Schema[8.0].define(version: 2026_08_19_105539) do
     t.bigint "blob_id", null: false
     t.string "variation_digest", null: false
     t.index ["blob_id", "variation_digest"], name: "index_active_storage_variant_records_uniqueness", unique: true
-  end
-
-  create_table "branches", force: :cascade do |t|
-    t.jsonb "name"
-    t.string "code"
-    t.bigint "organization_id", null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["code"], name: "index_branches_on_code"
-    t.index ["name"], name: "index_branches_on_name", using: :gin
-    t.index ["organization_id"], name: "index_branches_on_organization_id"
   end
 
   create_table "center_types", force: :cascade do |t|
@@ -209,20 +198,18 @@ ActiveRecord::Schema[8.0].define(version: 2026_08_19_105539) do
     t.date "date", null: false
     t.date "effective_date", null: false
     t.bigint "fiscal_year_id", null: false
-    t.bigint "branch_id", null: false
     t.string "no", null: false
     t.string "ref", null: false
     t.integer "daily_no", null: false
     t.integer "state", null: false
     t.integer "entry_type", null: false
-    t.jsonb "description"
-    t.float "debit"
-    t.float "credit"
+    t.jsonb "description", default: {}, null: false
+    t.decimal "debit", precision: 30, scale: 15, default: "0.0", null: false
+    t.decimal "credit", precision: 30, scale: 15, default: "0.0", null: false
     t.bigint "organization_id", null: false
     t.bigint "creator_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["branch_id"], name: "index_journal_entries_on_branch_id"
     t.index ["creator_id"], name: "index_journal_entries_on_creator_id"
     t.index ["credit"], name: "index_journal_entries_on_credit"
     t.index ["daily_no"], name: "index_journal_entries_on_daily_no"
@@ -231,6 +218,9 @@ ActiveRecord::Schema[8.0].define(version: 2026_08_19_105539) do
     t.index ["entry_type"], name: "index_journal_entries_on_entry_type"
     t.index ["fiscal_year_id"], name: "index_journal_entries_on_fiscal_year_id"
     t.index ["no"], name: "index_journal_entries_on_no"
+    t.index ["organization_id", "daily_no", "date"], name: "index_journal_entries_on_organization_id_and_daily_no_and_date"
+    t.index ["organization_id", "date"], name: "index_journal_entries_on_organization_id_and_date"
+    t.index ["organization_id", "fiscal_year_id", "no"], name: "idx_on_organization_id_fiscal_year_id_no_2a6ed0c132"
     t.index ["organization_id"], name: "index_journal_entries_on_organization_id"
     t.index ["state"], name: "index_journal_entries_on_state"
   end
@@ -245,12 +235,12 @@ ActiveRecord::Schema[8.0].define(version: 2026_08_19_105539) do
     t.bigint "center4_id"
     t.bigint "center5_id"
     t.bigint "center6_id"
-    t.jsonb "description"
-    t.float "debit"
-    t.float "credit"
+    t.jsonb "description", default: {}, null: false
+    t.decimal "debit", precision: 30, scale: 15, default: "0.0", null: false
+    t.decimal "credit", precision: 30, scale: 15, default: "0.0", null: false
     t.bigint "currency_id", null: false
-    t.float "rate"
-    t.float "currency_amount"
+    t.decimal "rate", precision: 30, scale: 15, default: "1.0", null: false
+    t.decimal "currency_amount", precision: 30, scale: 15, default: "0.0", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["account_id"], name: "index_journal_entry_items_on_account_id"
@@ -264,6 +254,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_08_19_105539) do
     t.index ["currency_amount"], name: "index_journal_entry_items_on_currency_amount"
     t.index ["currency_id"], name: "index_journal_entry_items_on_currency_id"
     t.index ["debit"], name: "index_journal_entry_items_on_debit"
+    t.index ["journal_entry_id", "row"], name: "index_journal_entry_items_on_journal_entry_id_and_row"
     t.index ["journal_entry_id"], name: "index_journal_entry_items_on_journal_entry_id"
     t.index ["rate"], name: "index_journal_entry_items_on_rate"
   end
@@ -474,7 +465,6 @@ ActiveRecord::Schema[8.0].define(version: 2026_08_19_105539) do
   add_foreign_key "accounts", "ledgers"
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
-  add_foreign_key "branches", "organizations"
   add_foreign_key "center_types", "organizations"
   add_foreign_key "centers", "center_types"
   add_foreign_key "conversation_participants", "conversations"
@@ -483,11 +473,10 @@ ActiveRecord::Schema[8.0].define(version: 2026_08_19_105539) do
   add_foreign_key "departments", "organizations"
   add_foreign_key "fiscal_years", "organizations"
   add_foreign_key "groups", "organizations"
-  add_foreign_key "journal_entries", "branches"
   add_foreign_key "journal_entries", "fiscal_years"
   add_foreign_key "journal_entries", "members", column: "creator_id"
   add_foreign_key "journal_entries", "organizations"
-  add_foreign_key "journal_entry_items", "centers", column: "account_id"
+  add_foreign_key "journal_entry_items", "accounts"
   add_foreign_key "journal_entry_items", "centers", column: "center1_id"
   add_foreign_key "journal_entry_items", "centers", column: "center2_id"
   add_foreign_key "journal_entry_items", "centers", column: "center3_id"

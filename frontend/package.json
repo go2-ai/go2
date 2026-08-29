@@ -23,6 +23,7 @@
     "@mui/styled-engine": "^7.3.5",
     "@mui/x-data-grid": "^9.0.3",
     "@reduxjs/toolkit": "^2.9.2",
+    "@tanstack/react-virtual": "^3.14.10",
     "date-fns": "^4.4.0",
     "date-fns-tz": "^3.2.0",
     "i18next": "^26.0.8",

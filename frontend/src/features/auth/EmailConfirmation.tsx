@@ -38,9 +38,7 @@ export const EmailConfirmation = () => {
 
     const confirm = async () => {
       try {
-        console.log("sending token");
         const result = await confirmEmail({ confirmation_token: token }).unwrap();
-        console.log('Email confirmed:', result);
         setStatus('success');
       } catch (error: any) {
         console.error('Confirmation failed:', error);
