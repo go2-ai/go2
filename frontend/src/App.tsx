@@ -23,6 +23,8 @@ import { CentersPage } from './features/accounting/centers/CentersPage';
 import { ChartOfAccountsPage } from './features/accounting/chartOfAccounts/ChartOfAccountsPage';
 import { FiscalYearsPage } from './features/fiscalYears/FiscalYearsPage';
 import { JournalEntryPage } from './features/accounting/journalEntries/JournalEntryPage';
+import { JournalEntriesPage } from './features/accounting/journalEntries/JournalEntriesPage';
+import { JournalEntryEditPage } from './features/accounting/journalEntries/JournalEntryEditPage';
 
 function App() {
   return (
@@ -54,6 +56,8 @@ function App() {
               <Route path=":organizationId/accounting/centers" element={<CentersPage />} />
               <Route path=":organizationId/accounting/chart-of-accounts" element={<ChartOfAccountsPage />} />
               <Route path=":organizationId/accounting/journal-entry" element={<JournalEntryPage />} />
+              <Route path=":organizationId/accounting/journal-entries" element={<JournalEntriesPage />} />
+              <Route path=":organizationId/accounting/journal-entries/:journalEntryId" element={<JournalEntryEditPage />} />
             </Route>
           </Route>
           

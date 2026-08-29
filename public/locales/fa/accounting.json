@@ -154,6 +154,21 @@
     "useParentOrgCenters": "استفاده از مراکز سازمان مادر",
     "useParentOrgCurrencies": "استفاده از ارزهای سازمان مادر",
     "useParentOrgFiscalYears": "استفاده از سال‌های مالی سازمان مادر",
-    "warn": "هشدار"
+    "warn": "هشدار",
+    "no": "شماره",
+    "ref": "مرجع",
+    "date": "تاریخ",
+    "state": "وضعیت",
+    "entryType": "نوع سند",
+    "createdAt": "تاریخ ایجاد",
+    "dailyNo": "شماره روزانه",
+    "createdBy": "ایجادکننده",
+    "journalEntriesDescription": "فهرست تمام اسناد حسابداری سال مالی فعال",
+    "noJournalEntries": "سندی برای این سال مالی یافت نشد",
+    "failedToLoadJournalEntries": "بارگذاری اسناد حسابداری ناموفق بود",
+    "normal": "عادی",
+    "beginning": "شروع دوره",
+    "ending": "پایان دوره",
+    "failedToLoadJournalEntry": "بارگذاری سند حسابداری ناموفق بود"
   }
 }

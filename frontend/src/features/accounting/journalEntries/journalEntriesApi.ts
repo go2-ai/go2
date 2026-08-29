@@ -37,6 +37,8 @@ export interface JournalEntry {
   credit: number;
   organization_id: number;
   creator_id: number | null;
+  created_at: string;
+  creator_name: string;
   t?: {
     description?: Record<string, string>;
   };

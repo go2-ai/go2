@@ -11,9 +11,7 @@ class PermissionsController < ApplicationController
 
     if params[:code].present?
       @permissions = @permissions.where(code: params[:code])
-    end
-
-    if params[:member_id].present?
+    elsif params[:member_id].present?
       member = @organization.members.find(params[:member_id])
 
       if params[:include_indirect] == "true"
@@ -21,6 +19,8 @@ class PermissionsController < ApplicationController
       else
         @permissions = Permission.where(grantee: member)
       end
+    else
+      @permissions = current_member.all_permissions
     end
 
     render json: PermissionBlueprint.render(@permissions)

@@ -2,7 +2,14 @@ import { useState, useMemo, useCallback, useRef, useEffect } from 'react';
 import { Box, InputBase, alpha } from '@mui/material';
 import SearchRoundedIcon from '@mui/icons-material/SearchRounded';
 import ClearRoundedIcon from '@mui/icons-material/ClearRounded';
-import { DataGrid } from '@mui/x-data-grid';
+import ArrowUpwardRoundedIcon from '@mui/icons-material/ArrowUpwardRounded';
+import ArrowDownwardRoundedIcon from '@mui/icons-material/ArrowDownwardRounded';
+import {
+  DataGrid,
+  useGridApiContext,
+  useGridSelector,
+  gridSortModelSelector,
+} from '@mui/x-data-grid';
 import type { GridColDef, DataGridProps } from '@mui/x-data-grid';
 
 interface ExtendedDataGridProps extends Omit<DataGridProps, 'rows' | 'columns'> {
@@ -24,7 +31,7 @@ export function ExtendedDataGrid({
   showHeaderSearchRow = false,
   excludeSearchFields = ['actions'],
   filterDebounceMs = 200,
-  headerHeightWithSearch = 76,
+  headerHeightWithSearch = 64,
   ...dataGridProps
 }: ExtendedDataGridProps) {
   // Committed filters drive the actual row filtering (debounced)
@@ -112,6 +119,7 @@ export function ExtendedDataGrid({
             renderOriginalHeader={col.renderHeader}
             headerParams={params}
             field={col.field}
+            sortable={col.sortable !== false}
             value={draftFilters[col.field] || ''}
             onChange={handleFilterChange}
             onClear={handleFilterClear}
@@ -135,20 +143,14 @@ export function ExtendedDataGrid({
           alignItems: 'stretch',
           height: '100%',
         },
-        // NEW: give the title/filter area the remaining space...
         '& .MuiDataGrid-columnHeaderTitleContainerContent': {
           flex: '1 1 auto',
-          minWidth: 0,        // lets its own ellipsis/overflow rules work instead of forcing growth
+          minWidth: 0,
           overflow: 'hidden',
         },
-        // ...and pin the sort icon to a small, fixed-size slot
+        // Remove the sort icon's column entirely
         '& .MuiDataGrid-iconButtonContainer': {
-          flex: '0 0 auto',
-          visibility: 'visible',
-          width: 'auto',
-        },
-        '& .MuiDataGrid-sortIcon': {
-          opacity: 'inherit !important',
+          display: 'none',
         },
         ...dataGridProps.sx,
       }}
@@ -161,6 +163,7 @@ function HeaderWithSearch({
   renderOriginalHeader,
   headerParams,
   field,
+  sortable,
   value,
   onChange,
   onClear,
@@ -169,11 +172,17 @@ function HeaderWithSearch({
   renderOriginalHeader?: (params: any) => React.ReactNode;
   headerParams: any;
   field: string;
+  sortable: boolean;
   value: string;
   onChange: (field: string, value: string) => void;
   onClear: (field: string) => void;
 }) {
   const isActive = Boolean(value);
+
+  const apiRef = useGridApiContext();
+  const sortModel = useGridSelector(apiRef, gridSortModelSelector);
+  const sortEntry = sortModel.find((item) => item.field === field);
+  const sortIndex = sortModel.length > 1 ? sortModel.findIndex((item) => item.field === field) : -1;
 
   return (
     <Box
@@ -188,16 +197,49 @@ function HeaderWithSearch({
     >
       <Box
         sx={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 0.5,
           fontSize: '0.8125rem',
           fontWeight: 600,
           lineHeight: 1.3,
           overflow: 'hidden',
-          textOverflow: 'ellipsis',
-          whiteSpace: 'nowrap',
         }}
-        title={headerName}
       >
-        {renderOriginalHeader ? renderOriginalHeader(headerParams) : headerName}
+        <Box
+          component="span"
+          sx={{
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
+            minWidth: 0,
+          }}
+          title={headerName}
+        >
+          {renderOriginalHeader ? renderOriginalHeader(headerParams) : headerName}
+        </Box>
+
+        {sortable && sortEntry && (
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              flexShrink: 0,
+              color: 'primary.main',
+            }}
+          >
+            {sortEntry.sort === 'asc' ? (
+              <ArrowUpwardRoundedIcon sx={{ fontSize: 14 }} />
+            ) : (
+              <ArrowDownwardRoundedIcon sx={{ fontSize: 14 }} />
+            )}
+            {sortIndex > -1 && (
+              <Box component="span" sx={{ fontSize: '0.6875rem', ml: 0.125, fontWeight: 700 }}>
+                {sortIndex + 1}
+              </Box>
+            )}
+          </Box>
+        )}
       </Box>
 
       <Box
@@ -212,9 +254,9 @@ function HeaderWithSearch({
           borderRadius: 1,
           border: '1px solid',
           borderColor: (theme) =>
-            isActive ? alpha(theme.palette.primary.main, 0.9) : alpha(theme.palette.text.primary, 0.15),
+            isActive ? alpha(theme.palette.primary.main, 0.5) : alpha(theme.palette.text.primary, 0.15),
           bgcolor: (theme) =>
-            isActive ? alpha(theme.palette.primary.main, 0.2) : alpha(theme.palette.text.primary, 0.03),
+            isActive ? alpha(theme.palette.primary.main, 0.06) : alpha(theme.palette.text.primary, 0.03),
           transition: 'border-color 0.15s ease, background-color 0.15s ease',
           '&:hover': {
             borderColor: (theme) =>
@@ -228,22 +270,13 @@ function HeaderWithSearch({
         }}
       >
         <SearchRoundedIcon
-          sx={{
-            fontSize: 15,
-            color: isActive ? 'primary.main' : 'text.disabled',
-            flexShrink: 0,
-          }}
+          sx={{ fontSize: 15, color: isActive ? 'primary.main' : 'text.disabled', flexShrink: 0 }}
         />
         <InputBase
           value={value}
           onChange={(e) => onChange(field, e.target.value)}
           onKeyDown={(e) => e.stopPropagation()}
-          placeholder="Filter"
-          sx={{
-            flex: 1,
-            fontSize: '0.8125rem',
-            '& .MuiInputBase-input': { p: 0 },
-          }}
+          sx={{ flex: 1, fontSize: '0.8125rem', '& .MuiInputBase-input': { p: 0 } }}
         />
         {value && (
           <ClearRoundedIcon

@@ -32,6 +32,10 @@ export function getTabPath(tab: Tab, organizationId: string): string {
         return `/app/organizations/${organizationId}/accounting/centers`;
       case 'chart-of-accounts':
         return `/app/organizations/${organizationId}/accounting/chart-of-accounts`;
+      case 'journal-entry-edit':
+        return tab.path && tab.path.startsWith(`/app/organizations/${organizationId}/`)
+          ? tab.path
+          : `/app/organizations/${organizationId}/accounting/journal-entries`;
       default:
         return `/app/organizations/${organizationId}`;
     }

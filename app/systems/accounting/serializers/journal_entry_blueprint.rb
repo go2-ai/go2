@@ -12,7 +12,8 @@ module Accounting
            :state,
            :entry_type,
            :organization_id,
-           :creator_id
+           :creator_id,
+           :created_at
 
     field :debit do |je|
       je.debit.to_f
@@ -20,6 +21,10 @@ module Accounting
 
     field :credit do |je|
       je.credit.to_f
+    end
+
+    field :creator_name do |journal_entry|
+      journal_entry.creator&.name
     end
 
     field :translations_hash, name: :t

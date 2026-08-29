@@ -55,7 +55,10 @@ export function RouteSynchronizer() {
     } else if (pathname.endsWith(`/organizations/${organizationId}`)) {
       pageId = 'dashboard';
       title = 'Dashboard';
-    } 
+    } else if (pathname.includes('/accounting/journal-entries/')) {
+      pageId = 'journal-entry-edit';
+      title = 'Edit Journal Entry';
+    }
     
     if (pageId) {
       // Find the most recently created tab with this pageId
