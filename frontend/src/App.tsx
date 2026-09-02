@@ -25,6 +25,8 @@ import { FiscalYearsPage } from './features/fiscalYears/FiscalYearsPage';
 import { JournalEntryPage } from './features/accounting/journalEntries/JournalEntryPage';
 import { JournalEntriesPage } from './features/accounting/journalEntries/JournalEntriesPage';
 import { JournalEntryEditPage } from './features/accounting/journalEntries/JournalEntryEditPage';
+import { ExplorerPage } from './features/accounting/journalEntryItems/ExplorerPage';
+import { JournalEntryItemsPage } from './features/accounting/journalEntryItems/JournalEntryItemsPage';
 
 function App() {
   return (
@@ -58,6 +60,8 @@ function App() {
               <Route path=":organizationId/accounting/journal-entry" element={<JournalEntryPage />} />
               <Route path=":organizationId/accounting/journal-entries" element={<JournalEntriesPage />} />
               <Route path=":organizationId/accounting/journal-entries/:journalEntryId" element={<JournalEntryEditPage />} />
+              <Route path=":organizationId/accounting/explorer" element={<ExplorerPage />} />
+              <Route path=":organizationId/accounting/journal-entry-items" element={<JournalEntryItemsPage />} />
             </Route>
           </Route>
           

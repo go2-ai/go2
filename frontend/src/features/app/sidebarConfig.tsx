@@ -1,5 +1,4 @@
-// src/features/app/sidebarConfig.tsx
-import type { ComponentType } from 'react';
+
 import {
   People,
   Business,
@@ -146,6 +145,13 @@ export const SIDEBAR_MODULES: SidebarModule[] = [
         path: '/accounting/settings',
         icon: Settings,
         requiredPermission: PERMISSION_CODES.ACCOUNTING_VIEW_SETTINGS,
+      },
+      {
+        pageId: 'explorer',
+        titleKey: 'explorer',
+        path: '/accounting/explorer',
+        icon: Settings,
+        requiredPermission: PERMISSION_CODES.ACCOUNTING_VIEW_JOURNAL_ENTRIES,
       },
     ],
   },

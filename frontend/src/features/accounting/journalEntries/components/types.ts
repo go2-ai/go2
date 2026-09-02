@@ -2,6 +2,8 @@ import type { GridRow } from '../../../../components/editableGrid/types';
 import type { FinancialGroup } from '../utils/journalEntryCalculations';
 
 export interface JournalEntryRow extends GridRow {
+  id: string; // local grid id
+  serverId?: number; // server-side journal_entry_item id (present when editing existing)
   row: number;
   accountId: number | null;
   center1Id: number | null;

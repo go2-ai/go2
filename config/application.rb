@@ -44,5 +44,6 @@ module Go3
     Rails.autoloaders.main.collapse(Rails.root.join("app/systems/*/controllers"))
     Rails.autoloaders.main.collapse(Rails.root.join("app/systems/*/policies"))
     Rails.autoloaders.main.collapse(Rails.root.join("app/systems/*/serializers"))
+    Rails.autoloaders.main.collapse(Rails.root.join("app/systems/*/services"))
   end
 end

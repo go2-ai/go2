@@ -3,7 +3,6 @@ import {
   AppBar,
   Toolbar,
   IconButton,
-  Badge,
   InputBase,
   Avatar,
   Menu,
@@ -17,7 +16,6 @@ import {
   FormControl,
 } from '@mui/material';
 import {
-  Notifications as NotificationsIcon,
   Search as SearchIcon,
   Brightness4 as DarkModeIcon,
   Brightness7 as LightModeIcon,
@@ -90,7 +88,6 @@ export const TopBar = () => {
   const dispatch = useDispatch();
   const { mode, toggleTheme } = useTheme();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const [notificationAnchor, setNotificationAnchor] = useState<null | HTMLElement>(null);
   const { user } = useSelector((state: RootState) => state.auth);
   const { currentOrganization } = useSelector((state: RootState) => state.organizations);
   const [signOut] = useSignOutMutation();
@@ -107,14 +104,6 @@ export const TopBar = () => {
 
   const handleMenuClose = () => {
     setAnchorEl(null);
-  };
-
-  const handleNotificationsOpen = (event: React.MouseEvent<HTMLElement>) => {
-    setNotificationAnchor(event.currentTarget);
-  };
-
-  const handleNotificationsClose = () => {
-    setNotificationAnchor(null);
   };
 
   const handleSignOut = async () => {
@@ -218,13 +207,6 @@ export const TopBar = () => {
 
         {/* Right side icons */}
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <Tooltip title={t('notifications')}>
-            <IconButton onClick={handleNotificationsOpen} color="inherit">
-              <Badge badgeContent={3} color="secondary">
-                <NotificationsIcon />
-              </Badge>
-            </IconButton>
-          </Tooltip>
 
           <Tooltip title={mode === 'light' ? t('darkMode') : t('lightMode')}>
             <IconButton onClick={toggleTheme} color="inherit">
@@ -290,27 +272,6 @@ export const TopBar = () => {
           <MenuItem onClick={handleSignOut}>
             <LogoutIcon sx={{ mr: 1, fontSize: 20 }} />
             {t('signOut')}
-          </MenuItem>
-        </Menu>
-
-        {/* Notifications Menu */}
-        <Menu
-          anchorEl={notificationAnchor}
-          open={Boolean(notificationAnchor)}
-          onClose={handleNotificationsClose}
-          transformOrigin={{ horizontal: 'right', vertical: 'top' }}
-          anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
-          PaperProps={{
-            sx: {
-              mt: 1,
-              width: 320,
-              borderRadius: 2,
-              boxShadow: (theme) => `0 4px 20px ${alpha(theme.palette.common.black, 0.1)}`,
-            },
-          }}
-        >
-          <MenuItem>
-            <Typography variant="body2">No new notifications</Typography>
           </MenuItem>
         </Menu>
       </Toolbar>

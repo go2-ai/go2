@@ -25,6 +25,8 @@ tags:
   description: Accounts
 - name: Journal Entries
   description: Journal Entries
+- name: Journal Entry Items
+  description: Journal Entry Items
 paths:
   "/organizations/{organization_id}/accounting/account_categories":
     parameters:
@@ -2943,6 +2945,250 @@ paths:
                 - debit
                 - credit
                 - organization_id
+  "/organizations/{organization_id}/accounting/journal_entry_items":
+    parameters:
+    - name: organization_id
+      in: path
+      description: Organization ID
+      required: true
+      schema:
+        type: integer
+    - name: fiscal_year_id
+      in: query
+      description: Fiscal Year ID
+      required: false
+      schema:
+        type: integer
+    - name: filters[][dimension]
+      in: query
+      description: Filter dimension
+      required: false
+      schema:
+        type: string
+    - name: filters[][ids][]
+      in: query
+      items:
+        type: integer
+      description: Filter IDs
+      required: false
+      schema:
+        type: array
+    get:
+      summary: Get all journal entry items (explorer)
+      tags:
+      - Journal Entry Items
+      description: Returns the flat, ungrouped journal_entry_items matching the explorer
+        filters. Only booked and approved entries are included.
+      responses:
+        '200':
+          description: Excludes draft entries from results
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                      example: 1
+                    row:
+                      type: integer
+                      example: 1
+                    account_id:
+                      type:
+                      - integer
+                      - nil
+                      example: 1
+                    center1_id:
+                      type:
+                      - integer
+                      - nil
+                      example:
+                    center2_id:
+                      type:
+                      - integer
+                      - nil
+                      example:
+                    center3_id:
+                      type:
+                      - integer
+                      - nil
+                      example:
+                    center4_id:
+                      type:
+                      - integer
+                      - nil
+                      example:
+                    center5_id:
+                      type:
+                      - integer
+                      - nil
+                      example:
+                    center6_id:
+                      type:
+                      - integer
+                      - nil
+                      example:
+                    debit:
+                      type: number
+                      format: float
+                      example: 5000.0
+                    credit:
+                      type: number
+                      format: float
+                      example: 0.0
+                    currency_id:
+                      type:
+                      - integer
+                      - nil
+                      example: 1
+                    rate:
+                      type: number
+                      format: float
+                      example: 1.0
+                    currency_amount:
+                      type: number
+                      format: float
+                      example: 5000.0
+                    account_code:
+                      type: string
+                      example: '01'
+                    account_name:
+                      type: string
+                      example: Bank
+                    t:
+                      type: object
+                      example:
+                        description:
+                          en: Description
+                          fa: توضیحات
+                    journal_entry:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                          example: 1
+                        date:
+                          type: string
+                          format: date
+                          example: '2024-01-15'
+                        'no':
+                          type: string
+                          example: '1'
+                        ref:
+                          type: string
+                          example: '1'
+                  required:
+                  - id
+                  - row
+                  - account_id
+                  - debit
+                  - credit
+                  - currency_id
+                  - rate
+                  - currency_amount
+        '422':
+          description: Invalid filter dimension
+  "/organizations/{organization_id}/accounting/journal_entry_items/group_by":
+    parameters:
+    - name: organization_id
+      in: path
+      description: Organization ID
+      required: true
+      schema:
+        type: integer
+    - name: fiscal_year_id
+      in: query
+      description: Fiscal Year ID
+      required: false
+      schema:
+        type: integer
+    - name: group_by
+      in: query
+      enum:
+      - account_category
+      - ledger
+      - account
+      - center1
+      - center2
+      - center3
+      - center4
+      - center5
+      - center6
+      - currency
+      description: Dimension to group by
+      required: true
+      schema:
+        type: string
+    - name: filters[][dimension]
+      in: query
+      description: Filter dimension
+      required: false
+      schema:
+        type: string
+    - name: filters[][ids][]
+      in: query
+      items:
+        type: integer
+      description: Filter IDs
+      required: false
+      schema:
+        type: array
+    get:
+      summary: Get grouped summary of journal entry items
+      tags:
+      - Journal Entry Items
+      description: Returns grouped summaries (debit/credit/net) for the explorer.
+        Only booked and approved entries are included.
+      responses:
+        '200':
+          description: Drills into currency filtered by a selected account
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  group_by:
+                    type: string
+                    example: ledger
+                  rows:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                          example: 1
+                        code:
+                          type: string
+                          example: '110'
+                        name:
+                          type: string
+                          example: Cash
+                        sum_debit:
+                          type: number
+                          format: float
+                          example: 5000.0
+                        sum_credit:
+                          type: number
+                          format: float
+                          example: 0.0
+                        debit_balance:
+                          type:
+                          - number
+                          - nil
+                          example: 5000.0
+                        credit_balance:
+                          type:
+                          - number
+                          - nil
+                          example:
+                required:
+                - group_by
+                - rows
+        '422':
+          description: Invalid filter dimension
   "/organizations/{organization_id}/accounting/ledgers":
     parameters:
     - name: organization_id

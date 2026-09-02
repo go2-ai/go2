@@ -62,9 +62,10 @@ const createEmptyRow = (rowNumber: number, defaultCurrencyId: number | null): Jo
 
 interface JournalEntryEditorProps {
   journalEntryId?: number;
+  focusItemId?: number;
 }
 
-export const JournalEntryEditor = ({ journalEntryId }: JournalEntryEditorProps) => {
+export const JournalEntryEditor = ({ journalEntryId, focusItemId }: JournalEntryEditorProps) => {
   const { t } = useTranslation('shared');
   const { t: tJE } = useTranslation('accounting');
   const { organizationId } = useParams<{ organizationId: string }>();
@@ -101,6 +102,7 @@ export const JournalEntryEditor = ({ journalEntryId }: JournalEntryEditorProps) 
   const [editingState, setEditingState] = useState<'draft' | 'booked' | 'approved' | null>(null);
   const [saving, setSaving] = useState(false);
   const [blinkingCells, setBlinkingCells] = useState<Set<string>>(new Set());
+  const [originalItemIds, setOriginalItemIds] = useState<Set<number>>(new Set());
 
   const mainCurrency = useMemo(
     () => currencies?.find(c => c.id === settings?.main_currency_id) ?? null,
@@ -126,31 +128,49 @@ export const JournalEntryEditor = ({ journalEntryId }: JournalEntryEditorProps) 
       fa: fetchedJournalEntry.t?.description?.fa ?? '',
     });
 
-    setRows(
-      (fetchedJournalEntry.items ?? []).map((item) => ({
-        id: `row-${Date.now()}-${Math.random()}-${item.row}`,
-        row: item.row,
-        accountId: item.account_id,
-        center1Id: item.center1_id,
-        center2Id: item.center2_id,
-        center3Id: item.center3_id,
-        center4Id: item.center4_id,
-        center5Id: item.center5_id,
-        center6Id: item.center6_id,
-        debit: item.debit ?? null,
-        credit: item.credit ?? null,
-        currencyId: item.currency_id,
-        rate: item.rate ?? null,
-        currencyAmount: Math.abs(item.currency_amount ?? 0),
-        description: {
-          en: item.t?.description?.en ?? '',
-          fa: item.t?.description?.fa ?? '',
-        },
-        errors: {},
-        financialEditOrder: [],
-      }))
-    );
-  }, [fetchedJournalEntry]);
+    const serverIds = (fetchedJournalEntry.items ?? [])
+      .map(item => item.id)
+      .filter((id): id is number => id != null);
+      
+    setOriginalItemIds(new Set(serverIds));
+
+    const mappedRows: JournalEntryRow[] = (fetchedJournalEntry.items ?? []).map((item) => ({
+      id: `row-${Date.now()}-${Math.random()}-${item.row}`,
+      serverId: item.id,
+      row: item.row,
+      accountId: item.account_id,
+      center1Id: item.center1_id,
+      center2Id: item.center2_id,
+      center3Id: item.center3_id,
+      center4Id: item.center4_id,
+      center5Id: item.center5_id,
+      center6Id: item.center6_id,
+      debit: item.debit ?? null,
+      credit: item.credit ?? null,
+      currencyId: item.currency_id,
+      rate: item.rate ?? null,
+      currencyAmount: item.currency_amount != null ? Math.abs(item.currency_amount) : null,
+      description: {
+        en: item.t?.description?.en ?? '',
+        fa: item.t?.description?.fa ?? '',
+      },
+      errors: {},
+      financialEditOrder: [],
+    }));
+
+    setRows(mappedRows);
+
+    // Select the focused item (when opened from JournalEntryItemsPage)
+    if (focusItemId) {
+      const targetRow = mappedRows.find(r => r.serverId === focusItemId);
+      if (targetRow) {
+        setSelectedRowId(targetRow.id);
+        setSelectedCellKey('account');
+        setSelectedRowIds(new Set([targetRow.id]));
+        setSelectionAnchorId(targetRow.id);
+      }
+    }
+  }, [fetchedJournalEntry, focusItemId]);
 
   const triggerBlink = useCallback((rowId: string, key: string) => {
     const cellId = `${rowId}-${key}`;
@@ -373,6 +393,48 @@ export const JournalEntryEditor = ({ journalEntryId }: JournalEntryEditorProps) 
       throw new Error('No active fiscal year');
     }
 
+    // Current server IDs from the grid
+    const currentServerIds = new Set(
+      rows
+        .map(row => row.serverId)
+        .filter((id): id is number => id != null)
+    );
+
+    // Deleted items = original IDs not in current rows
+    const deletedItemIds = Array.from(originalItemIds).filter(
+      id => !currentServerIds.has(id)
+    );
+
+    const itemsAttributes = [
+      ...rows.map((row) => {
+        const isMainCurrency = row.currencyId === settings?.main_currency_id;
+        return {
+          ...(row.serverId != null ? { id: row.serverId } : {}),
+          row: row.row,
+          account_id: row.accountId ?? undefined,
+          center1_id: row.center1Id ?? undefined,
+          center2_id: row.center2Id ?? undefined,
+          center3_id: row.center3Id ?? undefined,
+          center4_id: row.center4Id ?? undefined,
+          center5_id: row.center5Id ?? undefined,
+          center6_id: row.center6Id ?? undefined,
+          debit: row.debit ?? 0,
+          credit: row.credit ?? 0,
+          currency_id: row.currencyId ?? undefined,
+          rate: isMainCurrency ? null : (row.rate ?? null),
+          currency_amount: isMainCurrency ? null : (row.credit ? -Math.abs(row.currencyAmount ?? 0) : Math.abs(row.currencyAmount ?? 0)),
+          description_en: row.description['en'] || '',
+          description_fa: row.description['fa'] || '',
+        }
+      }),
+      // Mark deleted items
+      ...deletedItemIds.map(id => ({
+        id,
+        _destroy: true,
+      })),
+    ];
+
+
     return {
       date: date ?? '',
       effective_date: date ?? '',
@@ -381,23 +443,7 @@ export const JournalEntryEditor = ({ journalEntryId }: JournalEntryEditorProps) 
       entry_type: 'normal' as const,
       description_en: description['en'] || '',
       description_fa: description['fa'] || '',
-      items_attributes: rows.map((row) => ({
-        row: row.row,
-        account_id: row.accountId ?? undefined,
-        center1_id: row.center1Id ?? undefined,
-        center2_id: row.center2Id ?? undefined,
-        center3_id: row.center3Id ?? undefined,
-        center4_id: row.center4Id ?? undefined,
-        center5_id: row.center5Id ?? undefined,
-        center6_id: row.center6Id ?? undefined,
-        debit: row.debit ?? 0,
-        credit: row.credit ?? 0,
-        currency_id: row.currencyId ?? undefined,
-        rate: row.rate ?? null,
-        currency_amount: row.credit ? -Math.abs(row.currencyAmount ?? 0) : Math.abs(row.currencyAmount ?? 0),
-        description_en: row.description['en'] || '',
-        description_fa: row.description['fa'] || '',
-      })),
+      items_attributes: itemsAttributes
     };
   };
 
@@ -425,6 +471,7 @@ export const JournalEntryEditor = ({ journalEntryId }: JournalEntryEditorProps) 
     setSaving(true);
     try {
       const payload = buildPayload('booked');
+      console.log(payload);
       if (editingId) {
         await updateJournalEntry({ organizationId: orgId, id: editingId, data: payload }).unwrap();
       } else {

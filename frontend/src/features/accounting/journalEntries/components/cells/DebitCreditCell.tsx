@@ -23,7 +23,7 @@ export const DebitCreditCell = ({
   const theme = useTheme();
 
   const formatNumber = (val: number | null): string => {
-    if (val === null || val === undefined) return '';
+    if (val === null || val === undefined || val === 0) return '';
     return val.toLocaleString('en-US', {
       minimumFractionDigits: decimalDigits,
       maximumFractionDigits: decimalDigits,

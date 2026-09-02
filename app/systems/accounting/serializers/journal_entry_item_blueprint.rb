@@ -11,7 +11,8 @@ module Accounting
            :center4_id,
            :center5_id,
            :center6_id,
-           :currency_id
+           :currency_id,
+           :description
 
     field :debit do |item|
       item.debit.to_f
@@ -22,11 +23,11 @@ module Accounting
     end
 
     field :rate do |item|
-      item.rate.to_f
+      item.rate&.to_f
     end
 
     field :currency_amount do |item|
-      item.currency_amount.to_f
+      item.currency_amount&.to_f
     end
 
     field :account_code do |item|
@@ -37,6 +38,14 @@ module Accounting
       item.account&.name
     end
 
+    field :abr do |item|
+      item.currency.abr
+    end
+
     field :translations_hash, name: :t
+
+    view :with_journal_entry do
+      association :journal_entry, blueprint: Accounting::JournalEntryBlueprint, view: :explorer
+    end
   end
 end

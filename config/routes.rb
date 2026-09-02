@@ -119,6 +119,12 @@ Rails.application.routes.draw do
           patch :unapprove
         end
       end
+
+      resources :journal_entry_items, only: [ :index ] do
+        collection do
+          get :group_by
+        end
+      end
     end
   end
 

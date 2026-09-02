@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_08_21_182120) do
+ActiveRecord::Schema[8.0].define(version: 2026_09_01_111828) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -239,8 +239,8 @@ ActiveRecord::Schema[8.0].define(version: 2026_08_21_182120) do
     t.decimal "debit", precision: 30, scale: 15, default: "0.0", null: false
     t.decimal "credit", precision: 30, scale: 15, default: "0.0", null: false
     t.bigint "currency_id", null: false
-    t.decimal "rate", precision: 30, scale: 15, default: "1.0", null: false
-    t.decimal "currency_amount", precision: 30, scale: 15, default: "0.0", null: false
+    t.decimal "rate", precision: 30, scale: 15, default: "1.0"
+    t.decimal "currency_amount", precision: 30, scale: 15, default: "0.0"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["account_id"], name: "index_journal_entry_items_on_account_id"

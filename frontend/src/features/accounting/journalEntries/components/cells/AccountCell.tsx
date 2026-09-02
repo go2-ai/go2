@@ -90,7 +90,7 @@ export const AccountCell = ({ value, accounts, onChange, disabled, error }: Acco
               <span style={{ fontFamily: 'monospace', fontWeight: 600, minWidth: 80 }}>
                 {getAccountCode(option)}
               </span>
-              <span style={{ color: 'gray', flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              <span style={{ flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                 {option.name}
               </span>
             </Box>

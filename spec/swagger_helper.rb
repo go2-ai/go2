@@ -24,7 +24,8 @@ RSpec.configure do |config|
         { name: 'Account Categories', description: 'Organization-level account categories' },
         { name: 'Ledgers', description: 'Accounting Ledgers' },
         { name: 'Accounts', description: 'Accounts' },
-        { name: 'Journal Entries', description: 'Journal Entries' }
+        { name: 'Journal Entries', description: 'Journal Entries' },
+        { name: 'Journal Entry Items', description: 'Journal Entry Items' }
       ]
     }
   }

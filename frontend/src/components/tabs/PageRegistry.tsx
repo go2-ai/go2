@@ -17,6 +17,8 @@ import { FiscalYearsPage } from '../../features/fiscalYears/FiscalYearsPage';
 import { JournalEntryPage } from '../../features/accounting/journalEntries/JournalEntryPage';
 import { JournalEntriesPage } from '../../features/accounting/journalEntries/JournalEntriesPage';
 import { JournalEntryEditPage } from '../../features/accounting/journalEntries/JournalEntryEditPage';
+import { ExplorerPage } from '../../features/accounting/journalEntryItems/ExplorerPage';
+import { JournalEntryItemsPage } from '../../features/accounting/journalEntryItems/JournalEntryItemsPage';
 import { TabIdContext } from './TabIdContext';
 import { Box, Typography } from '@mui/material';
 
@@ -38,6 +40,8 @@ export const PAGE_REGISTRY: Record<string, React.ComponentType> = {
   'journal-entry': JournalEntryPage,
   'journal-entries': JournalEntriesPage,
   'journal-entry-edit': JournalEntryEditPage,
+  explorer: ExplorerPage,
+  'journal-entry-items': JournalEntryItemsPage,
 };
 
 export function PageContent({ pageId, tabId }: { pageId: string; tabId?: string }) {

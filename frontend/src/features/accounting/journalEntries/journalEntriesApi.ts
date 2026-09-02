@@ -55,7 +55,7 @@ export interface JournalEntryPayload {
   description_fa?: string;
   items_attributes?: Array<{
     id?: number;
-    row: number;
+    row?: number;
     account_id?: number | null;
     center1_id?: number | null;
     center2_id?: number | null;
@@ -63,11 +63,11 @@ export interface JournalEntryPayload {
     center4_id?: number | null;
     center5_id?: number | null;
     center6_id?: number | null;
-    debit: number;
-    credit: number;
+    debit?: number;
+    credit?: number;
     currency_id?: number;
     rate?: number | null;
-    currency_amount?: number;
+    currency_amount?: number | null;
     description_en?: string;
     description_fa?: string;
     _destroy?: boolean;

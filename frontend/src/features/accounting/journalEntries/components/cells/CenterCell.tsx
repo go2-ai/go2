@@ -98,7 +98,7 @@ export const CenterCell = ({ value, centers, disabled, error, onChange }: Center
           <li key={key} {...optionProps}>
             <Box sx={{ display: 'flex', gap: 1 }}>
               <span style={{ fontFamily: 'monospace', fontWeight: 600 }}>{option.code}</span>
-              <span style={{ color: 'gray' }}>{option.name}</span>
+              <span>{option.name}</span>
             </Box>
           </li>
         );

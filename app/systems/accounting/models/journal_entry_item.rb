@@ -23,8 +23,10 @@ module Accounting
 
     # ── Validations ───────────────────────────────────────────────────────
     validates :row, presence: true
-    validates :debit, :credit, :rate, :currency_amount,
+    validates :debit, :credit,
               numericality: { greater_than_or_equal_to: 0 }
+    validates :rate, :currency_amount,
+              numericality: { greater_than_or_equal_to: 0, allow_nil: true }
 
     validate :account_required_for_non_draft
     validate :centers_required_for_non_draft
@@ -34,13 +36,16 @@ module Accounting
     # ── Callbacks ─────────────────────────────────────────────────────────
     before_validation :set_default_currency_and_rate
     before_validation :calculate_currency_amount,
-                      if: -> { debit_changed? || credit_changed? || rate_changed? }
-
+                      if: -> { (debit_changed? || credit_changed? || rate_changed?) && !main_currency? }
     private
 
     def set_default_currency_and_rate
       self.currency ||= organization&.accounting_setting&.main_currency
-      self.rate ||= 1.0 if currency == organization&.accounting_setting&.main_currency
+      self.rate ||= 1.0 unless main_currency?
+    end
+
+    def main_currency?
+      currency == organization&.accounting_setting&.main_currency
     end
 
     def account_required_for_non_draft
@@ -72,7 +77,7 @@ module Accounting
     def amounts_consistent_for_non_draft
       return if journal_entry.nil? || journal_entry.draft?
       return if debit.zero? && credit.zero?
-      return if rate.zero?
+      return if rate.nil? || rate.zero?
 
       expected = (debit - credit).abs / rate
       unless (currency_amount - expected).abs < 0.000000000001
