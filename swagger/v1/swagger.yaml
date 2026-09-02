@@ -203,6 +203,263 @@ paths:
       responses:
         '200':
           description: Deletes the department successfully
+  "/organizations/{organization_id}/documents":
+    parameters:
+    - name: organization_id
+      in: path
+      description: Organization ID
+      required: true
+      schema:
+        type: integer
+    get:
+      summary: Get documents for a documentable
+      tags:
+      - Documents
+      parameters:
+      - name: documentable_type
+        in: query
+        required: true
+        description: Polymorphic documentable type
+        schema:
+          type: string
+      - name: documentable_id
+        in: query
+        required: true
+        description: Polymorphic documentable ID
+        schema:
+          type: integer
+      responses:
+        '200':
+          description: Loaded successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                      example: 1
+                    documentable_type:
+                      type: string
+                      example: Accounting::JournalEntry
+                    documentable_id:
+                      type: integer
+                      example: 1
+                    created_at:
+                      type: string
+                      example: '2026-09-02 10:52:46.787878000 +0000'
+                    name:
+                      type: string
+                      example: report.pdf
+                    size:
+                      type: integer
+                      example: 24576
+                    content_type:
+                      type: string
+                      example: application/pdf
+                    uploaded_by:
+                      type:
+                      - string
+                      - 'null'
+                      example: John Doe
+                    previewable:
+                      type: boolean
+                      example: true
+                    url:
+                      type: string
+                      example: "/rails/active_storage/blobs/..."
+    post:
+      summary: Upload a document
+      tags:
+      - Documents
+      parameters: []
+      responses:
+        '200':
+          description: Document uploaded successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    example: 1
+                  documentable_type:
+                    type: string
+                    example: Accounting::JournalEntry
+                  documentable_id:
+                    type: integer
+                    example: 1
+                  created_at:
+                    type: string
+                    example: '2026-09-02 10:52:46.787878000 +0000'
+                  name:
+                    type: string
+                    example: report.pdf
+                  size:
+                    type: integer
+                    example: 24576
+                  content_type:
+                    type: string
+                    example: application/pdf
+                  uploaded_by:
+                    type:
+                    - string
+                    - 'null'
+                    example: John Doe
+                  previewable:
+                    type: boolean
+                    example: true
+                  url:
+                    type: string
+                    example: "/rails/active_storage/blobs/..."
+        '422':
+          description: Unsupported file type
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errors:
+                    type: array
+                    items:
+                      type: string
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: string
+        required: true
+        description: Polymorphic documentable type
+  "/organizations/{organization_id}/documents/{id}":
+    parameters:
+    - name: organization_id
+      in: path
+      description: Organization ID
+      required: true
+      schema:
+        type: integer
+    - name: id
+      in: path
+      description: Document ID
+      required: true
+      schema:
+        type: integer
+    get:
+      summary: Get a document
+      tags:
+      - Documents
+      responses:
+        '200':
+          description: Loaded successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    example: 1
+                  documentable_type:
+                    type: string
+                    example: Accounting::JournalEntry
+                  documentable_id:
+                    type: integer
+                    example: 1
+                  created_at:
+                    type: string
+                    example: '2026-09-02 10:52:46.787878000 +0000'
+                  name:
+                    type: string
+                    example: report.pdf
+                  size:
+                    type: integer
+                    example: 24576
+                  content_type:
+                    type: string
+                    example: application/pdf
+                  uploaded_by:
+                    type:
+                    - string
+                    - 'null'
+                    example: John Doe
+                  previewable:
+                    type: boolean
+                    example: true
+                  url:
+                    type: string
+                    example: "/rails/active_storage/blobs/..."
+        '404':
+          description: Not found
+    delete:
+      summary: Delete a document
+      tags:
+      - Documents
+      responses:
+        '200':
+          description: Document deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    example: 1
+                  documentable_type:
+                    type: string
+                    example: Accounting::JournalEntry
+                  documentable_id:
+                    type: integer
+                    example: 1
+                  created_at:
+                    type: string
+                    example: '2026-09-02 10:52:46.787878000 +0000'
+                  name:
+                    type: string
+                    example: report.pdf
+                  size:
+                    type: integer
+                    example: 24576
+                  content_type:
+                    type: string
+                    example: application/pdf
+                  uploaded_by:
+                    type:
+                    - string
+                    - 'null'
+                    example: John Doe
+                  previewable:
+                    type: boolean
+                    example: true
+                  url:
+                    type: string
+                    example: "/rails/active_storage/blobs/..."
+        '404':
+          description: Not found
+  "/organizations/{organization_id}/documents/{id}/download":
+    parameters:
+    - name: organization_id
+      in: path
+      description: Organization ID
+      required: true
+      schema:
+        type: integer
+    - name: id
+      in: path
+      description: Document ID
+      required: true
+      schema:
+        type: integer
+    get:
+      summary: Download a document
+      tags:
+      - Documents
+      responses:
+        '302':
+          description: Redirects to Active Storage URL
   "/organizations/{organization_id}/fiscal_years":
     parameters:
     - name: organization_id

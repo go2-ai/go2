@@ -1,0 +1,20 @@
+{
+  "en": {
+    "name": "Name",
+    "size": "Size",
+    "uploadedBy": "Uploaded By",
+    "uploadedAt": "Uploaded At",
+    "actions": "Actions",
+    "documents": "Documents",
+    "files": "files",
+    "uploadFiles": "Upload Files",
+    "uploading": "Uploading...",
+    "acceptedTypes": "Accepted types",
+    "download": "Download",
+    "delete": "Delete",
+    "selectToPreview": "Select a file to preview",
+    "noPreview": "Preview not available",
+    "retry": "Retry",
+    "failedToLoad": "Failed to load documents"
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "fa": {
+    "name": "نام",
+    "size": "حجم",
+    "uploadedBy": "بارگذاری توسط",
+    "uploadedAt": "تاریخ بارگذاری",
+    "actions": "عملیات",
+    "documents": "اسناد",
+    "files": "فایل",
+    "uploadFiles": "بارگذاری فایل‌ها",
+    "uploading": "در حال بارگذاری...",
+    "acceptedTypes": "فرمت‌های مجاز",
+    "download": "دانلود",
+    "delete": "حذف",
+    "selectToPreview": "برای پیش‌نمایش یک فایل را انتخاب کنید",
+    "noPreview": "پیش‌نمایش در دسترس نیست",
+    "retry": "تلاش دوباره",
+    "failedToLoad": "بارگذاری اسناد ناموفق بود"
+  }
+}

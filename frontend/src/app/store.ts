@@ -7,6 +7,7 @@ import { rolesApi } from '../features/roles/rolesApi';
 import { groupsApi } from '../features/groups/groupsApi';
 import { versionsApi } from '../features/versions/versionsApi';
 import { permissionsApi } from '../features/permissions/permissionsApi';
+import { documentsApi } from '../features/documents/documentsApi';
 import { accountingSettingsApi } from '../features/accounting/settings/settingsApi';
 import { accountingCurrenciesApi } from '../features/accounting/currencies/currenciesApi';
 import { accountingCenterTypesApi } from '../features/accounting/centerTypes/centerTypesApi';
@@ -41,6 +42,7 @@ export const store = configureStore({
     [fiscalYearsApi.reducerPath]: fiscalYearsApi.reducer,
     [journalEntriesApi.reducerPath]: journalEntriesApi.reducer,
     [journalEntryItemsApi.reducerPath]: journalEntryItemsApi.reducer,
+    [documentsApi.reducerPath]: documentsApi.reducer,
     organizations: organizationsReducer,
     auth: authReducer,
   },
@@ -63,7 +65,8 @@ export const store = configureStore({
       accountingAccountsApi.middleware,
       fiscalYearsApi.middleware,
       journalEntriesApi.middleware,
-      journalEntryItemsApi.middleware
+      journalEntryItemsApi.middleware,
+      documentsApi.middleware
     ),
 });
 

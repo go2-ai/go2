@@ -31,6 +31,7 @@ class Organization < ApplicationRecord
   has_many :users, through: :members
   has_many :permissions, dependent: :destroy
   has_many :fiscal_years, dependent: :destroy
+  has_many :documents, dependent: :destroy
 
   has_many :currencies, class_name: "Accounting::Currency", dependent: :destroy
   has_many :center_types, class_name: "Accounting::CenterType", dependent: :destroy
@@ -107,6 +108,14 @@ class Organization < ApplicationRecord
 
   def default_calendar_type
     calendar_types.first
+  end
+
+  def total_file_size_mb
+    (total_file_size.to_f / 1.megabyte).round(2)
+  end
+
+  def total_file_size_gb
+    (total_file_size.to_f / 1.gigabyte).round(2)
   end
 
   # private

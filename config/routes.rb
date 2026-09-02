@@ -90,6 +90,15 @@ Rails.application.routes.draw do
 
     resources :versions, only: [ :index ]
 
+    resources :documents, only: [ :index, :show, :create, :destroy ] do
+      member do
+        get :download
+      end
+      collection do
+        post :zip
+      end
+    end
+
     resources :conversations do
       member do
         post :reply

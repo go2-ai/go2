@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_09_01_111828) do
+ActiveRecord::Schema[8.0].define(version: 2026_09_02_182423) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -163,6 +163,18 @@ ActiveRecord::Schema[8.0].define(version: 2026_09_01_111828) do
     t.datetime "updated_at", null: false
     t.index ["name"], name: "index_departments_on_name", using: :gin
     t.index ["organization_id"], name: "index_departments_on_organization_id"
+  end
+
+  create_table "documents", force: :cascade do |t|
+    t.bigint "organization_id", null: false
+    t.string "documentable_type", null: false
+    t.bigint "documentable_id", null: false
+    t.bigint "member_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["documentable_type", "documentable_id"], name: "index_documents_on_documentable"
+    t.index ["member_id"], name: "index_documents_on_member_id"
+    t.index ["organization_id"], name: "index_documents_on_organization_id"
   end
 
   create_table "fiscal_years", force: :cascade do |t|
@@ -330,6 +342,9 @@ ActiveRecord::Schema[8.0].define(version: 2026_09_01_111828) do
     t.string "active_locales", default: [], null: false, array: true
     t.string "inactive_locales", default: [], null: false, array: true
     t.string "calendar_types", default: ["gregorian"], null: false, array: true
+    t.integer "max_file_size", default: 50, null: false
+    t.bigint "total_file_size", default: 0, null: false
+    t.integer "max_total_file_size", default: 10, null: false
     t.index ["archived_at"], name: "index_organizations_on_archived_at"
     t.index ["name"], name: "index_organizations_on_name", using: :gin
     t.index ["parent_id"], name: "index_organizations_on_parent_id"
@@ -471,6 +486,8 @@ ActiveRecord::Schema[8.0].define(version: 2026_09_01_111828) do
   add_foreign_key "conversation_participants", "users"
   add_foreign_key "currencies", "organizations"
   add_foreign_key "departments", "organizations"
+  add_foreign_key "documents", "members"
+  add_foreign_key "documents", "organizations"
   add_foreign_key "fiscal_years", "organizations"
   add_foreign_key "groups", "organizations"
   add_foreign_key "journal_entries", "fiscal_years"

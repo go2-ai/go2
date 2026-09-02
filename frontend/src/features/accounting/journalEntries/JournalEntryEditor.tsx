@@ -1,6 +1,6 @@
 // frontend/src/features/accounting/journalEntries/JournalEntryEditor.tsx
 import { useState, useEffect, useMemo, useCallback } from 'react';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import {
   Container,
   Chip,
@@ -37,6 +37,10 @@ import { useJournalEntryKeyboard } from './hooks/useJournalEntryKeyboard';
 import { useToast } from '../../../contexts/ToastContext';
 import { BaseDatePicker } from '../../../components/shared/BaseDatePicker';
 import MultiLocaleInput from '../../../components/shared/MultiLocaleInput';
+import AttachFileIcon from '@mui/icons-material/AttachFile';
+import { Badge, IconButton, Tooltip } from '@mui/material';
+import { useGetDocumentsQuery } from '../../documents/documentsApi';
+import { useTabManager } from '../../../components/tabs';
 
 const FINANCIAL_KEYS: readonly string[] = ['debit', 'credit', 'rate', 'currencyAmount'];
 
@@ -100,9 +104,21 @@ export const JournalEntryEditor = ({ journalEntryId, focusItemId }: JournalEntry
   const [description, setDescription] = useState<Record<string, string>>({});
   const [editingId, setEditingId] = useState<number | null>(journalEntryId ?? null);
   const [editingState, setEditingState] = useState<'draft' | 'booked' | 'approved' | null>(null);
+  const { openTab } = useTabManager();
+  const navigate = useNavigate();
+
   const [saving, setSaving] = useState(false);
   const [blinkingCells, setBlinkingCells] = useState<Set<string>>(new Set());
   const [originalItemIds, setOriginalItemIds] = useState<Set<number>>(new Set());
+
+  const { data: documents } = useGetDocumentsQuery(
+    {
+      organizationId: orgId,
+      documentableType: 'Accounting::JournalEntry',
+      documentableId: editingId || 0,
+    },
+    { skip: !editingId }
+  );
 
   const mainCurrency = useMemo(
     () => currencies?.find(c => c.id === settings?.main_currency_id) ?? null,
@@ -292,6 +308,13 @@ export const JournalEntryEditor = ({ journalEntryId, focusItemId }: JournalEntry
       return { ...row, rate: newRate };
     }));
   }, [triggerBlink]);
+
+  const handleOpenAttachments = () => {
+    if (!editingId) return;
+    const path = `/app/organizations/${orgId}/documents?type=Accounting::JournalEntry&id=${editingId}`;
+    openTab('documents', `Attachments: Journal Entry #${editingId}`, path);
+    navigate(path);
+  };
 
   useJournalEntryKeyboard({
     rows,
@@ -533,9 +556,20 @@ export const JournalEntryEditor = ({ journalEntryId, focusItemId }: JournalEntry
     >
       <Box sx={{ mb: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexShrink: 0 }}>
         <Box>
-          <Typography variant="h4" gutterBottom>
-            {editingId ? tJE('journalEntryNumber', { id: editingId }) : tJE('newJournalEntry')}
-          </Typography>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Typography variant="h4" gutterBottom sx={{ mb: 0 }}>
+              {editingId ? tJE('journalEntryNumber', { id: editingId }) : tJE('newJournalEntry')}
+            </Typography>
+            {editingId && (
+              <Tooltip title="Attachments">
+                <IconButton onClick={handleOpenAttachments} size="small">
+                  <Badge badgeContent={documents?.length || 0} color="primary">
+                    <AttachFileIcon fontSize="small" />
+                  </Badge>
+                </IconButton>
+              </Tooltip>
+            )}
+          </Box>
         </Box>
         <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
           <Button variant="outlined" startIcon={<DraftsIcon />} onClick={handleSaveAsDraft} disabled={saving}>

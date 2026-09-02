@@ -13,15 +13,12 @@ local:
 # Amazon S3 configuration
 amazon:
   service: S3
-  access_key_id: <%= ENV['AWS_ACCESS_KEY_ID'] %>
-  secret_access_key: <%= ENV['AWS_SECRET_ACCESS_KEY'] %>
-  region: <%= ENV['AWS_REGION'] || 'us-east-1' %>
-  bucket: <%= ENV['AWS_BUCKET'] %>
-  public: <%= ENV['AWS_PUBLIC'] || false %>
-  # Optional additional settings
-  upload:
-    cache_control: <%= ENV['AWS_CACHE_CONTROL'] || 'private, max-age=86400' %>
-    server_side_encryption: <%= ENV['AWS_ENCRYPTION'] || 'AES256' %>
+  access_key_id: <%= ENV['STORAGE_ACCESS_KEY_ID'] %>
+  secret_access_key: <%= ENV['STORAGE_SECRET_ACCESS_KEY'] %>
+  region: <%= ENV.fetch('STORAGE_REGION', 'auto') %>
+  bucket: <%= ENV['STORAGE_BUCKET'] %>
+  endpoint: <%= ENV['STORAGE_ENDPOINT'] %>
+  force_path_style: true
 
 # Google Cloud Storage configuration
 google:
