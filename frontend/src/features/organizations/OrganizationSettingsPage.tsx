@@ -13,6 +13,7 @@ import {
   Autocomplete,
   Tabs,
   Tab,
+  LinearProgress,
 } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import {
@@ -30,6 +31,7 @@ import {
   type LocaleMap,
 } from '../../utils/translationHelper';
 import type { CalendarType } from '../../components/shared/BaseDatePicker';
+import { formatFileSize } from '../documents/formatFileSize';
 
 const CALENDAR_TYPE_OPTIONS = [
   { code: 'gregorian', label: 'Gregorian' },
@@ -72,12 +74,15 @@ export const OrganizationSettingsPage = () => {
     locale: LocaleCode;
     active_locales: LocaleCode[];
     calendar_types: CalendarType[];
+    max_file_size: number;
   }>({
     name: {},
     locale: 'en',
     active_locales: [],
     calendar_types: ['gregorian'],
+    max_file_size: 50,
   });
+
   // Populate form when organization data loads
   useEffect(() => {
     if (organization && isReady) {
@@ -88,6 +93,7 @@ export const OrganizationSettingsPage = () => {
         calendar_types: (organization.calendar_types?.length
           ? organization.calendar_types
           : ['gregorian']) as CalendarType[],
+        max_file_size: organization.max_file_size ?? 50,
       });
     }
   }, [organization, isReady, allLocales.join(',')]);
@@ -105,6 +111,7 @@ export const OrganizationSettingsPage = () => {
         locale: formData.locale,
         active_locales: formData.active_locales,
         calendar_types: formData.calendar_types,
+        max_file_size: formData.max_file_size,
       };
 
       await updateOrganization({ id: orgId, data: payload }).unwrap();
@@ -123,7 +130,8 @@ export const OrganizationSettingsPage = () => {
       JSON.stringify(formData.active_locales.slice().sort()) !==
         JSON.stringify((organization.active_locales || []).slice().sort()) ||
       JSON.stringify(formData.calendar_types.slice()) !==
-        JSON.stringify((organization.calendar_types || ['gregorian']).slice())
+        JSON.stringify((organization.calendar_types || ['gregorian']).slice()) ||
+      formData.max_file_size !== (organization.max_file_size ?? 50)
     );
   }, [formData, organization, isReady, allLocales]);
 
@@ -161,6 +169,14 @@ export const OrganizationSettingsPage = () => {
     );
   }
 
+  const maxTotalFileSizeGB = organization?.max_total_file_size ?? 10;
+  const totalFileSizeBytes = organization?.total_file_size ?? 0;
+  const maxTotalFileSizeBytes = maxTotalFileSizeGB * 1024 * 1024 * 1024;
+  const storageUsagePercent = Math.min(
+    100,
+    (totalFileSizeBytes / maxTotalFileSizeBytes) * 100
+  );
+
   return (
     <Container maxWidth="md" sx={{ py: 3 }}>
       <Typography variant="h4" gutterBottom>
@@ -188,6 +204,7 @@ export const OrganizationSettingsPage = () => {
             }}
           >
             <Tab label={tSettings('general')} />
+            <Tab label={tOrgs('storage')} />
           </Tabs>
 
           <Box sx={{ flex: 1, px: 4, py: 3 }}>
@@ -341,6 +358,47 @@ export const OrganizationSettingsPage = () => {
                     </MenuItem>
                   ))}
                 </TextField>
+              </Box>
+            </TabPanel>
+
+            <TabPanel value={tabValue} index={1}>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, maxWidth: 500 }}>
+                {/* Max File Size */}
+                <TextField
+                  label={tOrgs('maxFileSize')}
+                  type="number"
+                  value={formData.max_file_size}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      max_file_size: Math.min(50, Math.max(1, parseInt(e.target.value, 10) || 1)),
+                    }))
+                  }
+                  fullWidth
+                  size="small"
+                  inputProps={{ min: 1, max: 50 }}
+                  helperText={tOrgs('maxFileSizeHint')}
+                />
+
+                {/* Storage Usage Progress Bar */}
+                <Box>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                    <Typography variant="body2" color="text.secondary">
+                      {tOrgs('storageUsage')}
+                    </Typography>
+                    <Typography variant="body2" fontWeight={600}>
+                      {formatFileSize(totalFileSizeBytes)} / {maxTotalFileSizeGB} GB
+                    </Typography>
+                  </Box>
+                  <LinearProgress
+                    variant="determinate"
+                    value={storageUsagePercent}
+                    sx={{ height: 8, borderRadius: 5 }}
+                  />
+                  <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5, display: 'block' }}>
+                    {tOrgs('maxTotalFileSize')}: {maxTotalFileSizeGB} GB
+                  </Typography>
+                </Box>
               </Box>
             </TabPanel>
           </Box>

@@ -1,20 +1,18 @@
 {
   "en": {
-    "name": "Name",
-    "size": "Size",
-    "uploadedBy": "Uploaded By",
-    "uploadedAt": "Uploaded At",
-    "actions": "Actions",
-    "documents": "Documents",
-    "files": "files",
-    "uploadFiles": "Upload Files",
-    "uploading": "Uploading...",
     "acceptedTypes": "Accepted types",
-    "download": "Download",
     "delete": "Delete",
-    "selectToPreview": "Select a file to preview",
+    "documents": "Documents",
+    "download": "Download",
+    "files": "files",
     "noPreview": "Preview not available",
     "retry": "Retry",
-    "failedToLoad": "Failed to load documents"
+    "selectToPreview": "Select a file to preview",
+    "size": "Size",
+    "uploadFailed": "Failed to upload file",
+    "uploadFiles": "Upload Files",
+    "uploadedAt": "Uploaded At",
+    "uploadedBy": "Uploaded By",
+    "uploading": "Uploading..."
   }
 }

@@ -1,20 +1,18 @@
 {
   "fa": {
-    "name": "نام",
-    "size": "حجم",
-    "uploadedBy": "بارگذاری توسط",
-    "uploadedAt": "تاریخ بارگذاری",
-    "actions": "عملیات",
-    "documents": "اسناد",
-    "files": "فایل",
-    "uploadFiles": "بارگذاری فایل‌ها",
-    "uploading": "در حال بارگذاری...",
     "acceptedTypes": "فرمت‌های مجاز",
-    "download": "دانلود",
     "delete": "حذف",
-    "selectToPreview": "برای پیش‌نمایش یک فایل را انتخاب کنید",
+    "documents": "اسناد",
+    "download": "دانلود",
+    "files": "فایل",
     "noPreview": "پیش‌نمایش در دسترس نیست",
     "retry": "تلاش دوباره",
-    "failedToLoad": "بارگذاری اسناد ناموفق بود"
+    "selectToPreview": "برای پیش‌نمایش یک فایل را انتخاب کنید",
+    "size": "حجم",
+    "uploadFailed": "بارگذاری فایل ناموفق بود",
+    "uploadFiles": "بارگذاری فایل‌ها",
+    "uploadedAt": "تاریخ بارگذاری",
+    "uploadedBy": "بارگذاری توسط",
+    "uploading": "در حال بارگذاری..."
   }
 }

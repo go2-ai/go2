@@ -9,11 +9,17 @@
     "defaultCalendarTypeHint": "اولین تقویم در لیست به عنوان پیش‌فرض استفاده می‌شود",
     "defaultCalendarTypeSingleHint": "فقط یک نوع تقویم انتخاب شده است",
     "loadingOrganizations": "در حال بارگذاری سازمان‌های شما...",
+    "maxFileSize": "حداکثر حجم فایل (MB)",
+    "maxFileSizeHint": "حداکثر حجم یک فایل (1 تا 50 مگابایت)",
+    "maxTotalFileSize": "حداکثر حجم کل (MB)",
+    "maxTotalFileSizeHint": "حداکثر حجم کل فایل‌های بارگذاری شده",
     "onboardingSubtitle": "بیایید با ایجاد سازمان آزمایشی خود شروع کنیم",
     "organizationCreationFailed": "ایجاد سازمان ناموفق بود. لطفا دوباره تلاش کنید.",
     "organizationName": "نام سازمان",
     "organizationNamePlaceholder": "نام سازمان خود را وارد کنید",
     "organizationSettings": "تنظیمات سازمان",
-    "primaryLocale": "زبان اصلی"
+    "primaryLocale": "زبان اصلی",
+    "storage": "فضای ذخیره‌سازی",
+    "storageUsage": "مصرف فضا"
   }
 }

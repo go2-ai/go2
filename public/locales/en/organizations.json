@@ -9,11 +9,17 @@
     "defaultCalendarTypeHint": "The first calendar type in the list is used as default",
     "defaultCalendarTypeSingleHint": "Only one calendar type selected",
     "loadingOrganizations": "Loading your organizations...",
+    "maxFileSize": "Max File Size (MB)",
+    "maxFileSizeHint": "Maximum size of a single uploaded file (1–50 MB)",
+    "maxTotalFileSize": "Max Total Storage (MB)",
+    "maxTotalFileSizeHint": "Maximum total size of all uploaded files",
     "onboardingSubtitle": "Let's get started by creating your trial organization",
     "organizationCreationFailed": "Failed to create organization. Please try again.",
     "organizationName": "Organization Name",
     "organizationNamePlaceholder": "Enter your organization name",
     "organizationSettings": "Organization Settings",
-    "primaryLocale": "Primary Locale"
+    "primaryLocale": "Primary Locale",
+    "storage": "Storage",
+    "storageUsage": "Storage Usage"
   }
 }
