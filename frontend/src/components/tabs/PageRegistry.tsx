@@ -10,6 +10,9 @@ import { PermissionsPage } from '../../features/permissions/PermissionsPage';
 import { PermissionHistoryPage } from '../../features/permissions/PermissionHistoryPage';
 import { OrganizationSettingsPage } from '../../features/organizations/OrganizationSettingsPage';
 import { DocumentsPage } from '../../features/documents/DocumentsPage';
+import { ReportPage } from '../../features/reports/ReportPage';
+import { ReportSettingsPage } from '../../features/reports/ReportSettingsPage';
+import { ReportDesignerPage } from '../../features/reports/ReportDesignerPage';
 import { AccountingSettingsPage } from '../../features/accounting/settings/AccountingSettingsPage';
 import { CenterTypesPage } from '../../features/accounting/centerTypes/CenterTypesPage';
 import { CentersPage } from '../../features/accounting/centers/CentersPage';
@@ -44,6 +47,9 @@ export const PAGE_REGISTRY: Record<string, React.ComponentType> = {
   explorer: ExplorerPage,
   'journal-entry-items': JournalEntryItemsPage,
   documents: DocumentsPage,
+  reports: ReportPage,
+  'report-settings': ReportSettingsPage,
+  'report-designer': ReportDesignerPage,
 };
 
 export function PageContent({ pageId, tabId }: { pageId: string; tabId?: string }) {

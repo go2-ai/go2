@@ -32,6 +32,7 @@ class Organization < ApplicationRecord
   has_many :permissions, dependent: :destroy
   has_many :fiscal_years, dependent: :destroy
   has_many :documents, dependent: :destroy
+  has_many :report_templates, dependent: :destroy
 
   has_many :currencies, class_name: "Accounting::Currency", dependent: :destroy
   has_many :center_types, class_name: "Accounting::CenterType", dependent: :destroy

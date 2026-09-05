@@ -107,6 +107,15 @@ export const journalEntriesApi = createApi({
       providesTags: (result, error, { id }) => [{ type: 'JournalEntry', id }],
     }),
 
+    getJournalEntryForPrint: builder.query<
+      JournalEntry,
+      { organizationId: number; id: number }
+    >({
+      query: ({ organizationId, id }) =>
+        `/organizations/${organizationId}/accounting/journal_entries/${id}?view=print`,
+      providesTags: (result, error, { id }) => [{ type: 'JournalEntry', id }],
+    }),
+
     createJournalEntry: builder.mutation<
       JournalEntry,
       { organizationId: number; data: JournalEntryPayload }
@@ -178,6 +187,7 @@ export const journalEntriesApi = createApi({
 export const {
   useGetJournalEntriesQuery,
   useGetJournalEntryQuery,
+  useGetJournalEntryForPrintQuery,
   useCreateJournalEntryMutation,
   useUpdateJournalEntryMutation,
   useDeleteJournalEntryMutation,

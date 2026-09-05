@@ -11,7 +11,7 @@ i18n
     fallbackLng: 'en',
     defaultNS: 'shared',
     ns: ['shared', 'auth', 'organizations', 'members', 'departments', 'roles', 'groups', 'versions', 
-      'permissions', 'settings', 'accounting', 'fiscalYears', 'documents'],
+      'permissions', 'settings', 'accounting', 'fiscalYears', 'documents', 'reports'],
     backend: {
       loadPath: '/locales/{{lng}}/{{ns}}.json',
       parse: (data: string, languages?: string | string[]) => {

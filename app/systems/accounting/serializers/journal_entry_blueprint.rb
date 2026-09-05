@@ -39,5 +39,11 @@ module Accounting
     view :explorer do
       fields :date, :no, :ref
     end
+
+    view :print do
+      fields :no, :ref, :date, :description
+      field :creator do |je| je.creator.name end
+      association :items, blueprint: Accounting::JournalEntryItemBlueprint, view: :print_journal_entry
+    end
   end
 end

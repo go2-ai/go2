@@ -20,6 +20,7 @@ import {
   useCreateJournalEntryMutation,
   useUpdateJournalEntryMutation,
   useGetJournalEntryQuery,
+  useGetJournalEntryForPrintQuery
 } from './journalEntriesApi';
 import { useGetAccountsQuery } from '../accounts/accountsApi';
 import { useGetCentersQuery } from '../centers/centersApi';
@@ -41,6 +42,7 @@ import AttachFileIcon from '@mui/icons-material/AttachFile';
 import { Badge, IconButton, Tooltip } from '@mui/material';
 import { useGetDocumentsQuery } from '../../documents/documentsApi';
 import { useTabManager } from '../../../components/tabs';
+import { ReportSplitButton } from '../../reports/components/ReportSplitButton';
 
 const FINANCIAL_KEYS: readonly string[] = ['debit', 'credit', 'rate', 'currencyAmount'];
 
@@ -88,6 +90,11 @@ export const JournalEntryEditor = ({ journalEntryId, focusItemId }: JournalEntry
     isLoading: isLoadingJournalEntry,
     error: journalEntryFetchError,
   } = useGetJournalEntryQuery(
+    { organizationId: orgId, id: journalEntryId! },
+    { skip: !journalEntryId }
+  );
+
+  const { data: printJournalEntry } = useGetJournalEntryForPrintQuery(
     { organizationId: orgId, id: journalEntryId! },
     { skip: !journalEntryId }
   );
@@ -561,13 +568,29 @@ export const JournalEntryEditor = ({ journalEntryId, focusItemId }: JournalEntry
               {editingId ? tJE('journalEntryNumber', { id: editingId }) : tJE('newJournalEntry')}
             </Typography>
             {editingId && (
-              <Tooltip title="Attachments">
+              <><Tooltip title="Attachments">
                 <IconButton onClick={handleOpenAttachments} size="small">
                   <Badge badgeContent={documents?.length || 0} color="primary">
                     <AttachFileIcon fontSize="small" />
                   </Badge>
                 </IconButton>
               </Tooltip>
+              <ReportSplitButton
+                reportKey="journal_entry"
+                reportData={printJournalEntry || {
+                  id: editingId,
+                  date,
+                  description,
+                  items: rows.map((row) => ({
+                    row: row.row,
+                    account_id: row.accountId,
+                    debit: row.debit,
+                    credit: row.credit,
+                  })),
+                }}
+                reportTitle={`Journal Entry #${editingId}`}
+              />
+              </>
             )}
           </Box>
         </Box>

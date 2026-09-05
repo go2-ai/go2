@@ -15,7 +15,11 @@
       "revoke": "لغو",
       "save": "ذخیره",
       "unarchive": "لغو بایگانی",
-      "update": "به روز رسانی"
+      "update": "به روز رسانی",
+      "print": "چاپ",
+      "rename": "تغییر نام",
+      "duplicate": "تکثیر",
+      "close": "بستن"
     },
     "components": {
       "MultiLocaleInput": {

@@ -18,7 +18,7 @@ module Accounting
     def show
       authorize @journal_entry
 
-      render json: Accounting::JournalEntryBlueprint.render(@journal_entry, view: :show), status: :ok
+      render json: Accounting::JournalEntryBlueprint.render(@journal_entry, view: params[:view] ? params[:view].to_sym : :show), status: :ok
     end
 
     def create

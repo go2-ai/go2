@@ -1,0 +1,33 @@
+{
+  "fa": {
+    "noTemplateSelected": "قالب گزارشی انتخاب نشده است",
+    "templateNotFound": "قالب گزارش یافت نشد",
+    "reports": "گزارش‌ها",
+    "reportSettings": "تنظیمات گزارش",
+    "default": "پیش‌فرض",
+    "system": "سیستمی",
+    "design": "طراحی",
+    "setAsDefault": "تنظیم به عنوان پیش‌فرض",
+    "isDefault": "گزارش پیش‌فرض",
+    "systemTemplate": "قالب سیستمی",
+    "customTemplates": "قالب‌های سفارشی",
+    "duplicateSuccess": "گزارش با موفقیت تکثیر شد",
+    "duplicateFailed": "تکثیر گزارش ناموفق بود",
+    "renameSuccess": "نام گزارش با موفقیت تغییر کرد",
+    "renameFailed": "تغییر نام گزارش ناموفق بود",
+    "deleteSuccess": "گزارش با موفقیت حذف شد",
+    "deleteFailed": "حذف گزارش ناموفق بود",
+    "setDefaultSuccess": "گزارش پیش‌فرض به‌روزرسانی شد",
+    "setDefaultFailed": "تنظیم گزارش پیش‌فرض ناموفق بود",
+    "reportSettingsDescription": "مدیریت قالب‌های گزارش برای این صفحه",
+    "journalEntryPage": "صفحه سند حسابداری",
+    "explorerPage": "صفحه کاوشگر",
+    "journalEntryItemsPage": "صفحه آرتیکل‌های سند",
+    "reportSettingsFor": "تنظیمات گزارش برای {{page}}",
+    "unsetDefault": "حذف پیش‌فرض",
+    "unsetDefaultSuccess": "پیش‌فرض با موفقیت حذف شد",
+    "deleteTemplateTitle": "حذف قالب گزارش",
+    "deleteTemplateMessage": "آیا از حذف \"{{name}}\" مطمئن هستید؟ این عملیات قابل بازگشت نیست.",
+    "lastUpdatedAt": "آخرین به‌روزرسانی"
+  }
+}

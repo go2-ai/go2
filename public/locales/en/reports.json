@@ -1,0 +1,33 @@
+{
+  "en": {
+    "noTemplateSelected": "No report template selected",
+    "templateNotFound": "Report template not found",
+    "reports": "Reports",
+    "reportSettings": "Report Settings",
+    "default": "Default",
+    "system": "System",
+    "design": "Design",
+    "setAsDefault": "Set as Default",
+    "isDefault": "Default Report",
+    "systemTemplate": "System Template",
+    "customTemplates": "Custom Templates",
+    "duplicateSuccess": "Report duplicated successfully",
+    "duplicateFailed": "Failed to duplicate report",
+    "renameSuccess": "Report renamed successfully",
+    "renameFailed": "Failed to rename report",
+    "deleteSuccess": "Report deleted successfully",
+    "deleteFailed": "Failed to delete report",
+    "setDefaultSuccess": "Default report updated",
+    "setDefaultFailed": "Failed to set default report",
+    "reportSettingsDescription": "Manage report templates for this page",
+    "journalEntryPage": "Journal Entry Page",
+    "explorerPage": "Explorer Page",
+    "journalEntryItemsPage": "Journal Entry Items Page",
+    "reportSettingsFor": "Report settings for {{page}}",
+    "unsetDefault": "Unset Default",
+    "unsetDefaultSuccess": "Default unset successfully",
+    "deleteTemplateTitle": "Delete Report Template",
+    "deleteTemplateMessage": "Are you sure you want to delete \"{{name}}\"? This action cannot be undone.",
+    "lastUpdatedAt": "Last updated"
+  }
+}

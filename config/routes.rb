@@ -99,6 +99,8 @@ Rails.application.routes.draw do
       end
     end
 
+    resources :report_templates, only: [ :index, :show, :create, :update, :destroy ]
+
     resources :conversations do
       member do
         post :reply

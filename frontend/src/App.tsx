@@ -28,6 +28,9 @@ import { JournalEntryEditPage } from './features/accounting/journalEntries/Journ
 import { ExplorerPage } from './features/accounting/journalEntryItems/ExplorerPage';
 import { JournalEntryItemsPage } from './features/accounting/journalEntryItems/JournalEntryItemsPage';
 import { DocumentsPage } from './features/documents/DocumentsPage';
+import { ReportPage } from './features/reports/ReportPage';
+import { ReportSettingsPage } from './features/reports/ReportSettingsPage';
+import { ReportDesignerPage } from './features/reports/ReportDesignerPage';
 
 function App() {
   return (
@@ -55,6 +58,9 @@ function App() {
               <Route path=":organizationId/fiscal-years" element={<FiscalYearsPage />} />
               <Route path=":organizationId/settings" element={<OrganizationSettingsPage />} />
               <Route path=":organizationId/documents" element={<DocumentsPage />} />
+              <Route path=":organizationId/reports" element={<ReportPage />} />
+              <Route path=":organizationId/report-settings" element={<ReportSettingsPage />} />
+              <Route path=":organizationId/report-designer" element={<ReportDesignerPage />} />
               <Route path=":organizationId/accounting/settings" element={<AccountingSettingsPage />} />
               <Route path=":organizationId/accounting/center-types" element={<CenterTypesPage />} />
               <Route path=":organizationId/accounting/centers" element={<CentersPage />} />

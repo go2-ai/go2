@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_09_02_182423) do
+ActiveRecord::Schema[8.0].define(version: 2026_09_03_110512) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -365,6 +365,21 @@ ActiveRecord::Schema[8.0].define(version: 2026_09_02_182423) do
     t.index ["organization_id"], name: "index_permissions_on_organization_id"
   end
 
+  create_table "report_templates", force: :cascade do |t|
+    t.jsonb "name", default: {}, null: false
+    t.string "report_key", null: false
+    t.text "template_file", null: false
+    t.integer "parent_template_id"
+    t.bigint "organization_id"
+    t.integer "created_by_id"
+    t.boolean "is_default", default: false, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["organization_id", "report_key"], name: "idx_report_templates_org_default_unique", unique: true, where: "((organization_id IS NOT NULL) AND (is_default = true))"
+    t.index ["organization_id"], name: "index_report_templates_on_organization_id"
+    t.index ["report_key"], name: "idx_report_templates_system_unique", unique: true, where: "(organization_id IS NULL)"
+  end
+
   create_table "roles", force: :cascade do |t|
     t.jsonb "name", default: {}, null: false
     t.jsonb "description", default: {}
@@ -511,6 +526,8 @@ ActiveRecord::Schema[8.0].define(version: 2026_09_02_182423) do
   add_foreign_key "messages", "conversations"
   add_foreign_key "messages", "messages", column: "reply_to_id"
   add_foreign_key "permissions", "organizations"
+  add_foreign_key "report_templates", "members", column: "created_by_id"
+  add_foreign_key "report_templates", "organizations"
   add_foreign_key "roles", "departments"
   add_foreign_key "roles", "members"
   add_foreign_key "roles", "organizations"

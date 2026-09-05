@@ -15,7 +15,11 @@
       "revoke": "Revoke",
       "save": "Save",
       "unarchive": "Unarchive",
-      "update": "Update"
+      "update": "Update",
+      "print": "Print",
+      "rename": "Rename",
+      "duplicate": "Duplicate",
+      "close": "Close"
     },
     "components": {
       "MultiLocaleInput": {
