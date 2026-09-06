@@ -8,18 +8,18 @@
       "addNewRow": "اضافه کردن ردیف جدید",
       "archive": "بایگانی",
       "cancel": "انصراف",
+      "close": "بستن",
       "confirm": "تایید",
       "create": "ایجاد",
       "delete": "حذف",
+      "duplicate": "تکثیر",
       "edit": "ویرایش",
+      "print": "چاپ",
+      "rename": "تغییر نام",
       "revoke": "لغو",
       "save": "ذخیره",
       "unarchive": "لغو بایگانی",
-      "update": "به روز رسانی",
-      "print": "چاپ",
-      "rename": "تغییر نام",
-      "duplicate": "تکثیر",
-      "close": "بستن"
+      "update": "به روز رسانی"
     },
     "components": {
       "MultiLocaleInput": {

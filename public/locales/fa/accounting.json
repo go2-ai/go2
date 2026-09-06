@@ -207,7 +207,6 @@
     "setContraLedger": "تنظیم به عنوان دفتر کل مقابل",
     "snakeCaseHint": "از snake_case استفاده کنید: حروف کوچک، اعداد و زیرخط (مثلاً swift_code)",
     "state": "وضعیت",
-    "system": "سیستمی",
     "type": "نوع",
     "unexpectedBalance": "مانده غیرمنتظره",
     "useParentOrgAccounts": "استفاده از حساب‌های سازمان مادر",

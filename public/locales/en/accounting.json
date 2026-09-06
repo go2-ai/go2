@@ -207,7 +207,6 @@
     "setContraLedger": "Set as contra ledger",
     "snakeCaseHint": "Use snake_case: lowercase letters, numbers, and underscores (e.g., swift_code)",
     "state": "State",
-    "system": "System",
     "type": "Type",
     "unexpectedBalance": "Unexpected Balance",
     "useParentOrgAccounts": "Use Parent Org Accounts",

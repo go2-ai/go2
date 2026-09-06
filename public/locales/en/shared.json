@@ -8,18 +8,18 @@
       "addNewRow": "Add Row",
       "archive": "Archive",
       "cancel": "Cancel",
+      "close": "Close",
       "confirm": "Confirm",
       "create": "Create",
       "delete": "Delete",
+      "duplicate": "Duplicate",
       "edit": "Edit",
+      "print": "Print",
+      "rename": "Rename",
       "revoke": "Revoke",
       "save": "Save",
       "unarchive": "Unarchive",
-      "update": "Update",
-      "print": "Print",
-      "rename": "Rename",
-      "duplicate": "Duplicate",
-      "close": "Close"
+      "update": "Update"
     },
     "components": {
       "MultiLocaleInput": {
