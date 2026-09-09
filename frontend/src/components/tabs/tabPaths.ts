@@ -1,53 +1,20 @@
-// tabs/tabPaths.ts
+// src/components/tabs/tabPaths.ts
 import type { Tab } from './types';
+import { getPageDefinition } from './pageDefinitions';
 
 export function getTabPath(tab: Tab, organizationId: string): string {
-  const basePath = (() => {
-    switch (tab.pageId) {
-      case 'dashboard':
-        return `/app/organizations/${organizationId}`;
-      case 'members':
-        return `/app/organizations/${organizationId}/members`;
-      case 'departments':
-        return `/app/organizations/${organizationId}/departments`;
-      case 'roles':
-        return `/app/organizations/${organizationId}/roles`;
-      case 'groups':
-        return `/app/organizations/${organizationId}/groups`;
-      case 'record-history':
-        return `/app/organizations/${organizationId}/record-history`;
-      case 'permissions':
-        return `/app/organizations/${organizationId}/permissions`;
-      case 'fiscal-years':
-        return `/app/organizations/${organizationId}/fiscal-years`;
-      case 'permission-history':
-        return `/app/organizations/${organizationId}/permission-history`;
-      case 'organization-settings':
-        return `/app/organizations/${organizationId}/settings`;
-      case 'accounting-settings':
-        return `/app/organizations/${organizationId}/accounting/settings`;
-      case 'center-types':
-        return `/app/organizations/${organizationId}/accounting/center-types`;
-      case 'centers':
-        return `/app/organizations/${organizationId}/accounting/centers`;
-      case 'chart-of-accounts':
-        return `/app/organizations/${organizationId}/accounting/chart-of-accounts`;
-      case 'journal-entry-edit':
-        return tab.path && tab.path.startsWith(`/app/organizations/${organizationId}/`)
-          ? tab.path
-          : `/app/organizations/${organizationId}/accounting/journal-entries`;
-      default:
-        return `/app/organizations/${organizationId}`;
-    }
-  })();
-
-  // Only trust an explicit tab.path (e.g. record-history with query params)
-  // if it's actually a full path scoped to this organization. Otherwise
-  // it's stale/incomplete and we fall back to the canonical path.
   const orgPrefix = `/app/organizations/${organizationId}/`;
+
+  // Only trust an explicit tab.path if it's actually a full path scoped to
+  // this organization (e.g. record-history with query params, or a
+  // dynamic-segment page like journal-entry-edit that needs a real id).
+  // Otherwise it's stale/relative and we fall back to the canonical path.
   if (tab.path && tab.path.startsWith(orgPrefix)) {
     return tab.path;
   }
 
-  return basePath;
+  const def = getPageDefinition(tab.pageId);
+  if (!def) return `/app/organizations/${organizationId}`;
+
+  return `/app/organizations/${organizationId}/${def.path}`;
 }

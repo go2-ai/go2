@@ -1,56 +1,12 @@
 // src/components/tabs/PageRegistry.tsx
 
-import { Dashboard } from '../../features/app/Dashboard';
-import { MembersPage } from '../../features/members/MembersPage';
-import { DepartmentsPage } from '../../features/departments/DepartmentsPage';
-import { RolesPage } from '../../features/roles/RolesPage';
-import { GroupsPage } from '../../features/groups/GroupsPage';
-import { RecordHistoryPage } from '../../features/versions/RecordHistoryPage';
-import { PermissionsPage } from '../../features/permissions/PermissionsPage';
-import { PermissionHistoryPage } from '../../features/permissions/PermissionHistoryPage';
-import { OrganizationSettingsPage } from '../../features/organizations/OrganizationSettingsPage';
-import { DocumentsPage } from '../../features/documents/DocumentsPage';
-import { ReportPage } from '../../features/reports/ReportPage';
-import { ReportSettingsPage } from '../../features/reports/ReportSettingsPage';
-import { ReportDesignerPage } from '../../features/reports/ReportDesignerPage';
-import { AccountingSettingsPage } from '../../features/accounting/settings/AccountingSettingsPage';
-import { CenterTypesPage } from '../../features/accounting/centerTypes/CenterTypesPage';
-import { CentersPage } from '../../features/accounting/centers/CentersPage';
-import { ChartOfAccountsPage } from '../../features/accounting/chartOfAccounts/ChartOfAccountsPage';
-import { FiscalYearsPage } from '../../features/fiscalYears/FiscalYearsPage';
-import { JournalEntryPage } from '../../features/accounting/journalEntries/JournalEntryPage';
-import { JournalEntriesPage } from '../../features/accounting/journalEntries/JournalEntriesPage';
-import { JournalEntryEditPage } from '../../features/accounting/journalEntries/JournalEntryEditPage';
-import { ExplorerPage } from '../../features/accounting/journalEntryItems/ExplorerPage';
-import { JournalEntryItemsPage } from '../../features/accounting/journalEntryItems/JournalEntryItemsPage';
+import { PAGE_DEFINITIONS } from './pageDefinitions';
 import { TabIdContext } from './TabIdContext';
 import { Box, Typography } from '@mui/material';
 
-export const PAGE_REGISTRY: Record<string, React.ComponentType> = {
-  dashboard: Dashboard,
-  members: MembersPage,
-  departments: DepartmentsPage,
-  roles: RolesPage,
-  groups: GroupsPage,
-  'record-history': RecordHistoryPage,
-  'permission-history': PermissionHistoryPage,
-  permissions: PermissionsPage,
-  'organization-settings': OrganizationSettingsPage,
-  'accounting-settings': AccountingSettingsPage,
-  'center-types': CenterTypesPage,
-  centers: CentersPage,
-  'chart-of-accounts': ChartOfAccountsPage,
-  'fiscal-years': FiscalYearsPage,
-  'journal-entry': JournalEntryPage,
-  'journal-entries': JournalEntriesPage,
-  'journal-entry-edit': JournalEntryEditPage,
-  explorer: ExplorerPage,
-  'journal-entry-items': JournalEntryItemsPage,
-  documents: DocumentsPage,
-  reports: ReportPage,
-  'report-settings': ReportSettingsPage,
-  'report-designer': ReportDesignerPage,
-};
+export const PAGE_REGISTRY: Record<string, React.ComponentType> = Object.fromEntries(
+  PAGE_DEFINITIONS.map((def) => [def.pageId, def.component]),
+);
 
 export function PageContent({ pageId, tabId }: { pageId: string; tabId?: string }) {
   const Component = PAGE_REGISTRY[pageId];

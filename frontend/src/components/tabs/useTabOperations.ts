@@ -16,7 +16,7 @@ export function useTabOperations(
       // Find existing tabs of the same page to determine numbering
       const allTabs = prev.panels.flatMap((p) => p.tabs);
       const sameTabs = allTabs.filter((t) => t.pageId === pageId);
-      
+
       // Generate a unique title with numbering
       let newTitle = title;
       if (sameTabs.length > 0) {
@@ -26,16 +26,16 @@ export function useTabOperations(
             return match ? parseInt(match[1], 10) : 0;
           })
           .filter((n) => n > 0);
-        
-        const nextNumber = existingNumbers.length > 0 
-          ? Math.max(...existingNumbers) + 1 
+
+        const nextNumber = existingNumbers.length > 0
+          ? Math.max(...existingNumbers) + 1
           : sameTabs.length + 1;
-        
+
         newTitle = `${title} (${nextNumber})`;
       }
 
       const newTab = createTab(pageId, newTitle, path);
-      
+
       return {
         ...prev,
         panels: prev.panels.map((p, i) =>
@@ -102,7 +102,9 @@ export function useTabOperations(
       const tab = panel?.tabs.find((t) => t.id === tabId);
       if (!tab) return prev;
 
-      const newTab = createTab(tab.pageId, tab.title);
+      // Carry the source tab's exact path along (important for
+      // dynamic-segment pages like journal-entry-edit).
+      const newTab = createTab(tab.pageId, tab.title, tab.path);
       const newPanel: PanelConfig = {
         id: `panel-${Date.now()}`,
         tabs: [newTab],
@@ -119,7 +121,7 @@ export function useTabOperations(
     });
   }, [setLayout]);
 
-  const duplicateTab = useCallback((pageId: string, title: string) => {
+  const duplicateTab = useCallback((pageId: string, title: string, path?: string) => {
     setLayout((prev) => {
       const allTabs = prev.panels.flatMap((p) => p.tabs);
       const sameTabs = allTabs.filter((t) => t.pageId === pageId);
@@ -133,7 +135,7 @@ export function useTabOperations(
       const nextNumber =
         existingNumbers.length > 0 ? Math.max(...existingNumbers) + 1 : 1;
 
-      const newTab = createTab(pageId, `${baseTitle} (${nextNumber})`);
+      const newTab = createTab(pageId, `${baseTitle} (${nextNumber})`, path);
       return {
         ...prev,
         panels: prev.panels.map((p, i) =>
@@ -146,9 +148,8 @@ export function useTabOperations(
   }, [setLayout]);
 
   const resetLayout = useCallback(() => {
-    const defaultTab = createTab('dashboard', 'Dashboard');
     setLayout({
-      panels: [{ id: 'panel-1', tabs: [defaultTab], activeTabId: defaultTab.id }],
+      panels: [{ id: 'panel-1', tabs: [], activeTabId: '' }],
       direction: 'horizontal',
       sizes: [100],
     });

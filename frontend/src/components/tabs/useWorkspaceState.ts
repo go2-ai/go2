@@ -1,19 +1,14 @@
-
 import { useState } from 'react';
-import type { Tab, WorkspaceLayout } from './types';
+import type { WorkspaceLayout } from './types';
 
-function createTab(pageId: string, title: string): Tab {
-  return { id: `${pageId}-${Date.now()}`, pageId, title };
-}
-
-const defaultTab = createTab('dashboard', 'Dashboard');
-
+// Starts empty on purpose — RouteSynchronizer populates a tab for whatever
+// URL the app loads on, instead of restoring a persisted session.
 const defaultLayout: WorkspaceLayout = {
   panels: [
     {
       id: 'panel-1',
-      tabs: [defaultTab],
-      activeTabId: defaultTab.id,
+      tabs: [],
+      activeTabId: '',
     },
   ],
   direction: 'horizontal',
@@ -21,6 +16,6 @@ const defaultLayout: WorkspaceLayout = {
 };
 
 export function useWorkspaceState() {
-  const [layout, setLayout] = useState<WorkspaceLayout>(defaultLayout);
+  const [layout, setLayout] = useState<WorkspaceLayout>(() => structuredClone(defaultLayout));
   return { layout, setLayout };
 }

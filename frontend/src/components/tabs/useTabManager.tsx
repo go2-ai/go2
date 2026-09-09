@@ -9,20 +9,19 @@ import type {
 import { createContext, useContext, type ReactNode } from 'react';
 import { useTabDragAndDrop } from './useTabDragAndDrop';
 import { useTabOperations } from './useTabOperations';
-import { useTabPersistence } from './useTabPersistence';
 import { useWorkspaceState } from './useWorkspaceState';
 
 interface TabContextType {
   layout: WorkspaceLayout;
   setLayout: React.Dispatch<React.SetStateAction<WorkspaceLayout>>;
-  openTab: (pageId: string, title: string, path: string) => void;
+  openTab: (pageId: string, title: string, path?: string) => void;
   closeTab: (tabId: string, panelId: string) => void;
   splitTab: (
     tabId: string,
     panelId: string,
     direction?: 'horizontal' | 'vertical',
   ) => void;
-  duplicateTab: (pageId: string, title: string) => void;
+  duplicateTab: (pageId: string, title: string, path?: string) => void;
   resetLayout: () => void;
   moveTab: (
     tabId: string,
@@ -43,12 +42,13 @@ const TabContext = createContext<TabContextType | null>(null);
 
 interface TabProviderProps {
   children: ReactNode;
+  // No longer used to hydrate/persist (that's gone — tabs are URL-driven
+  // now via RouteSynchronizer). Kept for API compatibility / future use.
   organizationId: number;
 }
 
-export function TabProvider({ children, organizationId }: TabProviderProps) {
+export function TabProvider({ children }: TabProviderProps) {
   const { layout, setLayout } = useWorkspaceState();
-  useTabPersistence(organizationId, layout, setLayout);
 
   const { openTab, closeTab, splitTab, duplicateTab, resetLayout, updateTabTitle } =
     useTabOperations(setLayout);
@@ -94,7 +94,7 @@ export function TabProvider({ children, organizationId }: TabProviderProps) {
     handleDragEnd,
     setActiveTab,
     setActiveTabByPageId,
-    updateTabTitle 
+    updateTabTitle
   };
 
   return <TabContext.Provider value={value}>{children}</TabContext.Provider>;
