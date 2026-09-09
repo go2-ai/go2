@@ -9,6 +9,7 @@ import {
   Button,
   CircularProgress,
   Alert,
+  TextField
 } from '@mui/material';
 import SaveIcon from '@mui/icons-material/Save';
 import DraftsIcon from '@mui/icons-material/Drafts';
@@ -107,6 +108,8 @@ export const JournalEntryEditor = ({ journalEntryId, focusItemId }: JournalEntry
   const [selectedCellKey, setSelectedCellKey] = useState<string | null>(null);
   const [selectedRowIds, setSelectedRowIds] = useState<Set<string>>(new Set());
   const [selectionAnchorId, setSelectionAnchorId] = useState<string | null>(null);
+  const [no, setNo] = useState<string>('');
+  const [ref, setRef] = useState<string>(''); 
   const [date, setDate] = useState<string | null>(null);
   const [description, setDescription] = useState<Record<string, string>>({});
   const [editingId, setEditingId] = useState<number | null>(journalEntryId ?? null);
@@ -145,6 +148,8 @@ export const JournalEntryEditor = ({ journalEntryId, focusItemId }: JournalEntry
 
     setEditingId(fetchedJournalEntry.id);
     setEditingState(fetchedJournalEntry.state);
+    setNo(fetchedJournalEntry.no != null ? String(fetchedJournalEntry.no) : '');
+    setRef(fetchedJournalEntry.ref != null ? String(fetchedJournalEntry.ref) : '');
     setDate(fetchedJournalEntry.date);
     setDescription({
       en: fetchedJournalEntry.t?.description?.en ?? '',
@@ -157,7 +162,8 @@ export const JournalEntryEditor = ({ journalEntryId, focusItemId }: JournalEntry
       
     setOriginalItemIds(new Set(serverIds));
 
-    const mappedRows: JournalEntryRow[] = (fetchedJournalEntry.items ?? []).map((item) => ({
+    const sortedItems = [...(fetchedJournalEntry.items ?? [])].sort((a, b) => a.row - b.row);
+    const mappedRows: JournalEntryRow[] = sortedItems.map((item) => ({
       id: `row-${Date.now()}-${Math.random()}-${item.row}`,
       serverId: item.id,
       row: item.row,
@@ -168,8 +174,8 @@ export const JournalEntryEditor = ({ journalEntryId, focusItemId }: JournalEntry
       center4Id: item.center4_id,
       center5Id: item.center5_id,
       center6Id: item.center6_id,
-      debit: item.debit ?? null,
-      credit: item.credit ?? null,
+      debit: item.debit ? item.debit : null,
+      credit: item.credit ? item.credit : null,
       currencyId: item.currency_id,
       rate: item.rate ?? null,
       currencyAmount: item.currency_amount != null ? Math.abs(item.currency_amount) : null,
@@ -204,7 +210,7 @@ export const JournalEntryEditor = ({ journalEntryId, focusItemId }: JournalEntry
         next.delete(cellId);
         return next;
       });
-    }, 3000);
+    }, 1500);
   }, []);
 
   const handleRowsChange = useCallback((newRows: JournalEntryRow[]) => {
@@ -471,6 +477,7 @@ export const JournalEntryEditor = ({ journalEntryId, focusItemId }: JournalEntry
       fiscal_year_id: activeFiscalYearId,
       state,
       entry_type: 'normal' as const,
+      no: no || undefined,
       description_en: description['en'] || '',
       description_fa: description['fa'] || '',
       items_attributes: itemsAttributes
@@ -519,7 +526,7 @@ export const JournalEntryEditor = ({ journalEntryId, focusItemId }: JournalEntry
 
   if (journalEntryId && isLoadingJournalEntry) {
     return (
-      <Container maxWidth="xl" sx={{ py: 4 }}>
+      <Container maxWidth={false} sx={{ py: 4 }}>
         <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
           <CircularProgress />
         </Box>
@@ -529,7 +536,7 @@ export const JournalEntryEditor = ({ journalEntryId, focusItemId }: JournalEntry
 
   if (journalEntryId && journalEntryFetchError) {
     return (
-      <Container maxWidth="xl" sx={{ py: 4 }}>
+      <Container maxWidth={false} sx={{ py: 4 }}>
         <Alert severity="error">
           {tJE('failedToLoadJournalEntry')}
         </Alert>
@@ -539,7 +546,7 @@ export const JournalEntryEditor = ({ journalEntryId, focusItemId }: JournalEntry
 
   if (!accounts || !centers || !currencies || !settings) {
     return (
-      <Container maxWidth="xl" sx={{ py: 4 }}>
+      <Container maxWidth={false} sx={{ py: 4 }}>
         <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
           <CircularProgress />
         </Box>
@@ -564,34 +571,33 @@ export const JournalEntryEditor = ({ journalEntryId, focusItemId }: JournalEntry
       <Box sx={{ mb: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexShrink: 0 }}>
         <Box>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Typography variant="h4" gutterBottom sx={{ mb: 0 }}>
-              {editingId ? tJE('journalEntryNumber', { id: editingId }) : tJE('newJournalEntry')}
-            </Typography>
-            {editingId && (
-              <><Tooltip title="Attachments">
-                <IconButton onClick={handleOpenAttachments} size="small">
-                  <Badge badgeContent={documents?.length || 0} color="primary">
-                    <AttachFileIcon fontSize="small" />
-                  </Badge>
-                </IconButton>
-              </Tooltip>
-              <ReportSplitButton
-                reportKey="journal_entry"
-                reportData={printJournalEntry || {
-                  id: editingId,
-                  date,
-                  description,
-                  items: rows.map((row) => ({
-                    row: row.row,
-                    account_id: row.accountId,
-                    debit: row.debit,
-                    credit: row.credit,
-                  })),
-                }}
-                reportTitle={`Journal Entry #${editingId}`}
-              />
-              </>
-            )}
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+              <Typography variant="h4" sx={{ mb: 0 }}>
+                {tJE('journalEntry')}
+              </Typography>
+              
+              {editingId && (
+                <Typography variant="h4" sx={{ mb: 0 }}>
+                  #{ref || '—'}
+                </Typography>
+              )}
+              {editingId && (
+                <>
+                  <Tooltip title="Attachments">
+                    <IconButton onClick={handleOpenAttachments} size="small">
+                      <Badge badgeContent={documents?.length || 0} color="primary">
+                        <AttachFileIcon fontSize="small" />
+                      </Badge>
+                    </IconButton>
+                  </Tooltip>
+                  <ReportSplitButton
+                    reportKey="journal_entry"
+                    reportData={printJournalEntry || { id: editingId, date, description, items: rows.map((row) => ({ row: row.row, account_id: row.accountId, debit: row.debit, credit: row.credit })) }}
+                    reportTitle={`Journal Entry #${editingId}`}
+                  />
+                </>
+              )}
+            </Box>
           </Box>
         </Box>
         <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
@@ -605,6 +611,13 @@ export const JournalEntryEditor = ({ journalEntryId, focusItemId }: JournalEntry
       </Box>
 
       <Box sx={{ mb: 1, display: 'flex', gap: 2, flexWrap: 'wrap', alignItems: 'center', flexShrink: 0 }}>
+        <TextField
+          label={tJE('no')}
+          value={no}
+          onChange={(e) => setNo(e.target.value)}
+          size="small"
+          sx={{ width: 130 }}
+        />
         <BaseDatePicker
           label={tJE('journalEntryDate')}
           value={date}

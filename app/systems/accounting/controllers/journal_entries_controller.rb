@@ -85,6 +85,7 @@ module Accounting
 
     def permitted_params
       params.permit(
+        :no,
         :date,
         :effective_date,
         :fiscal_year_id,

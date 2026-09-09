@@ -39,7 +39,7 @@ export function SortableTab({
   const showCloseButton = !tab.pinned && (isActive || isHovered);
 
   const primaryColor = theme.palette.primary.main;
-  const activeBackground = `${primaryColor}15`;
+  const activeBackground = `${primaryColor}00`;
   const inactiveBackground =
     theme.palette.mode === 'dark'
       ? 'rgba(255, 255, 255, 0.03)'
@@ -95,7 +95,7 @@ export function SortableTab({
                 ml: 0.5,
                 opacity: showCloseButton ? 0.7 : 0,
                 visibility: showCloseButton ? 'visible' : 'hidden',
-                color: isActive ? 'primary.main' : 'text.secondary',
+                color: isActive ? 'primary.light' : 'text.secondary',
                 borderRadius: '50%',
                 '&:hover': {
                   opacity: 1,
@@ -148,7 +148,7 @@ export function SortableTab({
         },
         '&.Mui-selected': {
           fontWeight: 600,
-          color: 'primary.main',
+          color: 'primary.light',
           boxShadow: isActive ? `0 -1px 3px ${primaryColor}20` : 'none',
         },
         '&:not(.Mui-selected)': {

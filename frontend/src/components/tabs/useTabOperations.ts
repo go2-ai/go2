@@ -2,6 +2,7 @@
 
 import { useCallback } from 'react';
 import type { PanelConfig, Tab, WorkspaceLayout } from './types';
+import { getNextActiveTabId, pruneHistory, pushActivation } from './tabActivation';
 
 function createTab(pageId: string, title: string, path?: string): Tab {
   return { id: `${pageId}-${Date.now()}`, pageId, title, path };
@@ -12,12 +13,9 @@ export function useTabOperations(
 ) {
   const openTab = useCallback((pageId: string, title: string, path?: string) => {
     setLayout((prev) => {
-      // Always create a new tab - no deduplication
-      // Find existing tabs of the same page to determine numbering
       const allTabs = prev.panels.flatMap((p) => p.tabs);
       const sameTabs = allTabs.filter((t) => t.pageId === pageId);
 
-      // Generate a unique title with numbering
       let newTitle = title;
       if (sameTabs.length > 0) {
         const existingNumbers = sameTabs
@@ -40,7 +38,12 @@ export function useTabOperations(
         ...prev,
         panels: prev.panels.map((p, i) =>
           i === 0
-            ? { ...p, tabs: [...p.tabs, newTab], activeTabId: newTab.id }
+            ? {
+                ...p,
+                tabs: [...p.tabs, newTab],
+                activeTabId: newTab.id,
+                activationHistory: pushActivation(p.activationHistory, newTab.id),
+              }
             : p,
         ),
       };
@@ -66,12 +69,20 @@ export function useTabOperations(
       if (tab?.pinned) return prev;
 
       const newTabs = panel.tabs.filter((t) => t.id !== tabId);
+      const validIds = new Set(newTabs.map((t) => t.id));
+
+      // Only recompute the active tab if the closed one WAS the active one.
       const newActiveId =
         panel.activeTabId === tabId
-          ? newTabs[newTabs.length - 1]?.id || ''
+          ? getNextActiveTabId(panel.tabs, panel.activationHistory, tabId)
           : panel.activeTabId;
 
-      // If panel is now empty and it's not the only panel, remove the panel
+      let newHistory = pruneHistory(panel.activationHistory, validIds);
+      if (newActiveId) {
+        newHistory = pushActivation(newHistory, newActiveId);
+      }
+
+      // If panel is now empty and it's not the only panel, remove the panel.
       if (newTabs.length === 0 && prev.panels.length > 1) {
         const newPanels = prev.panels.filter((p) => p.id !== panelId);
         return {
@@ -85,7 +96,7 @@ export function useTabOperations(
         ...prev,
         panels: prev.panels.map((p) =>
           p.id === panelId
-            ? { ...p, tabs: newTabs, activeTabId: newActiveId }
+            ? { ...p, tabs: newTabs, activeTabId: newActiveId, activationHistory: newHistory }
             : p,
         ),
       };
@@ -102,13 +113,12 @@ export function useTabOperations(
       const tab = panel?.tabs.find((t) => t.id === tabId);
       if (!tab) return prev;
 
-      // Carry the source tab's exact path along (important for
-      // dynamic-segment pages like journal-entry-edit).
       const newTab = createTab(tab.pageId, tab.title, tab.path);
       const newPanel: PanelConfig = {
         id: `panel-${Date.now()}`,
         tabs: [newTab],
         activeTabId: newTab.id,
+        activationHistory: [newTab.id],
       };
 
       const newPanels = [...prev.panels, newPanel];
@@ -140,7 +150,12 @@ export function useTabOperations(
         ...prev,
         panels: prev.panels.map((p, i) =>
           i === 0
-            ? { ...p, tabs: [...p.tabs, newTab], activeTabId: newTab.id }
+            ? {
+                ...p,
+                tabs: [...p.tabs, newTab],
+                activeTabId: newTab.id,
+                activationHistory: pushActivation(p.activationHistory, newTab.id),
+              }
             : p,
         ),
       };
@@ -149,7 +164,7 @@ export function useTabOperations(
 
   const resetLayout = useCallback(() => {
     setLayout({
-      panels: [{ id: 'panel-1', tabs: [], activeTabId: '' }],
+      panels: [{ id: 'panel-1', tabs: [], activeTabId: '', activationHistory: [] }],
       direction: 'horizontal',
       sizes: [100],
     });

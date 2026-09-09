@@ -37,9 +37,11 @@ export const CurrencyAmountCell = ({
     }
   }, [value, isFocused]);
 
-  const handleFocus = () => {
+  const handleFocus = (e: React.FocusEvent<HTMLInputElement>) => {
     setIsFocused(true);
     setInputValue(value === null || value === undefined ? '' : String(value));
+    const input = e.target;
+    requestAnimationFrame(() => input.select());
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {

@@ -181,7 +181,7 @@ export const JournalEntriesPage = () => {
   
 
   return (
-    <Container maxWidth="xl" sx={{ height: '100%', display: 'flex', flexDirection: 'column', py: 2 }}>
+    <Container maxWidth={false} sx={{ height: '100%', display: 'flex', flexDirection: 'column', py: 2 }}>
       <Box sx={{ mb: 2, flexShrink: 0 }}>
         <Typography variant="h4" gutterBottom>
           {tJE('journalEntries')}
@@ -220,12 +220,6 @@ export const JournalEntriesPage = () => {
               flex: 1,
               '& .MuiDataGrid-cell:focus': { outline: 'none' },
               '& .MuiDataGrid-row:hover': { cursor: 'pointer' },
-              
-              '& .MuiDataGrid-row': {
-                '&:nth-of-type(odd)': {
-                  backgroundColor: (theme) => theme.palette.action.hover,
-                },
-              },
               '& .MuiDataGrid-cell': {
                 borderRight: 1,
                 borderColor: 'divider',

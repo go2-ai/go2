@@ -74,7 +74,7 @@ export const PermissionHistoryPage = () => {
 
   if (isLoading) {
     return (
-      <Container maxWidth="xl" sx={{ py: 4 }}>
+      <Container maxWidth={false} sx={{ py: 4 }}>
         <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 400 }}>
           <CircularProgress />
           <Typography sx={{ ml: 2 }}>{t('loadingHistory')}</Typography>
@@ -85,7 +85,7 @@ export const PermissionHistoryPage = () => {
 
   if (error) {
     return (
-      <Container maxWidth="xl" sx={{ py: 4 }}>
+      <Container maxWidth={false} sx={{ py: 4 }}>
         <Alert
           severity="error"
           action={
@@ -103,7 +103,7 @@ export const PermissionHistoryPage = () => {
   // ─── Render ──────────────────────────────────────────────────────────────
 
   return (
-    <Container maxWidth="xl" sx={{ py: 3 }}>
+    <Container maxWidth={false} sx={{ py: 3 }}>
       {/* Header */}
       <Box sx={{ display: 'flex', alignItems: 'center', mb: 3, gap: 2 }}>
         <Typography variant="h4" component="h1">

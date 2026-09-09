@@ -10,6 +10,7 @@ import { createContext, useContext, type ReactNode } from 'react';
 import { useTabDragAndDrop } from './useTabDragAndDrop';
 import { useTabOperations } from './useTabOperations';
 import { useWorkspaceState } from './useWorkspaceState';
+import { pushActivation } from './tabActivation';
 
 interface TabContextType {
   layout: WorkspaceLayout;
@@ -42,8 +43,6 @@ const TabContext = createContext<TabContextType | null>(null);
 
 interface TabProviderProps {
   children: ReactNode;
-  // No longer used to hydrate/persist (that's gone — tabs are URL-driven
-  // now via RouteSynchronizer). Kept for API compatibility / future use.
   organizationId: number;
 }
 
@@ -65,18 +64,22 @@ export function TabProvider({ children }: TabProviderProps) {
     setLayout((prev) => ({
       ...prev,
       panels: prev.panels.map((p) =>
-        p.id === panelId ? { ...p, activeTabId: tabId } : p,
+        p.id === panelId
+          ? {
+              ...p,
+              activeTabId: tabId,
+              activationHistory: pushActivation(p.activationHistory, tabId),
+            }
+          : p,
       ),
     }));
   };
 
   const setActiveTabByPageId = (tabId: string, panelId: string) => {
-    setLayout((prev) => ({
-      ...prev,
-      panels: prev.panels.map((p) =>
-        p.id === panelId ? { ...p, activeTabId: tabId } : p,
-      ),
-    }));
+    // Same operation as setActiveTab — kept as a distinct name because
+    // callers (e.g. RouteSynchronizer) are activating by a resolved tab id
+    // that was looked up via pageId, not from a direct user click.
+    setActiveTab(panelId, tabId);
   };
 
   const value: TabContextType = {
@@ -94,7 +97,7 @@ export function TabProvider({ children }: TabProviderProps) {
     handleDragEnd,
     setActiveTab,
     setActiveTabByPageId,
-    updateTabTitle
+    updateTabTitle,
   };
 
   return <TabContext.Provider value={value}>{children}</TabContext.Provider>;

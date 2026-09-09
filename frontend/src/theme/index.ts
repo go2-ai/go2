@@ -14,10 +14,10 @@ export const createAppTheme = (locale: string = 'en', mode: ThemeMode = 'light')
     palette: {
       mode,
       primary: {
-        main: isDark ? '#6366F1' : '#4F46E5',     // Indigo 500 / 600
-        light: isDark ? '#A5B4FC' : '#6366F1',    // Indigo 300 / 500
-        dark: isDark ? '#4F46E5' : '#3730A3',     // Indigo 600 / 700
-        contrastText: '#FFFFFF',
+        main: isDark ? '#A5B4FC' : '#4F46E5',     // Indigo 300 (dark) / 600 (light)
+        light: isDark ? '#C7D2FE' : '#6366F1',    // Indigo 200 (dark) / 500 (light)
+        dark: isDark ? '#6366F1' : '#3730A3',     // Indigo 500 (dark) / 700 (light)
+        contrastText: isDark ? '#0F172A' : '#FFFFFF',
       },
       secondary: {
         main: isDark ? '#94A3B8' : '#64748B',     // Slate 400 / 500 - subtle contrast
@@ -67,6 +67,7 @@ export const createAppTheme = (locale: string = 'en', mode: ThemeMode = 'light')
               background: isDark 
                 ? 'linear-gradient(135deg, #6366F1, #4F46E5)'
                 : undefined,
+              color: isDark ? '#FFFFFF' : undefined, // decoupled from contrastText
             },
           },
         ],

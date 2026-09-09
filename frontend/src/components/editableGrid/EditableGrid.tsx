@@ -11,6 +11,8 @@ import { useEditableGrid } from './useEditableGrid';
 import { RowHeader } from './RowHeader';
 import { RowContextMenu, type ContextMenuAction } from './RowContextMenu';
 import { ResizableColumnHeader } from './ResizableColumnHeader';
+import { useTheme } from '@mui/material/styles';
+import { keyframes } from '@mui/material/styles';
 
 interface SortableRowProps {
   row: GridRow;
@@ -95,6 +97,7 @@ export const EditableGrid = <T extends GridRow = GridRow>({
 
   const [columnWidths, setColumnWidths] = useState<Record<string, number>>({});
   const scrollRef = useRef<HTMLDivElement | null>(null);
+  const theme = useTheme();
 
   const getColumnWidth = (col: ColumnDef<T>): number => {
     return columnWidths[col.key] ?? col.width;
@@ -193,6 +196,18 @@ export const EditableGrid = <T extends GridRow = GridRow>({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [contextMenu, rows, selectedRowIds]);
 
+
+  const cellHighlight = keyframes`
+    0% {
+      background-color: rgba(255, 193, 7, 0.45);
+      box-shadow: inset 0 0 0 2px rgba(255, 193, 7, 0.65);
+    }
+    100% {
+      background-color: rgba(255, 193, 7, 0);
+      box-shadow: inset 0 0 0 2px rgba(255, 193, 7, 0);
+    }
+  `;
+
   const isRowSelected = (rowId: string): boolean =>
     selectedRowIds ? selectedRowIds.has(rowId) : selectedRowId === rowId;
 
@@ -270,7 +285,7 @@ export const EditableGrid = <T extends GridRow = GridRow>({
                             height: rowHeight,
                             borderBottom: 1,
                             borderColor: 'divider',
-                            backgroundColor: selected ? 'action.selected' : 'transparent',
+                            backgroundColor: selected ? `${theme.palette.primary.dark}22` : 'transparent',
                           }}
                         >
                           <SortableRow
@@ -300,7 +315,6 @@ export const EditableGrid = <T extends GridRow = GridRow>({
                               return (
                                 <Box
                                   key={col.key}
-                                  className={isBlinking ? 'cell-blink' : undefined}
                                   sx={{
                                     width: getColumnWidth(col),
                                     px: 0,
@@ -317,17 +331,14 @@ export const EditableGrid = <T extends GridRow = GridRow>({
                                       boxShadow: (theme) => `inset 0 0 0 2px ${theme.palette.secondary.main}`,
                                       bgcolor: 'action.hover',
                                     }),
+                                    ...(isBlinking && {
+                                      animation: `${cellHighlight} 1.4s ease-out`,
+                                    }),
                                   }}
-                                  onMouseDown={(e) => {
-                                    onCellClick?.(row.id, col.key, e);
-                                  }}
-                                  onFocus={() => {
-                                    onActiveCellChange?.(row.id, col.key);
-                                  }}
+                                  onMouseDown={(e) => onCellClick?.(row.id, col.key, e)}
+                                  onFocus={() => onActiveCellChange?.(row.id, col.key)}
                                 >
-                                  {col.renderCell
-                                    ? col.renderCell(row)
-                                    : String(row[col.key] ?? '')}
+                                  {col.renderCell ? col.renderCell(row) : String(row[col.key] ?? '')}
                                 </Box>
                               );
                             })}

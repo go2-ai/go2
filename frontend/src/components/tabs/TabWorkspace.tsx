@@ -100,12 +100,23 @@ export function TabWorkspace() {
                   panelId={panel.id}
                   tabs={panel.tabs}
                   activeTabId={panel.activeTabId}
+                  activationHistory={panel.activationHistory}
                   onTabsChange={(tabs) =>
                     setLayout((prev) => ({
                       ...prev,
-                      panels: prev.panels.map((p) =>
-                        p.id === panel.id ? { ...p, tabs } : p,
-                      ),
+                      panels: prev.panels.map((p) => {
+                        if (p.id !== panel.id) return p;
+                        // TabGroup's bulk-close handlers (Close Others / Close All / Close to
+                        // the Right) already pick an explicit next-active tab themselves via
+                        // onActiveTabChange right after this call — here we just prune stale
+                        // ids out of the history so it doesn't reference closed tabs.
+                        const validIds = new Set(tabs.map((t) => t.id));
+                        return {
+                          ...p,
+                          tabs,
+                          activationHistory: p.activationHistory.filter((id) => validIds.has(id)),
+                        };
+                      }),
                     }))
                   }
                   onActiveTabChange={(id) => setActiveTab(panel.id, id)}

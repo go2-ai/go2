@@ -65,7 +65,7 @@ export const ReportPage = () => {
   }
 
   return (
-    <Box sx={{ height: '100%', p: 2 }}>
+    <Box sx={{ height: '100%'}}>
       <ReportViewer
         templateFile={template.template_file}
         data={reportData || undefined}

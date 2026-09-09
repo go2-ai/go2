@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { TextField, Autocomplete, Box, type AutocompleteInputChangeReason } from '@mui/material';
 import type { Center } from '../../../centers/centersApi';
+import { createFilterOptions } from '@mui/material';
 
 interface CenterCellProps {
   value: number | null;
@@ -32,11 +33,22 @@ export const CenterCell = ({ value, centers, disabled, error, onChange }: Center
     }
   };
 
+  const filterOptions = createFilterOptions<Center>({
+    stringify: (option) => `${option.code} ${option.name}`,
+  });
+
+  const handleBlur = () => {
+    if (inputValue.trim() === '') {
+      onChange(null);
+    }
+  };
+
   return (
     <Autocomplete
       options={centers}
+      filterOptions={filterOptions}
       getOptionLabel={(option) => option.code}
-      value={selectedCenter}
+      value={selectedCenter ?? undefined}
       onChange={(_, newValue) => onChange(newValue?.id ?? null)}
       inputValue={inputValue}
       onInputChange={(_, newValue, reason) => handleInputChange(newValue, reason)}
@@ -44,14 +56,15 @@ export const CenterCell = ({ value, centers, disabled, error, onChange }: Center
       isOptionEqualToValue={(option, value) => option.id === value?.id}
       size="small"
       fullWidth
+      disableClearable
       sx={{
         height: '100%',
         '& .MuiFormControl-root': {
           height: '100%',
+          backgroundColor: disabled ? 'action.disabledBackground' : 'transparent',
         },
         '& .MuiInputBase-root': {
           height: '100%',
-          backgroundColor: disabled ? 'action.disabledBackground' : 'transparent',
           pt: 0,
           pb: 0,
         },
@@ -86,6 +99,8 @@ export const CenterCell = ({ value, centers, disabled, error, onChange }: Center
           {...params}
           variant="standard"
           error={error}
+          onBlur={handleBlur}
+          sx={{ px: 1 }}
           InputProps={{
             ...params.InputProps,
             disableUnderline: true,

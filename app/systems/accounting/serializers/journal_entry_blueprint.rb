@@ -33,7 +33,9 @@ module Accounting
 
     view :show do
       include_view :index
-      association :items, blueprint: Accounting::JournalEntryItemBlueprint
+      association :items, blueprint: Accounting::JournalEntryItemBlueprint do |journal_entry|
+        journal_entry.items.sort_by(&:row)
+      end
     end
 
     view :explorer do
@@ -43,7 +45,9 @@ module Accounting
     view :print do
       fields :no, :ref, :date, :description
       field :creator do |je| je.creator.name end
-      association :items, blueprint: Accounting::JournalEntryItemBlueprint, view: :print_journal_entry
+      association :items, blueprint: Accounting::JournalEntryItemBlueprint, view: :print_journal_entry do |journal_entry|
+        journal_entry.items.sort_by(&:row)
+      end
     end
   end
 end

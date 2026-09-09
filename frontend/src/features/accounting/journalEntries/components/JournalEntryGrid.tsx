@@ -92,7 +92,7 @@ export const JournalEntryGrid = ({
       {
         key: 'account',
         title: tJE('account'),
-        width: 120,
+        width: 100,
         cellType: 'custom',
         align: 'center',
         renderCell: (row) => (
@@ -143,7 +143,7 @@ export const JournalEntryGrid = ({
       cols.push({
         key: `center${i}`,
         title: tJE('center', { level: i }),
-        width: 130,
+        width: 110,
         cellType: 'custom',
         align: 'center',
         renderCell: (row) => {

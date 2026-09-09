@@ -43,7 +43,7 @@ export const MembersPage = () => {
     : undefined;
 
   return (
-    <Container maxWidth="xl" sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+    <Container maxWidth={false} sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
       <Box sx={{ my: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <Box>
           <Typography variant="h4" component="h1" gutterBottom>

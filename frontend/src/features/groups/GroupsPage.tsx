@@ -43,7 +43,7 @@ export const GroupsPage = () => {
   };
 
   return (
-    <Container maxWidth="xl" sx={{ height: '100%', display: 'flex', flexDirection: 'column', pb: 2 }}>
+    <Container maxWidth={false} sx={{ height: '100%', display: 'flex', flexDirection: 'column', pb: 2 }}>
       <Box sx={{ my: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <Box>
           <Typography variant="h4" component="h1" gutterBottom>

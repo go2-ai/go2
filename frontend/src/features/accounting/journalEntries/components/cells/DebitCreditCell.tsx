@@ -39,16 +39,27 @@ export const DebitCreditCell = ({
   const [isFocused, setIsFocused] = useState(false);
   const [inputValue, setInputValue] = useState<string>(formatNumber(value));
 
+  // Sync the local buffer with the outside `value` whenever it changes,
+  // even while focused. Typing never changes `value` itself (that only
+  // happens on blur via onChange), so this can't clobber what the user is
+  // mid-typing — it only kicks in for *external* updates, e.g. F10 (swap
+  // debit/credit) or F8 (balance), which previously got silently reverted
+  // the moment the field lost focus because this effect used to skip
+  // syncing while isFocused was true.
   useEffect(() => {
-    if (!isFocused) {
+    if (isFocused) {
+      setInputValue(value === null || value === undefined || value === 0 ? '' : String(value));
+    } else {
       setInputValue(formatNumber(value));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value, decimalDigits, isFocused]);
 
-  const handleFocus = () => {
+  const handleFocus = (e: React.FocusEvent<HTMLInputElement>) => {
     setIsFocused(true);
-    setInputValue(value === null || value === undefined ? '' : String(value));
+    setInputValue(value === null || value === undefined || value === 0 ? '' : String(value));
+    const input = e.target;
+    requestAnimationFrame(() => input.select());
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -70,6 +81,9 @@ export const DebitCreditCell = ({
       const num = parseFloat(inputValue);
       parsed = isNaN(num) ? null : num;
     }
+    // A literal 0 means "no value" — must not look like a real debit/credit
+    // entry to the rest of the app (isCredit checks, mutual-exclusion logic).
+    if (parsed === 0) parsed = null;
 
     onChange(parsed);
     setInputValue(formatNumber(parsed));

@@ -258,7 +258,7 @@ export const PermissionsPage = () => {
   // ─── Error State ────────────────────────────────────────────────────────
   if (grantableError || permissionsByCodeError || allPermissionsError || membersError || rolesError || groupsError || departmentsError) {
     return (
-      <Container maxWidth="xl" sx={{ py: 4 }}>
+      <Container maxWidth={false} sx={{ py: 4 }}>
         <Alert
           severity="error"
           action={
@@ -276,7 +276,7 @@ export const PermissionsPage = () => {
   // ─── Loading State ──────────────────────────────────────────────────────
   if (isLoading && !grantablePermissions) {
     return (
-      <Container maxWidth="xl" sx={{ py: 4 }}>
+      <Container maxWidth={false} sx={{ py: 4 }}>
         <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 400 }}>
           <CircularProgress />
           <Typography sx={{ ml: 2 }}>{tPermissions('loadingPermissions')}</Typography>
@@ -286,7 +286,7 @@ export const PermissionsPage = () => {
   }
 
   return (
-    <Container maxWidth="xl" sx={{ height: '100%', display: 'flex', flexDirection: 'column', py: 2, overflow: 'hidden' }}>
+    <Container maxWidth={false} sx={{ height: '100%', display: 'flex', flexDirection: 'column', py: 2, overflow: 'hidden' }}>
       {/* Header */}
       <Box sx={{ mb: 2, flexShrink: 0 }}>
         <Typography variant="h4" component="h1" gutterBottom>

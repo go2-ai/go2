@@ -123,6 +123,7 @@ const MultiLocaleInput: React.FC<TranslatableInputProps> = ({
         fullWidth={fullWidth}
         size={dense ? undefined : "small"}
         variant={dense ? "standard" : "outlined"}
+        autoComplete="off"
         sx={
           dense
             ? {
@@ -229,6 +230,7 @@ const MultiLocaleInput: React.FC<TranslatableInputProps> = ({
                   fullWidth
                   size="small"
                   value={draft[primaryLocale] ?? ""}
+                  autoComplete="off"
                   onChange={(e) => handleDraftChange(primaryLocale, e.target.value)}
                 />
               </Box>

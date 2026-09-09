@@ -120,7 +120,7 @@ export const ReportViewer = ({ templateFile, data, reportKey }: ReportViewerProp
   }, [templateFile, data, reportKey]);
 
   return (
-    <Box sx={{ height: '100%', width: '100%', position: 'relative' }}>
+    <Box sx={{ height: '100%', width: '100%'}}>
       <div ref={viewerRef} style={{ height: '100%', width: '100%' }} />
 
       {loading && (

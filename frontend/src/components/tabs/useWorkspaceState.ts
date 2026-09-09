@@ -9,6 +9,7 @@ const defaultLayout: WorkspaceLayout = {
       id: 'panel-1',
       tabs: [],
       activeTabId: '',
+      activationHistory: [],
     },
   ],
   direction: 'horizontal',

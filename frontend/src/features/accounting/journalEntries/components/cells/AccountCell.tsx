@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { TextField, Autocomplete, Box, type AutocompleteInputChangeReason } from '@mui/material';
 import type { Account } from '../../../accounts/accountsApi';
+import { createFilterOptions } from '@mui/material';
 
 interface AccountCellProps {
   value: number | null;
@@ -44,11 +45,22 @@ export const AccountCell = ({ value, accounts, onChange, disabled, error }: Acco
     }
   };
 
+  const filterOptions = createFilterOptions<Account>({
+    stringify: (option) => `${getAccountCode(option)} ${option.name}`,
+  });
+
+  const handleBlur = () => {
+    if (inputValue.trim() === '') {
+      onChange(null);
+    }
+  };
+
   return (
     <Autocomplete
       options={accounts}
+      filterOptions={filterOptions}
       getOptionLabel={getAccountCode}
-      value={selectedAccount}
+      value={selectedAccount ?? undefined}
       onChange={(_, newValue) => onChange(newValue?.id ?? null)}
       inputValue={inputValue}
       onInputChange={(_, newValue, reason) => handleInputChange(newValue, reason)}
@@ -56,7 +68,8 @@ export const AccountCell = ({ value, accounts, onChange, disabled, error }: Acco
       isOptionEqualToValue={(option, value) => option.id === value?.id}
       size="small"
       fullWidth
-      sx={{ pl: 0.5 }}
+      disableClearable
+      sx={{ px: 1 }}
       slotProps={{
         popper: {
           sx: {
@@ -76,6 +89,7 @@ export const AccountCell = ({ value, accounts, onChange, disabled, error }: Acco
           {...params}
           variant="standard"
           error={error}
+          onBlur={handleBlur}
           InputProps={{
             ...params.InputProps,
             disableUnderline: true,

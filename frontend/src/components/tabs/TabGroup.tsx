@@ -15,11 +15,13 @@ import { SortableTab } from './SortableTab';
 import { TabContextMenu } from './TabContextMenu';
 import { TabContainerContextMenu } from './TabContainerContextMenu';
 import { getTabPath } from './tabPaths';
+import { getNextActiveTabId } from './tabActivation';
 
 interface TabGroupProps {
   panelId: string;
   tabs: Tab[];
   activeTabId: string;
+  activationHistory: string[]; // NEW
   onTabsChange: (tabs: Tab[]) => void;
   onActiveTabChange: (id: string) => void;
   onCloseTab: (id: string, panelId: string) => void;
@@ -34,6 +36,7 @@ export function TabGroup({
   panelId,
   tabs,
   activeTabId,
+  activationHistory,
   onTabsChange,
   onActiveTabChange,
   onCloseTab,
@@ -100,20 +103,19 @@ export function TabGroup({
     if (tab?.pinned) return;
 
     const wasActive = activeTabId === tabId;
-    const remaining = tabs.filter((t) => t.id !== tabId);
 
-    onCloseTab(tabId, panelId); // updates layout state as before
+    onCloseTab(tabId, panelId); // updates layout state (picks next active via MRU)
 
-    // If the closed tab was active, mirror useTabOperations' own choice of
-    // next active tab (it picks the *last* remaining tab) and navigate there.
     if (wasActive && organizationId) {
-      const nextActive = remaining[remaining.length - 1];
+      // Mirror the exact same decision useTabOperations.closeTab just made,
+      // so navigation lands on the tab that actually became active.
+      const nextActiveId = getNextActiveTabId(tabs, activationHistory, tabId);
+      const nextActive = tabs.find((t) => t.id === nextActiveId);
+
       if (nextActive) {
         navigate(getTabPath(nextActive, organizationId));
       } else {
-        // Panel is now empty. If it was the only panel, fall back to dashboard.
-        // If there were other panels, this panel gets removed by useTabOperations
-        // and focus should really shift elsewhere — see note below.
+        // Panel is now empty.
         navigate(`/app/organizations/${organizationId}`);
       }
     }
