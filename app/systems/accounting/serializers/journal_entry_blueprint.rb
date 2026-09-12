@@ -43,8 +43,10 @@ module Accounting
     end
 
     view :print do
-      fields :no, :ref, :date, :description
+      fields :no, :ref, :description
+      field :date do |je| je.date.strftime("%Y-%m-%d") end
       field :creator do |je| je.creator.name end
+      field :organization_name do |je| je.organization.name end
       association :items, blueprint: Accounting::JournalEntryItemBlueprint, view: :print_journal_entry do |journal_entry|
         journal_entry.items.sort_by(&:row)
       end
