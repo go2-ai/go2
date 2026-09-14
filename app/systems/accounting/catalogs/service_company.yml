@@ -1,0 +1,385 @@
+key: service_company
+label:
+  en: Service Company
+  fa: شرکت خدماتی
+description:
+  en: A standard chart of accounts for a professional services business.
+  fa: نمودار استاندارد حساب‌ها برای یک کسب‌وکار خدمات حرفه‌ای.
+categories: []
+ledgers:
+  - category: CA
+    code: "10"
+    name:
+      en: Cash and Cash Equivalents
+      fa: نقد و معادل نقد
+    unexpected_balance: accept
+    is_monetary: true
+  - category: CA
+    code: "11"
+    name:
+      en: Accounts Receivable
+      fa: حساب‌های دریافتنی
+    unexpected_balance: accept
+    is_monetary: true
+  - category: CA
+    code: "12"
+    name:
+      en: Prepaid Expenses
+      fa: پیش‌پرداخت‌ها
+    unexpected_balance: accept
+    is_monetary: false
+  - category: CA
+    code: "13"
+    name:
+      en: Other Current Assets
+      fa: سایر دارایی‌های جاری
+    unexpected_balance: accept
+    is_monetary: false
+  - category: LA
+    code: "20"
+    name:
+      en: Fixed Assets
+      fa: دارایی‌های ثابت
+    unexpected_balance: accept
+    is_monetary: false
+  - category: LA
+    code: "21"
+    name:
+      en: Accumulated Depreciation
+      fa: استهلاک انباشته
+    unexpected_balance: accept
+    is_monetary: false
+  - category: LA
+    code: "22"
+    name:
+      en: Intangible Assets
+      fa: دارایی‌های نامشهود
+    unexpected_balance: accept
+    is_monetary: false
+  - category: CL
+    code: "30"
+    name:
+      en: Accounts Payable
+      fa: حساب‌های پرداختنی
+    unexpected_balance: accept
+    is_monetary: true
+  - category: CL
+    code: "31"
+    name:
+      en: Accrued Liabilities
+      fa: بدهی‌های تحقق‌یافته
+    unexpected_balance: accept
+    is_monetary: true
+  - category: CL
+    code: "32"
+    name:
+      en: Taxes Payable
+      fa: مالیات‌های پرداختنی
+    unexpected_balance: accept
+    is_monetary: true
+  - category: CL
+    code: "33"
+    name:
+      en: Deferred Revenue
+      fa: درآمد پیش‌دریافت
+    unexpected_balance: accept
+    is_monetary: false
+  - category: LL
+    code: "40"
+    name:
+      en: Long-term Debt
+      fa: بدهی‌های بلندمدت
+    unexpected_balance: accept
+    is_monetary: true
+  - category: OE
+    code: "50"
+    name:
+      en: Owner's Capital
+      fa: سرمایه مالک
+    unexpected_balance: accept
+    is_monetary: false
+  - category: OE
+    code: "51"
+    name:
+      en: Retained Earnings
+      fa: سود انباشته
+    unexpected_balance: accept
+    is_monetary: false
+  - category: OE
+    code: "52"
+    name:
+      en: Owner's Draws
+      fa: برداشت مالک
+    unexpected_balance: accept
+    is_monetary: false
+  - category: RE
+    code: "60"
+    name:
+      en: Service Revenue
+      fa: درآمد خدمات
+    unexpected_balance: accept
+    is_monetary: false
+  - category: RE
+    code: "61"
+    name:
+      en: Other Income
+      fa: سایر درآمدها
+    unexpected_balance: accept
+    is_monetary: false
+  - category: EX
+    code: "70"
+    name:
+      en: Salaries and Wages
+      fa: حقوق و دستمزد
+    unexpected_balance: accept
+    is_monetary: false
+  - category: EX
+    code: "71"
+    name:
+      en: Rent Expense
+      fa: هزینه اجاره
+    unexpected_balance: accept
+    is_monetary: false
+  - category: EX
+    code: "72"
+    name:
+      en: Utilities Expense
+      fa: هزینه آب و برق و گاز
+    unexpected_balance: accept
+    is_monetary: false
+  - category: EX
+    code: "73"
+    name:
+      en: Office Supplies
+      fa: ملزومات اداری
+    unexpected_balance: accept
+    is_monetary: false
+  - category: EX
+    code: "74"
+    name:
+      en: Professional Fees
+      fa: حق‌الزحمه حرفه‌ای
+    unexpected_balance: accept
+    is_monetary: false
+  - category: EX
+    code: "75"
+    name:
+      en: Marketing and Advertising
+      fa: بازاریابی و تبلیغات
+    unexpected_balance: accept
+    is_monetary: false
+  - category: EX
+    code: "76"
+    name:
+      en: Travel and Entertainment
+      fa: سفر و پذیرایی
+    unexpected_balance: accept
+    is_monetary: false
+  - category: EX
+    code: "77"
+    name:
+      en: Insurance
+      fa: بیمه
+    unexpected_balance: accept
+    is_monetary: false
+  - category: EX
+    code: "78"
+    name:
+      en: Depreciation Expense
+      fa: هزینه استهلاک
+    unexpected_balance: accept
+    is_monetary: false
+  - category: EX
+    code: "79"
+    name:
+      en: Miscellaneous Expense
+      fa: هزینه‌های متفرقه
+    unexpected_balance: accept
+    is_monetary: false
+accounts:
+  - ledger: CA.10
+    code: "01"
+    name:
+      en: Petty Cash
+      fa: تنخواه
+    accepts_other_currencies: false
+  - ledger: CA.10
+    code: "02"
+    name:
+      en: Main Bank Account
+      fa: حساب بانکی اصلی
+    accepts_other_currencies: false
+  - ledger: CA.11
+    code: "01"
+    name:
+      en: Trade Receivables
+      fa: مطالبات تجاری
+    accepts_other_currencies: false
+  - ledger: CA.12
+    code: "01"
+    name:
+      en: Prepaid Rent
+      fa: اجاره پیش‌پرداخت
+    accepts_other_currencies: false
+  - ledger: CA.13
+    code: "01"
+    name:
+      en: Other Current Assets
+      fa: سایر دارایی‌های جاری
+    accepts_other_currencies: false
+  - ledger: LA.20
+    code: "01"
+    name:
+      en: Office Equipment
+      fa: تجهیزات اداری
+    accepts_other_currencies: false
+  - ledger: LA.20
+    code: "02"
+    name:
+      en: Furniture and Fixtures
+      fa: مبلمان و اثاثیه
+    accepts_other_currencies: false
+  - ledger: LA.21
+    code: "01"
+    name:
+      en: Accumulated Depreciation - Equipment
+      fa: استهلاک انباشته - تجهیزات
+    accepts_other_currencies: false
+  - ledger: LA.22
+    code: "01"
+    name:
+      en: Software and Licenses
+      fa: نرم‌افزار و مجوزها
+    accepts_other_currencies: false
+  - ledger: CL.30
+    code: "01"
+    name:
+      en: Trade Payables
+      fa: بدهی‌های تجاری
+    accepts_other_currencies: false
+  - ledger: CL.31
+    code: "01"
+    name:
+      en: Accrued Salaries
+      fa: حقوق پرداختنی
+    accepts_other_currencies: false
+  - ledger: CL.32
+    code: "01"
+    name:
+      en: Sales Tax Payable
+      fa: مالیات بر فروش پرداختنی
+    accepts_other_currencies: false
+  - ledger: CL.33
+    code: "01"
+    name:
+      en: Customer Prepayments
+      fa: پیش‌دریافت مشتریان
+    accepts_other_currencies: false
+  - ledger: LL.40
+    code: "01"
+    name:
+      en: Bank Loans
+      fa: وام‌های بانکی
+    accepts_other_currencies: false
+  - ledger: OE.50
+    code: "01"
+    name:
+      en: Owner's Capital
+      fa: سرمایه مالک
+    accepts_other_currencies: false
+  - ledger: OE.51
+    code: "01"
+    name:
+      en: Retained Earnings
+      fa: سود انباشته
+    accepts_other_currencies: false
+  - ledger: OE.52
+    code: "01"
+    name:
+      en: Owner's Draws
+      fa: برداشت مالک
+    accepts_other_currencies: false
+  - ledger: RE.60
+    code: "01"
+    name:
+      en: Consulting Revenue
+      fa: درآمد مشاوره
+    accepts_other_currencies: false
+  - ledger: RE.60
+    code: "02"
+    name:
+      en: Other Service Revenue
+      fa: سایر درآمدهای خدماتی
+    accepts_other_currencies: false
+  - ledger: RE.61
+    code: "01"
+    name:
+      en: Interest Income
+      fa: درآمد بهره
+    accepts_other_currencies: false
+  - ledger: EX.70
+    code: "01"
+    name:
+      en: Salaries and Wages
+      fa: حقوق و دستمزد
+    accepts_other_currencies: false
+  - ledger: EX.71
+    code: "01"
+    name:
+      en: Office Rent
+      fa: اجاره دفتر
+    accepts_other_currencies: false
+  - ledger: EX.72
+    code: "01"
+    name:
+      en: Utilities
+      fa: آب و برق و گاز
+    accepts_other_currencies: false
+  - ledger: EX.73
+    code: "01"
+    name:
+      en: Office Supplies
+      fa: ملزومات اداری
+    accepts_other_currencies: false
+  - ledger: EX.74
+    code: "01"
+    name:
+      en: Legal and Accounting Fees
+      fa: حق‌الزحمه حقوقی و حسابداری
+    accepts_other_currencies: false
+  - ledger: EX.75
+    code: "01"
+    name:
+      en: Advertising
+      fa: تبلیغات
+    accepts_other_currencies: false
+  - ledger: EX.76
+    code: "01"
+    name:
+      en: Travel
+      fa: سفر
+    accepts_other_currencies: false
+  - ledger: EX.76
+    code: "02"
+    name:
+      en: Meals and Entertainment
+      fa: پذیرایی
+    accepts_other_currencies: false
+  - ledger: EX.77
+    code: "01"
+    name:
+      en: Business Insurance
+      fa: بیمه کسب‌وکار
+    accepts_other_currencies: false
+  - ledger: EX.78
+    code: "01"
+    name:
+      en: Depreciation Expense
+      fa: هزینه استهلاک
+    accepts_other_currencies: false
+  - ledger: EX.79
+    code: "01"
+    name:
+      en: Miscellaneous Expense
+      fa: هزینه‌های متفرقه
+    accepts_other_currencies: false

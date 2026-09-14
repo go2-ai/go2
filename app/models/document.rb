@@ -14,6 +14,7 @@ class Document < ApplicationRecord
     text/plain
     text/csv
     application/json
+    application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
   ].freeze
 
   validate :attachment_presence

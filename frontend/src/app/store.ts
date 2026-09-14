@@ -19,6 +19,7 @@ import { fiscalYearsApi } from '../features/fiscalYears/fiscalYearsApi';
 import { journalEntriesApi } from '../features/accounting/journalEntries/journalEntriesApi';
 import { journalEntryItemsApi } from '../features/accounting/journalEntryItems/journalEntryItemsApi';
 import { reportTemplatesApi } from '../features/reportTemplates/reportTemplatesApi';
+import { chartOfAccountsAiApi } from '../features/accounting/chartOfAccountsAi/chartOfAccountsAiApi';
 
 import organizationsReducer from '../features/organizations/organizationsSlice';
 import authReducer from '../features/auth/authSlice';
@@ -45,6 +46,7 @@ export const store = configureStore({
     [journalEntryItemsApi.reducerPath]: journalEntryItemsApi.reducer,
     [documentsApi.reducerPath]: documentsApi.reducer,
     [reportTemplatesApi.reducerPath]: reportTemplatesApi.reducer,
+    [chartOfAccountsAiApi.reducerPath]: chartOfAccountsAiApi.reducer,
     organizations: organizationsReducer,
     auth: authReducer,
   },
@@ -70,6 +72,7 @@ export const store = configureStore({
       journalEntryItemsApi.middleware,
       documentsApi.middleware,
       reportTemplatesApi.middleware,
+      chartOfAccountsAiApi.middleware,
     ),
 });
 

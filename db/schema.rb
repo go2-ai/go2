@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_09_03_110512) do
+ActiveRecord::Schema[8.0].define(version: 2026_09_12_181548) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -91,6 +91,37 @@ ActiveRecord::Schema[8.0].define(version: 2026_09_03_110512) do
     t.bigint "blob_id", null: false
     t.string "variation_digest", null: false
     t.index ["blob_id", "variation_digest"], name: "index_active_storage_variant_records_uniqueness", unique: true
+  end
+
+  create_table "ai_chats", force: :cascade do |t|
+    t.bigint "organization_id", null: false
+    t.bigint "member_id", null: false
+    t.string "kind", null: false
+    t.string "subject_type"
+    t.bigint "subject_id"
+    t.jsonb "state", default: {}, null: false
+    t.string "status", default: "open", null: false
+    t.datetime "last_message_at"
+    t.datetime "abandoned_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["last_message_at"], name: "index_ai_chats_on_last_message_at"
+    t.index ["member_id"], name: "index_ai_chats_on_member_id"
+    t.index ["organization_id", "member_id", "kind", "status"], name: "index_ai_chats_on_owner_kind_status"
+    t.index ["organization_id"], name: "index_ai_chats_on_organization_id"
+    t.index ["subject_type", "subject_id"], name: "index_ai_chats_on_subject"
+  end
+
+  create_table "ai_messages", force: :cascade do |t|
+    t.bigint "ai_chat_id", null: false
+    t.bigint "sender_member_id"
+    t.string "role", null: false
+    t.text "content", default: "", null: false
+    t.jsonb "metadata", default: {}, null: false
+    t.datetime "created_at", null: false
+    t.index ["ai_chat_id", "created_at"], name: "index_ai_messages_on_chat_and_created"
+    t.index ["ai_chat_id"], name: "index_ai_messages_on_ai_chat_id"
+    t.index ["sender_member_id"], name: "index_ai_messages_on_sender_member_id"
   end
 
   create_table "center_types", force: :cascade do |t|
@@ -495,6 +526,10 @@ ActiveRecord::Schema[8.0].define(version: 2026_09_03_110512) do
   add_foreign_key "accounts", "ledgers"
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "ai_chats", "members"
+  add_foreign_key "ai_chats", "organizations"
+  add_foreign_key "ai_messages", "ai_chats"
+  add_foreign_key "ai_messages", "members", column: "sender_member_id"
   add_foreign_key "center_types", "organizations"
   add_foreign_key "centers", "center_types"
   add_foreign_key "conversation_participants", "conversations"

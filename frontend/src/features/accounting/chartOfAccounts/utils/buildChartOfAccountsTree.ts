@@ -15,6 +15,11 @@ export interface ChartOfAccountsNode {
   hasChildren: boolean;
   children: ChartOfAccountsNode[];
   raw: AccountCategory | Ledger | Account;
+  /**
+   * Marks a node that comes from an AI draft overlay rather than from
+   * persisted data. Draft nodes have synthetic ids and are read-only.
+   */
+  isDraft?: boolean;
 }
 
 const naturalSort = (a: string, b: string): number =>

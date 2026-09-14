@@ -1,0 +1,13 @@
+#!/usr/bin/env ruby
+
+require_relative "../config/environment"
+require "solid_queue/cli"
+
+if Rails.env.local?
+  # Route both loggers to the console for the worker process only.
+  SolidQueue.logger = ActiveSupport::Logger.new(STDOUT).tap { |l| l.level = Logger::INFO }
+  ActiveJob::Base.logger = ActiveSupport::Logger.new(STDOUT).tap { |l| l.level = Logger::INFO }
+end
+
+
+SolidQueue::Cli.start(ARGV)

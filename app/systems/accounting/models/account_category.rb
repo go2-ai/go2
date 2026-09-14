@@ -16,7 +16,7 @@ module Accounting
     enum :type, { balance_sheet: 1, income_statement: 2, other: 3 }
 
     validates :code, presence: true, uniqueness: { scope: :organization_id }
-    before_destroy :prevent_system_deletion, if: -> { identifier.present? }
+    # before_destroy :prevent_system_deletion, if: -> { identifier.present? }
 
     validate :validate_user_category_type, on: :create
     validate :code_length_matches

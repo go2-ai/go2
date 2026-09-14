@@ -1,6 +1,7 @@
 GEM
   remote: https://rubygems.org/
   specs:
+    Ascii85 (2.0.1)
     actioncable (8.0.2)
       actionpack (= 8.0.2)
       activesupport (= 8.0.2)
@@ -77,6 +78,7 @@ GEM
     addressable (2.8.7)
       public_suffix (>= 2.0.2, < 7.0)
     aes_key_wrap (1.1.0)
+    afm (1.0.0)
     ast (2.4.3)
     aws-eventstream (1.4.0)
     aws-partitions (1.1283.0)
@@ -140,6 +142,9 @@ GEM
     chunky_png (1.4.0)
     concurrent-ruby (1.3.5)
     connection_pool (2.5.3)
+    crack (1.0.1)
+      bigdecimal
+      rexml
     crass (1.0.6)
     database_cleaner-active_record (2.2.0)
       activerecord (>= 5.a)
@@ -196,6 +201,8 @@ GEM
       base64
       fiber-storage
       logger
+    hashdiff (1.2.1)
+    hashery (2.1.2)
     hashie (5.0.0)
     highline (3.1.2)
       reline
@@ -351,6 +358,11 @@ GEM
     parser (3.3.7.3)
       ast (~> 2.4.1)
       racc
+    pdf-reader (2.16.0)
+      Ascii85 (>= 1.0, < 3.0, != 2.0.0)
+      afm (>= 0.2.1, < 2)
+      hashery (~> 2.0)
+      ttfunk
     pg (1.5.9)
     pp (0.6.2)
       prettyprint
@@ -556,6 +568,8 @@ GEM
     thruster (0.1.14-arm64-darwin)
     thruster (0.1.14-x86_64-linux)
     timeout (0.4.3)
+    ttfunk (1.8.0)
+      bigdecimal (~> 3.1)
     turbo-rails (2.0.13)
       actionpack (>= 7.1.0)
       railties (>= 7.1.0)
@@ -579,6 +593,10 @@ GEM
       activemodel (>= 6.0.0)
       bindex (>= 0.4.0)
       railties (>= 6.0.0)
+    webmock (3.26.4)
+      addressable (>= 2.8.0)
+      crack (>= 0.3.2)
+      hashdiff (>= 0.4.0, < 2.0.0)
     websocket (1.2.11)
     websocket-driver (0.7.7)
       base64
@@ -586,6 +604,8 @@ GEM
     websocket-extensions (0.1.5)
     xpath (3.2.0)
       nokogiri (~> 1.8)
+    xsv (1.4.1)
+      rubyzip (>= 1.3, < 4)
     zeitwerk (2.7.3)
 
 PLATFORMS
@@ -631,6 +651,7 @@ DEPENDENCIES
   omniauth-linkedin-oauth2
   omniauth-rails_csrf_protection
   paper_trail
+  pdf-reader (~> 2.12)
   pg (~> 1.1)
   propshaft
   puma (>= 5.0)
@@ -661,6 +682,8 @@ DEPENDENCIES
   twilio-ruby
   tzinfo-data
   web-console
+  webmock
+  xsv (~> 1.1)
 
 BUNDLED WITH
    2.5.14
