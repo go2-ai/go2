@@ -3,25 +3,37 @@
 module Ai
   # Abstract base for every AI chat controller in the app.
   #
-  # Owns the mechanism that must not be duplicated per feature:
-  #   - authorization gate (current_organization :administrate?)
-  #   - member-scoped chat lookup — the security-critical piece
-  #   - find-or-create open chat
-  #   - calling the feature's service
-  #   - availability gating on chat creation only
+  # The AI chat protocol is asynchronous by design:
   #
-  # Does NOT own policy that varies per feature:
-  #   - which `kind` this controller serves
-  #   - which service to invoke
-  #   - what makes the feature "available" for an organization
-  #   - how to serialize chat and post_message responses
-  #   - any feature-specific actions (accept, apply, etc.)
+  #   POST   /chats              — find or create the member's open chat
+  #   GET    /chats/:id          — poll the chat's current state
+  #   POST   /chats/:id/messages — persist the user message, enqueue a
+  #                                background job, return 202 Accepted.
+  #                                The client polls GET /chats/:id until
+  #                                chat.state["processing"] is false.
+  #   POST   /chats/:id/abandon  — mark the chat abandoned
   #
-  # Subclasses must implement the hooks below. Not routed directly.
+  # All four actions are implemented here. Subclasses declare only the
+  # feature-specific facts:
+  #
+  #   - `chat_kind`             — the discriminator stored on AiChat.kind
+  #   - `availability_ok?(org)` — gate for creating a new chat
+  #   - `job_class`             — the job that processes a user message
+  #   - `chat_payload(chat)`    — serialization of a chat to JSON
+  #
+  # Feature-specific actions that don't fit this protocol (e.g. "accept
+  # the current proposal") are declared on the subclass and may use the
+  # shared `load_chat` / `chat_payload` helpers.
+  #
+  # The base does NOT know how the feature's service is invoked — that
+  # is the job's responsibility (see Ai::ProcessMessageJob). A feature
+  # therefore declares its `service_class` once, on its job subclass.
   class BaseChatsController < ApplicationController
     before_action :authorize_org
     before_action :load_chat, only: [ :show, :post_message, :abandon, :accept ]
     before_action :check_availability, only: [ :create ]
+
+    # ── Actions ─────────────────────────────────────────────────────────
 
     def create
       chat = find_or_create_open_chat
@@ -32,6 +44,21 @@ module Ai
       render json: chat_payload(@chat), status: :ok
     end
 
+    # Async message submission. Persists the user message (and reparents
+    # any uploads under it), flips the chat into "processing", enqueues
+    # the feature's job, and returns 202 Accepted. The client then polls
+    # GET /chats/:id until `state["processing"]` is false.
+    #
+    # Rejects:
+    #   - blank content (422)
+    #   - a chat that is already processing (409)
+    #
+    # NOTE: the "already processing" guard is an HTTP-level convenience,
+    # not a hard concurrency control. Two simultaneous POSTs can both
+    # pass the check before either commits `start_processing!`. The job's
+    # `limits_concurrency` serializes execution, but both user messages
+    # are still persisted. The frontend disables the send button while
+    # processing, which is what keeps this from mattering in practice.
     def post_message
       content = params[:content].to_s
 
@@ -40,9 +67,26 @@ module Ai
         return
       end
 
-      result = run_service(@chat, content)
+      if @chat.processing?
+        render json: { errors: [ "chat is already processing a message" ] }, status: :conflict
+        return
+      end
 
-      render json: post_message_payload(@chat.reload, result), status: :ok
+      user_message = nil
+
+      ActiveRecord::Base.transaction do
+        user_message = @chat.append_message!(
+          role:          "user",
+          content:       content,
+          sender_member: current_member
+        )
+        reparent_attachments_to(user_message)
+        @chat.start_processing!
+      end
+
+      job_class.perform_later(@chat.id, user_message.id)
+
+      render json: post_message_response(@chat.reload, user_message), status: :accepted
     end
 
     def abandon
@@ -50,29 +94,44 @@ module Ai
       render json: chat_payload(@chat), status: :ok
     end
 
-    private
+    # ── Subclass hooks ──────────────────────────────────────────────────
 
-    # ── Subclass hooks ─────────────────────────────────────────────────
-
+    # The feature discriminator stored on AiChat.kind.
     def chat_kind
       raise NotImplementedError, "#{self.class} must implement #chat_kind"
     end
 
-    def service_class
-      raise NotImplementedError, "#{self.class} must implement #service_class"
-    end
-
+    # Gate for creating a new chat. Defaults to "always available" so a
+    # feature that has no state precondition doesn't have to override.
     def availability_ok?(_organization)
       true
     end
 
-    def chat_payload(chat)
+    # The job enqueued by #post_message. Each feature has its own job
+    # subclass (typically a thin wrapper around Ai::ProcessMessageJob)
+    # that names its service class and fallback message.
+    def job_class
+      raise NotImplementedError, "#{self.class} must implement #job_class"
+    end
+
+    # Serialization of a chat to JSON. Must return a Hash. Subclasses
+    # typically delegate to their feature Blueprint, and usually use a
+    # view that includes messages.
+    def chat_payload(_chat)
       raise NotImplementedError, "#{self.class} must implement #chat_payload"
     end
 
-    def post_message_payload(chat, result)
-      raise NotImplementedError, "#{self.class} must implement #post_message_payload"
+    # The 202 response body for #post_message. Subclasses override only
+    # if they need to add feature-specific keys to the envelope.
+    def post_message_response(chat, user_message)
+      {
+        status:          "processing",
+        user_message_id: user_message.id,
+        chat:            chat_payload(chat)
+      }
     end
+
+    private
 
     # ── Shared behavior ────────────────────────────────────────────────
 
@@ -106,8 +165,23 @@ module Ai
       current_member.ai_chats.where(kind: chat_kind, status: "open").order(:id).first!
     end
 
-    def run_service(chat, content)
-      service_class.call(chat: chat, user_content: content)
+    # Moves the requested Documents from this chat to the given user
+    # message. The client uploads files first (documentable_type:
+    # "AiChat", documentable_id: chat.id), then posts a message with
+    # attachment_ids. Ids that don't belong to this chat, or don't
+    # exist, are silently skipped — the message still sends.
+    def reparent_attachments_to(user_message)
+      ids = Array(params[:attachment_ids]).map(&:to_i).reject(&:zero?)
+      return if ids.empty?
+
+      documents = @chat.documents.where(id: ids)
+
+      documents.find_each do |document|
+        document.update!(
+          documentable_type: "AiMessage",
+          documentable_id:   user_message.id
+        )
+      end
     end
   end
 end

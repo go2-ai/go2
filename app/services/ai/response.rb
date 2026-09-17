@@ -17,14 +17,23 @@ module Ai
   #                debugging and for storing in AiMessage#metadata when
   #                the caller wants an audit trail.
   #   usage      — token usage hash (provider-specific keys) or nil.
+  #   provider   — identifier of the adapter that produced this response
+  #                (e.g. "nararouter"). Used for per-message cost
+  #                attribution. nil when the adapter didn't set one.
+  #   model      — the concrete model the provider actually used for this
+  #                call. Recorded per-message because a provider's free
+  #                tier can rotate models between calls. nil if unknown.
   class Response
-    attr_reader :content, :tool_calls, :raw, :usage
+    attr_reader :content, :tool_calls, :raw, :usage, :provider, :model
 
-    def initialize(content: "", tool_calls: [], raw: {}, usage: nil)
+    def initialize(content: "", tool_calls: [], raw: {}, usage: nil,
+                   provider: nil, model: nil)
       @content    = content.to_s
       @tool_calls = Array(tool_calls).map { |tc| normalize_tool_call(tc) }
       @raw        = raw
       @usage      = usage
+      @provider   = provider
+      @model      = model
     end
 
     def tool_calls?
@@ -39,7 +48,9 @@ module Ai
       {
         content: content,
         tool_calls: tool_calls,
-        usage: usage
+        usage: usage,
+        provider: provider,
+        model: model
       }
     end
 

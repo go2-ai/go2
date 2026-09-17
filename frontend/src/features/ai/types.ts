@@ -23,6 +23,18 @@ export interface AiChat {
   created_at: string;
   updated_at: string;
   messages?: AiMessage[];
+  /**
+   * Total number of messages in the chat (not just the ones returned
+   * in `messages`). Present on the `with_messages` view. Absent on the
+   * default view.
+   */
+  messages_total?: number;
+  /**
+   * True when `messages` contains only the most recent slice of the
+   * full transcript. Use this to render an "N older messages not shown"
+   * affordance when real pagination is added.
+   */
+  messages_truncated?: boolean;
 }
 
 /**

@@ -7,9 +7,33 @@ module Ai
   # back to the Null adapter so the app never crashes just because AI
   # isn't set up.
   #
-  #   Ai::Client.complete(messages: [...], tools: [...], system: "...")
+  # ── Feature-scoped configuration ─────────────────────────────────────
+  #
+  # Every method accepts an optional `feature:` kwarg (a String like
+  # "chart_of_accounts"). When present, the client looks for
+  # feature-specific env vars FIRST and falls back to the global ones:
+  #
+  #   AI_PROVIDER                          global provider
+  #   AI_MODEL                             global model
+  #   AI_PROVIDER__CHART_OF_ACCOUNTS       per-feature provider
+  #   AI_MODEL__CHART_OF_ACCOUNTS          per-feature model
+  #
+  # The double underscore separates the scope ("__FEATURE") from the
+  # key ("AI_PROVIDER"). It's needed because feature names contain
+  # underscores themselves. The suffix is the feature name upcased with
+  # underscores preserved:
+  #
+  #   "chart_of_accounts" → AI_MODEL__CHART_OF_ACCOUNTS
+  #
+  # A feature that declares no override behaves exactly as before: it
+  # uses the global config.
+  #
+  #   Ai::Client.complete(messages: [...])
+  #   Ai::Client.complete(messages: [...], feature: "chart_of_accounts")
   #   Ai::Client.available?
+  #   Ai::Client.available?(feature: "chart_of_accounts")
   #   Ai::Client.provider_name
+  #   Ai::Client.provider_name(feature: "chart_of_accounts")
   module Client
     PROVIDERS = {
       "openrouter" => "Ai::Adapters::Openrouter",
@@ -24,58 +48,97 @@ module Ai
       "fake" => "Ai::Adapters::Fake"
     }.freeze
 
+    # Memoized adapter instances, keyed by feature name (nil → "").
+    # Initialized eagerly so the first reader doesn't have to race.
+    @adapters       = {}
+    @adapters_mutex = Mutex.new
+
     class << self
-      def complete(messages:, tools: nil, system: nil, model: nil)
-        adapter.complete(messages: messages, tools: tools, system: system, model: model)
+      def complete(messages:, tools: nil, system: nil, model: nil, feature: nil)
+        adapter(feature: feature).complete(
+          messages: messages,
+          tools:    tools,
+          system:   system,
+          model:    model
+        )
       end
 
-      def available?
-        adapter.available?
+      def available?(feature: nil)
+        adapter(feature: feature).available?
       end
 
-      def provider_name
-        adapter.name
+      def provider_name(feature: nil)
+        adapter(feature: feature).name
       end
 
-      # Returns the current adapter instance. Memoized per-process for
-      # the common case (a single configured provider for the whole app).
-      # Call `reset_adapter!` in tests between examples to force a rebuild
-      # when ENV changes.
-      def adapter
-        @adapter ||= build_adapter
+      # Returns the adapter for the given feature (or the global default
+      # when feature is nil). Memoized per feature for the process
+      # lifetime. Adapter construction is cheap (no I/O), so holding the
+      # mutex across construction is fine.
+      #
+      # `with_adapter(instance)` installs a thread-local override that
+      # shadows ALL feature slots for the duration of a block — used by
+      # tests that want to inject a Fake adapter without knowing the
+      # feature key.
+      def adapter(feature: nil)
+        override = Thread.current[:ai_client_adapter_override]
+        return override if override
+
+        @adapters_mutex.synchronize do
+          @adapters[normalize_feature_key(feature)] ||= build_adapter(feature: feature)
+        end
       end
 
-      def reset_adapter!
-        @adapter = nil
+      # Clears memoized adapters. With no argument, clears every feature
+      # slot. With a `feature:`, clears only that slot.
+      def reset_adapter!(feature: nil)
+        @adapters_mutex.synchronize do
+          if feature.nil?
+            @adapters.clear
+          else
+            @adapters.delete(normalize_feature_key(feature))
+          end
+        end
       end
 
-      # Test helper — replaces the memoized adapter for the duration of a
-      # block. Useful when a spec needs to inject a Fake adapter with a
-      # specific response script without touching ENV.
+      # Test helper — replaces the adapter for the duration of a block.
+      # The override shadows every feature slot, so a spec can inject a
+      # Fake adapter regardless of which feature the code under test uses.
       def with_adapter(instance)
-        previous = @adapter
-        @adapter = instance
+        previous = Thread.current[:ai_client_adapter_override]
+        Thread.current[:ai_client_adapter_override] = instance
         yield
       ensure
-        @adapter = previous
+        Thread.current[:ai_client_adapter_override] = previous
       end
 
       private
 
-      def build_adapter
-        provider = ENV["AI_PROVIDER"].to_s.strip.downcase
+      def normalize_feature_key(feature)
+        feature.to_s
+      end
+
+      def build_adapter(feature: nil)
+        provider = env_for(feature, "AI_PROVIDER").to_s.strip.downcase
 
         return Ai::Adapters::Null.new if provider.blank?
 
         klass_name = provider_class_name(provider)
         unless klass_name
-          Rails.logger.warn("[Ai::Client] Unknown AI_PROVIDER=#{provider.inspect}; falling back to Null")
+          Rails.logger.warn(
+            "[Ai::Client] Unknown AI_PROVIDER=#{provider.inspect} " \
+            "(feature=#{feature.inspect}); falling back to Null"
+          )
           return Ai::Adapters::Null.new
         end
 
-        klass_name.constantize.new
+        # Pass the resolved model (possibly nil) into the adapter. Adapters
+        # fall back to their own DEFAULT_MODEL when nil is passed.
+        klass_name.constantize.new(model: env_for(feature, "AI_MODEL").presence)
       rescue Ai::ConfigurationError => e
-        Rails.logger.warn("[Ai::Client] Falling back to Null adapter: #{e.message}")
+        Rails.logger.warn(
+          "[Ai::Client] Falling back to Null adapter (feature=#{feature.inspect}): #{e.message}"
+        )
         Ai::Adapters::Null.new
       end
 
@@ -83,6 +146,26 @@ module Ai
         return PROVIDERS[provider] if PROVIDERS.key?(provider)
         return TEST_PROVIDERS[provider] if Rails.env.test? && TEST_PROVIDERS.key?(provider)
         nil
+      end
+
+      # Read a feature-scoped env var (e.g. AI_MODEL__CHART_OF_ACCOUNTS),
+      # falling back to the global key (AI_MODEL). Returns nil when
+      # neither is set.
+      def env_for(feature, base_key)
+        feature_key = feature_env_key(feature, base_key)
+        if feature_key
+          value = ENV[feature_key]
+          return value if value.present?
+        end
+
+        ENV[base_key]
+      end
+
+      def feature_env_key(feature, base_key)
+        name = normalize_feature_key(feature)
+        return nil if name.blank?
+
+        "#{base_key}__#{name.upcase}"
       end
     end
   end

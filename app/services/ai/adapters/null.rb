@@ -18,7 +18,9 @@ module Ai
             received_messages: messages.length,
             received_tools: Array(tools).map { |t| t.dig(:function, :name) || t.dig("function", "name") }
           },
-          usage: nil
+          usage: nil,
+          provider: "null",
+          model: nil
         )
       end
 

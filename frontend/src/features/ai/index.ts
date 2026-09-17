@@ -7,3 +7,4 @@ export { AiThinkingIndicator } from './components/AiThinkingIndicator';
 export { AiActionBanner } from './components/AiActionBanner';
 export { AiPendingAttachmentChips } from './components/AiPendingAttachmentChips';
 export type { PendingAttachment } from './components/AiPendingAttachmentChips';
+export { useAiChatChannel } from './hooks/useAiChatChannel';

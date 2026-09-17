@@ -55,6 +55,10 @@ module Accounting
         errors << Error.new(path: err.path, field: err.field, message: err.message)
       end
 
+      # Locale validation depends only on the organization, not on
+      # accounting_setting, so it runs even if settings are missing.
+      validate_locale_keys
+
       unless settings
         errors << Error.new(
           path: "accounting_setting",
@@ -77,6 +81,51 @@ module Accounting
     private
 
     attr_reader :proposal, :organization, :settings, :errors
+
+    # ── Locale check ─────────────────────────────────────────────────────
+
+    # ToolSchema's localized_name_schema deliberately allows any locale
+    # string — the model can't be trusted to only ever emit locales the
+    # org actually supports. Without this check, a hallucinated locale
+    # key (e.g. "ar" for an org configured with only en/fa) would sail
+    # through structural validation and only surface as a
+    # Mobility.with_locale crash mid-transaction inside ApplyProposal.
+    # Catching it here turns it into an ordinary validation error that
+    # gets fed back to the LLM on the next retry, like any other mistake.
+    def validate_locale_keys
+      allowed = allowed_locales
+      return if allowed.empty?
+
+      all_entries = proposal.categories + proposal.ledgers + proposal.accounts
+
+      all_entries.each do |entry|
+        name = entry[:name]
+        next if name.blank?
+
+        invalid_locales = name.keys.map(&:to_s) - allowed
+        next if invalid_locales.empty?
+
+        errors << Error.new(
+          path: entry_path(entry),
+          field: "name",
+          message: "unsupported locale(s) #{invalid_locales.join(', ')} " \
+                    "(organization only supports #{allowed.join(', ')})"
+        )
+      end
+    end
+
+    def allowed_locales
+      return [] if organization.nil?
+
+      ([ organization.locale ] + Array(organization.active_locales))
+        .compact
+        .map(&:to_s)
+        .uniq
+    end
+
+    def entry_path(entry)
+      entry[:full_code] || entry[:code].to_s
+    end
 
     # ── Length checks ───────────────────────────────────────────────────
 

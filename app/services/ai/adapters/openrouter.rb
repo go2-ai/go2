@@ -20,6 +20,12 @@ module Ai
     #   AI_REFERER         — optional; OpenRouter analytics
     #   AI_APP_TITLE       — optional; OpenRouter analytics
     #
+    # When Ai::Client instantiates this adapter, it has already resolved
+    # the model from feature-scoped env vars (AI_MODEL__FEATURE) and the
+    # global AI_MODEL. It passes the result via `model:`; a nil value
+    # means "no env-provided model" and the adapter falls back to its own
+    # DEFAULT_MODEL (Nararouter overrides it).
+    #
     # This adapter does NOT retry. 429/5xx/network errors are raised as
     # typed exceptions and left to the caller to handle.
     class Openrouter < Base
@@ -28,7 +34,7 @@ module Ai
 
       def initialize(
         api_key: ENV["AI_API_KEY"],
-        model: ENV["AI_MODEL"].presence || self.class::DEFAULT_MODEL,
+        model: nil,
         open_timeout: (ENV["AI_OPEN_TIMEOUT"] || 5).to_i,
         read_timeout: (ENV["AI_READ_TIMEOUT"] || 60).to_i,
         referer: ENV["AI_REFERER"],
@@ -37,7 +43,7 @@ module Ai
         raise Ai::ConfigurationError, "AI_API_KEY is not set" if api_key.blank?
 
         @api_key      = api_key
-        @model        = model
+        @model        = model.presence || ENV["AI_MODEL"].presence || self.class::DEFAULT_MODEL
         @open_timeout = open_timeout
         @read_timeout = read_timeout
         @referer      = referer
@@ -127,7 +133,7 @@ module Ai
         return {} if body.blank?
         JSON.parse(body)
       rescue JSON::ParserError => e
-        raise Ai::ResponseParseError, "#{provider_label} returned non-JSON body: #{e.message}"
+        raise Ai::ResponseParseError, "#{self.class.name.demodulize} returned non-JSON body: #{e.message}"
       end
 
       def error_message(body)
@@ -135,14 +141,16 @@ module Ai
       end
 
       def build_response(body)
-        choice = body.dig("choices", 0) || {}
+        choice  = body.dig("choices", 0) || {}
         message = choice["message"] || {}
 
         Ai::Response.new(
-          content: message["content"].to_s,
+          content:    message["content"].to_s,
           tool_calls: parse_tool_calls(message["tool_calls"]),
-          raw: body,
-          usage: body["usage"]
+          raw:        body,
+          usage:      body["usage"],
+          provider:   name,
+          model:      body["model"].presence || @model
         )
       end
 
@@ -150,8 +158,8 @@ module Ai
         Array(raw_tool_calls).map do |tc|
           function = tc["function"] || {}
           {
-            id: tc["id"],
-            name: function["name"],
+            id:        tc["id"],
+            name:      function["name"],
             arguments: function["arguments"]
           }
         end

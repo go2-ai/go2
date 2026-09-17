@@ -16,6 +16,16 @@ class AiChat < ApplicationRecord
 
   STATUSES = %w[open accepted abandoned].freeze
 
+  # Upper bound on how many messages are shipped to the client in a
+  # single payload. The DB keeps the full transcript; the wire carries
+  # only the most recent MAX_PAYLOAD_MESSAGES, plus a total count so the
+  # client can render "N older messages not shown" if it wants to.
+  #
+  # Chosen to cover virtually every real chat (a chart-of-accounts
+  # conversation is typically a handful of turns; 50 is generous). Real
+  # pagination is a follow-up if a feature ever routinely exceeds this.
+  MAX_PAYLOAD_MESSAGES = 50
+
   belongs_to :organization
   belongs_to :member
 
@@ -50,13 +60,7 @@ class AiChat < ApplicationRecord
   end
 
   # ── Processing state ────────────────────────────────────────────────
-  #
-  # While an async job is handling a message for this chat, we mark the
-  # chat as "processing" so the frontend can poll GET /chats/:id and
-  # render a "thinking..." indicator until the job finishes.
-  #
-  # Stored in the state jsonb rather than a dedicated column because it's
-  # transient ephemeral metadata, not a domain attribute of the chat.
+
   def processing?
     state["processing"] == true
   end
@@ -64,27 +68,26 @@ class AiChat < ApplicationRecord
   def start_processing!
     update!(
       state: state.merge(
-        "processing" => true,
-        "processing_started_at" => Time.current.iso8601
+        "processing"             => true,
+        "processing_started_at"  => Time.current.iso8601,
+        "processing_finished_at" => nil
       )
     )
+    broadcast_change(:processing_started)
   end
 
   def finish_processing!
-    # Explicitly set to false rather than delete the key, so the frontend
-    # can distinguish "never started" (key absent) from "just finished"
-    # (key == false).
     update!(
       state: state.merge(
-        "processing" => false,
+        "processing"             => false,
         "processing_finished_at" => Time.current.iso8601
       )
     )
+    broadcast_change(:processing_finished)
   end
 
-  # Appends a message and bumps last_message_at. This is the only sanctioned
-  # way to add to a chat — going through the association directly won't
-  # update the timestamp.
+  # ── Messages ────────────────────────────────────────────────────────
+
   def append_message!(role:, content:, sender_member: nil, metadata: {})
     messages.create!(
       role: role,
@@ -93,6 +96,24 @@ class AiChat < ApplicationRecord
       metadata: metadata
     ).tap do
       update_column(:last_message_at, Time.current)
+      broadcast_change(:message_created)
     end
+  end
+
+  private
+
+  # Fire-and-forget cable signal. A broadcast failure must NEVER roll
+  # back or fail the caller: the message (or state change) is already
+  # persisted, and polling will catch up within its fallback interval.
+  #
+  # We log and swallow. If this ever needs to be more than best-effort,
+  # the right shape is an after-commit hook with a retry queue — not a
+  # synchronous raise.
+  def broadcast_change(reason)
+    AiChatChannel.signal(self, reason: reason)
+  rescue StandardError => e
+    Rails.logger.warn(
+      "[AiChat##{reason}] broadcast failed for chat=#{id}: #{e.class}: #{e.message}"
+    )
   end
 end

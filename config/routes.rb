@@ -52,6 +52,8 @@ Rails.application.routes.draw do
     delete ":provider", to: "users/social_connections#destroy", on: :collection, as: :destroy
   end
 
+  mount ActionCable.server => "/cable"
+
   resources :organizations do
     resources :members do
       collection do

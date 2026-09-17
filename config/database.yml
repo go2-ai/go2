@@ -30,6 +30,12 @@ development:
     host: localhost
     port: 5432
     migrations_paths: db/queue_migrate
+  cable:
+    <<: *default
+    database: go3_development_cable
+    host: localhost
+    port: 5432
+    migrations_paths: db/cable_migrate
 
 test:
   primary:
@@ -43,6 +49,12 @@ test:
     host: localhost
     port: 5432
     migrations_paths: db/queue_migrate
+  cable:
+    <<: *default
+    database: go3_test_cable
+    host: localhost
+    port: 5432
+    migrations_paths: db/cable_migrate
 
 # As with config/credentials.yml, you never want to store sensitive information,
 # like your database password, in your source code. If your source code is

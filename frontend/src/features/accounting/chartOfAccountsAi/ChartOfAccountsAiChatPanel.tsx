@@ -2,16 +2,19 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Alert, Box, CircularProgress } from '@mui/material';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import { useTranslation } from 'react-i18next';
+import { useDispatch } from 'react-redux';
 import {
   AiChatPanel,
   type AiActionBannerConfig,
   type PendingAttachment,
+  useAiChatChannel,
 } from '../../ai';
 import {
   useGetOrCreateChatMutation,
   useGetChatQuery,
   usePostMessageMutation,
   useAcceptProposalMutation,
+  chartOfAccountsAiApi,
 } from './chartOfAccountsAiApi';
 import type { Proposal, ProposalError } from './types';
 import { useDocumentUpload } from '../../documents/hooks/useDocumentUpload';
@@ -42,6 +45,7 @@ export const ChartOfAccountsAiChatPanel: React.FC<
   const { t } = useTranslation('accounting');
   const { showSuccess, showError } = useToast();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const dispatch = useDispatch();
 
   const [chatId, setChatId] = useState<number | null>(null);
   const [pollingInterval, setPollingInterval] = useState(0);
@@ -85,9 +89,38 @@ export const ChartOfAccountsAiChatPanel: React.FC<
 
   const processing = chat?.state?.processing === true;
 
+  // Subscribe to cable updates for this chat while the panel is mounted.
+  // The handler invalidates the getChat tag so RTK Query refetches
+  // immediately rather than waiting for the next poll.
+  const { connected: cableConnected } = useAiChatChannel({
+    organizationId,
+    chatId,
+    onChatChanged: () => {
+      if (chatId === null) return;
+      dispatch(
+        chartOfAccountsAiApi.util.invalidateTags([
+          { type: 'ChartOfAccountsAiChat', id: chatId },
+        ]),
+      );
+    },
+  });
+
+  // Polling strategy:
+  //   - not processing:               poll disabled
+  //   - processing + cable connected: poll every 30s as a cheap safety net
+  //   - processing + cable down:      poll every 2s (pre-cable behavior)
+  //
+  // The WebSocket is the fast path; polling exists so a silently-dropped
+  // socket degrades to "30 seconds late" rather than "frozen forever".
   useEffect(() => {
-    setPollingInterval(processing ? 2000 : 0);
-  }, [processing]);
+    if (!processing) {
+      setPollingInterval(0);
+    } else if (cableConnected) {
+      setPollingInterval(30_000);
+    } else {
+      setPollingInterval(2_000);
+    }
+  }, [processing, cableConnected]);
 
   const { uploadFiles, uploading } = useDocumentUpload({
     organizationId,

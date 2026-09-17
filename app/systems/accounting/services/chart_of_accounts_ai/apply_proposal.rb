@@ -10,6 +10,19 @@ module Accounting
     # against the current accounting_setting before persisting — the
     # settings may have changed since the proposal was first validated.
     #
+    # Concurrency: two near-simultaneous accept requests (double-click,
+    # two tabs) both racing past a plain `chat.status == "accepted"`
+    # check is a real scenario, not a hypothetical — the second one used
+    # to hit a raw ActiveRecord::RecordNotUnique on the ledgers table and
+    # 500. `persist!` now takes a pessimistic row lock on the chat
+    # (`chat.lock!`) as the FIRST thing inside the transaction and
+    # re-checks status under that lock. The second request blocks until
+    # the first transaction commits, then sees status == "accepted" and
+    # raises AlreadyAcceptedError cleanly instead of racing the unique
+    # index. The RecordNotUnique rescue in #call is kept as a second line
+    # of defense in case a future caller bypasses persist! or the lock
+    # path changes.
+    #
     # The heavy lifting is done in a single transaction. On any failure
     # (re-validation or an ActiveRecord save), the transaction rolls back
     # and the chat is left in "open" state so the user can revise and
@@ -45,8 +58,16 @@ module Accounting
         persist!(proposal)
 
         success_result
+      rescue AlreadyAcceptedError
+        already_accepted_result
       rescue ActiveRecord::RecordInvalid => e
         failure_result([ serialize_record_error(e) ])
+      rescue ActiveRecord::RecordNotUnique
+        # Defense-in-depth: should be unreachable given the lock in
+        # persist!, but if it ever does race past the lock, fail the
+        # same way rather than letting a 500 escape.
+        chat.reload
+        already_accepted_result
       end
 
       private
@@ -61,6 +82,14 @@ module Accounting
 
       def persist!(proposal)
         ActiveRecord::Base.transaction do
+          # Row lock FIRST. This blocks a concurrent accept on the same
+          # chat until this transaction commits or rolls back, and
+          # refreshes chat's in-memory attributes from the locked row —
+          # so the status check immediately below sees the true current
+          # state, not a value read before the lock was acquired.
+          chat.lock!
+          raise AlreadyAcceptedError if chat.status == "accepted"
+
           upsert_system_categories(proposal)
           custom_category_records = create_custom_categories(proposal)
           ledger_records          = create_ledgers(proposal, custom_category_records)

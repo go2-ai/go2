@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_09_12_181548) do
+ActiveRecord::Schema[8.0].define(version: 2026_09_17_083424) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -105,6 +105,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_09_12_181548) do
     t.datetime "abandoned_at"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.index "member_id, kind, COALESCE(subject_type, ''::character varying), COALESCE(subject_id, (0)::bigint)", name: "index_ai_chats_on_owner_kind_subject_open", unique: true, where: "((status)::text = 'open'::text)"
     t.index ["last_message_at"], name: "index_ai_chats_on_last_message_at"
     t.index ["member_id"], name: "index_ai_chats_on_member_id"
     t.index ["organization_id", "member_id", "kind", "status"], name: "index_ai_chats_on_owner_kind_status"
