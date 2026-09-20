@@ -97,6 +97,9 @@ gem "blueprinter"
 gem "aws-sdk-s3", require: false
 gem "rubyzip"
 
+gem "pdf-reader", "~> 2.12"
+gem "xsv", "~> 1.1"
+
 group :development, :test do
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
   gem "debug", platforms: %i[ mri windows ], require: "debug/prelude"
@@ -140,5 +143,6 @@ group :test do
   gem "capybara"
   gem "selenium-webdriver", "~> 4.34"
   gem "simplecov", require: false
+  gem "webmock"
 end
 gem "graphiql-rails", group: :development

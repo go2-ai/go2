@@ -1,6 +1,16 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Box, CircularProgress } from '@mui/material';
+import {
+  Box,
+  CircularProgress,
+  Paper,
+  IconButton,
+  Tooltip,
+  Typography,
+  Fab,
+} from '@mui/material';
+import SmartToyIcon from '@mui/icons-material/SmartToy';
+import CloseIcon from '@mui/icons-material/Close';
 import { Group, Panel, Separator } from 'react-resizable-panels';
 import { useTranslation } from 'react-i18next';
 import { useGetAccountCategoriesQuery } from '../accountCategories/accountCategoriesApi';
@@ -21,9 +31,12 @@ import { LedgerModal } from './components/LedgerModal';
 import { AccountModal } from './components/AccountModal';
 import { ChartOfAccountsTree } from './components/ChartOfAccountsTree';
 import { AccountDetailPanel } from './components/AccountDetailPanel';
+import { ChartOfAccountsAiChatPanel } from '../chartOfAccountsAi';
 import { useToast } from '../../../contexts/ToastContext';
 import { useConfirm } from '../../../contexts/confirmContext';
 import { useTabManager } from '../../../components/tabs/useTabManager';
+import type { Proposal } from '../chartOfAccountsAi/types';
+import { buildDraftTree } from '../chartOfAccountsAi/utils/buildDraftTree';
 
 export const ChartOfAccountsPage = () => {
   const { t } = useTranslation('shared');
@@ -35,13 +48,21 @@ export const ChartOfAccountsPage = () => {
   const confirm = useConfirm();
   const { openTab } = useTabManager();
 
-  // ─── Data fetching ──────────────────────────────────────────────────────
-  const { data: categories, isLoading: isLoadingCategories } =
-    useGetAccountCategoriesQuery(orgId, { skip: !orgId });
-  const { data: ledgers, isLoading: isLoadingLedgers } =
-    useGetLedgersQuery(orgId, { skip: !orgId });
-  const { data: accounts, isLoading: isLoadingAccounts } =
-    useGetAccountsQuery(orgId, { skip: !orgId });
+  const {
+    data: categories,
+    isLoading: isLoadingCategories,
+    refetch: refetchCategories,
+  } = useGetAccountCategoriesQuery(orgId, { skip: !orgId });
+  const {
+    data: ledgers,
+    isLoading: isLoadingLedgers,
+    refetch: refetchLedgers,
+  } = useGetLedgersQuery(orgId, { skip: !orgId });
+  const {
+    data: accounts,
+    isLoading: isLoadingAccounts,
+    refetch: refetchAccounts,
+  } = useGetAccountsQuery(orgId, { skip: !orgId });
   const { data: centerTypes } = useGetCenterTypesQuery(orgId, { skip: !orgId });
   const { data: settings } = useGetAccountingSettingsQuery(orgId, { skip: !orgId });
 
@@ -51,6 +72,23 @@ export const ChartOfAccountsPage = () => {
 
   const isLoading = isLoadingCategories || isLoadingLedgers || isLoadingAccounts;
   const centerLevels = settings?.center_levels ?? 3;
+
+  // ─── AI availability gate ───────────────────────────────────────────────
+  // The AI panel is offered only when the org is eligible:
+  //   1. the org is NOT inheriting its parent's chart, and
+  //   2. the org's chart is empty (no ledgers).
+  // We derive this from already-loaded cache rather than probing the API.
+  const aiAvailable = useMemo(() => {
+    if (!settings || !ledgers) return false;
+    if (settings.use_parent_org_accounts) return false;
+    if (ledgers.length > 0) return false;
+    return true;
+  }, [settings, ledgers]);
+
+  // Panel 3 (AI chat) open/closed state. Defaults open whenever the
+  // feature is available; the person can close it and reopen it via
+  // the floating toggle button.
+  const [aiPanelOpen, setAiPanelOpen] = useState(true);
 
   // ─── UI state ───────────────────────────────────────────────────────────
   const [selectedNode, setSelectedNode] = useState<ChartOfAccountsNode | null>(null);
@@ -74,13 +112,13 @@ export const ChartOfAccountsPage = () => {
   const [parentLedgerForNewAccount, setParentLedgerForNewAccount] =
     useState<{ id: number; fullCode: string } | null>(null);
 
-  // ─── Build tree ─────────────────────────────────────────────────────────
+  const [draftProposal, setDraftProposal] = useState<Proposal | null>(null);
+
   const tree = useMemo(() => {
     if (!categories || !ledgers || !accounts) return [];
     return buildChartOfAccountsTree(categories, ledgers, accounts);
   }, [categories, ledgers, accounts]);
 
-  // ─── Resolve selected node with full account detail ────────────────────
   const resolvedSelectedNode = useMemo(() => {
     if (!selectedNode) return null;
     if (selectedNode.type === 'account' && selectedAccountDetail) {
@@ -92,10 +130,9 @@ export const ChartOfAccountsPage = () => {
     return selectedNode;
   }, [selectedNode, selectedAccountDetail]);
 
-  // ─── Handlers ───────────────────────────────────────────────────────────
   const handleSelectNode = (node: ChartOfAccountsNode) => {
     setSelectedNode(node);
-    if (node.type === 'account') {
+    if (node.type === 'account' && !node.isDraft) {
       setSelectedAccountId(node.sourceId);
     } else {
       setSelectedAccountId(null);
@@ -160,19 +197,13 @@ export const ChartOfAccountsPage = () => {
   };
 
   const handleAddLedger = (category: ChartOfAccountsNode) => {
-    setParentCategoryForNewLedger({
-      id: category.sourceId,
-      code: category.code,
-    });
+    setParentCategoryForNewLedger({ id: category.sourceId, code: category.code });
     setEditingLedger(null);
     setLedgerModalOpen(true);
   };
 
   const handleAddAccount = (ledger: ChartOfAccountsNode) => {
-    setParentLedgerForNewAccount({
-      id: ledger.sourceId,
-      fullCode: ledger.code,
-    });
+    setParentLedgerForNewAccount({ id: ledger.sourceId, fullCode: ledger.code });
     setEditingAccount(null);
     setAccountModalOpen(true);
   };
@@ -207,7 +238,27 @@ export const ChartOfAccountsPage = () => {
     handleChangeLog(resolvedSelectedNode);
   };
 
-  // ─── Loading state ──────────────────────────────────────────────────────
+  const draftTree = useMemo(() => {
+    // buildDraftTree needs the org's real categories to resolve
+    // system-category references (CA, LA, EX, ...) that the AI's
+    // proposal never redeclares.
+    if (!draftProposal || !categories) return undefined;
+    return buildDraftTree(draftProposal, categories);
+  }, [draftProposal, categories]);
+
+  // Fired when the AI panel successfully accepts a proposal. The AI
+  // chat's own RTK Query cache gets invalidated automatically, but
+  // categories/ledgers/accounts live in separate API slices that
+  // aren't wired to those tags — so without this, the tree keeps
+  // showing pre-acceptance (empty) data until a hard refresh.
+  const handleAiAccepted = useCallback(() => {
+    refetchCategories();
+    refetchLedgers();
+    refetchAccounts();
+  }, [refetchCategories, refetchLedgers, refetchAccounts]);
+
+  const showAiPanel = aiAvailable && aiPanelOpen;
+
   if (isLoading) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
@@ -216,18 +267,20 @@ export const ChartOfAccountsPage = () => {
     );
   }
 
-  // ─── Render ─────────────────────────────────────────────────────────────
   return (
-    <Box sx={{ height: '100%', overflow: 'hidden', p: 2 }}>
+    <Box sx={{ height: '100%', overflow: 'hidden', p: 2, position: 'relative' }}>
       <Group orientation="horizontal" id="chart-of-accounts-layout">
-        <Panel defaultSize="40" minSize="30" maxSize="70">
+        {/* ── Panel 1: Chart of Accounts tree ─────────────────────────── */}
+        <Panel defaultSize="35" minSize="25" maxSize="60">
           <ChartOfAccountsTree
             tree={tree}
+            draftTree={draftTree}
             selectedNode={resolvedSelectedNode}
             onSelectNode={handleSelectNode}
             onAddLedger={handleAddLedger}
             onAddAccount={handleAddAccount}
-            onAddCategory={handleAddCategory} 
+            onAddCategory={handleAddCategory}
+            onDiscardDraft={() => setDraftProposal(null)}
           />
         </Panel>
 
@@ -239,15 +292,13 @@ export const ChartOfAccountsPage = () => {
               backgroundColor: 'divider',
               transition: 'background-color 0.2s',
               cursor: 'col-resize',
-              '&:hover': {
-                backgroundColor: 'primary.main',
-                opacity: 0.5,
-              },
+              '&:hover': { backgroundColor: 'primary.main', opacity: 0.5 },
             }}
           />
         </Separator>
 
-        <Panel defaultSize="60" minSize="30" maxSize="70">
+        {/* ── Panel 2: Details (always visible) ───────────────────────── */}
+        <Panel defaultSize={showAiPanel ? '35' : '65'} minSize="25" maxSize="75">
           <AccountDetailPanel
             node={resolvedSelectedNode}
             tree={tree}
@@ -258,9 +309,78 @@ export const ChartOfAccountsPage = () => {
             onChangeLog={handleChangeLogSelected}
           />
         </Panel>
+
+        {/* ── Panel 3: AI chat (closable/openable) ─────────────────────── */}
+        {showAiPanel && (
+          <>
+            <Separator>
+              <Box
+                sx={{
+                  width: 4,
+                  height: '100%',
+                  backgroundColor: 'divider',
+                  transition: 'background-color 0.2s',
+                  cursor: 'col-resize',
+                  '&:hover': { backgroundColor: 'primary.main', opacity: 0.5 },
+                }}
+              />
+            </Separator>
+
+            <Panel defaultSize="30" minSize="22" maxSize="45">
+              <Paper sx={{ height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+                <Box
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    px: 2,
+                    py: 1,
+                    borderBottom: 1,
+                    borderColor: 'divider',
+                    flexShrink: 0,
+                  }}
+                >
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <SmartToyIcon fontSize="small" color="primary" />
+                    <Typography variant="subtitle2" fontWeight={600}>
+                      {tAccounting('aiAssistant.tabAi')}
+                    </Typography>
+                  </Box>
+                  <Tooltip title={t('commonActions.close')}>
+                    <IconButton size="small" onClick={() => setAiPanelOpen(false)}>
+                      <CloseIcon fontSize="small" />
+                    </IconButton>
+                  </Tooltip>
+                </Box>
+
+                <Box sx={{ flex: 1, minHeight: 0 }}>
+                  <ChartOfAccountsAiChatPanel
+                    organizationId={orgId}
+                    onAccepted={handleAiAccepted}
+                    onProposalChange={setDraftProposal}
+                  />
+                </Box>
+              </Paper>
+            </Panel>
+          </>
+        )}
       </Group>
 
-      {/* Modals */}
+      {/* Floating reopen button — the only way back in once the AI
+          panel is closed, since it's otherwise unmounted entirely. */}
+      {aiAvailable && !aiPanelOpen && (
+        <Tooltip title={tAccounting('aiAssistant.tabAi')} placement="left">
+          <Fab
+            size="medium"
+            color="primary"
+            onClick={() => setAiPanelOpen(true)}
+            sx={{ position: 'absolute', bottom: 24, right: 24 }}
+          >
+            <SmartToyIcon />
+          </Fab>
+        </Tooltip>
+      )}
+
       <AccountCategoryModal
         open={categoryModalOpen}
         onClose={() => setCategoryModalOpen(false)}

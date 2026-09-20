@@ -40,6 +40,8 @@ module Go3
     config.autoload_paths << Rails.root.join("app/systems")
     config.eager_load_paths << Rails.root.join("app/systems")
 
+    config.active_record.schema_format = :ruby
+
     Rails.autoloaders.main.collapse(Rails.root.join("app/systems/*/models"))
     Rails.autoloaders.main.collapse(Rails.root.join("app/systems/*/controllers"))
     Rails.autoloaders.main.collapse(Rails.root.join("app/systems/*/policies"))

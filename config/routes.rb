@@ -52,6 +52,8 @@ Rails.application.routes.draw do
     delete ":provider", to: "users/social_connections#destroy", on: :collection, as: :destroy
   end
 
+  mount ActionCable.server => "/cable"
+
   resources :organizations do
     resources :members do
       collection do
@@ -124,6 +126,16 @@ Rails.application.routes.draw do
       resources :account_categories, only: [ :index, :show, :create, :update, :destroy ]
       resources :ledgers, only: [ :index, :show, :create, :update, :destroy ]
       resources :accounts, only: [ :index, :show, :create, :update, :destroy ]
+      namespace :chart_of_accounts_ai do
+        resources :chats, only: [ :create, :show ], controller: "chats" do
+          member do
+            post :messages, action: :post_message
+            post :abandon
+            post :accept
+          end
+        end
+      end
+
       resources :journal_entries, only: [ :index, :show, :create, :update, :destroy ] do
         member do
           patch :approve

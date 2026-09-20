@@ -14,6 +14,7 @@ class Member < ApplicationRecord
   has_and_belongs_to_many :groups
   has_many :departments, through: :roles
   has_many :direct_permissions, as: :grantee, class_name: "Permission"
+  has_many :ai_chats, dependent: :destroy
 
   # Validations
   validates :email,

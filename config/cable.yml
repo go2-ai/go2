@@ -1,10 +1,29 @@
+# Action Cable configuration. Uses Solid Cable, the database-backed
+# pub/sub adapter that ships with Rails 8. This is the same pattern as
+# Solid Queue (see config/queue.yml): no Redis, no extra infrastructure,
+# just Postgres.
+#
+# Solid Cable stores messages in a dedicated `cable` database and fans
+# them out via LISTEN/NOTIFY. It's a good fit for a single-app deploy.
+#
+# In test we use the built-in :test adapter (in-memory, synchronous) so
+# channel specs don't need a real database.
+#
+# See https://github.com/rails/solid_cable for details.
+
+default: &default
+  adapter: solid_cable
+  connects_to:
+    database:
+      writing: cable
+  polling_interval: 0.1.seconds
+  message_retention: 1.day
+
 development:
-  adapter: async
+  <<: *default
 
 test:
   adapter: test
 
 production:
-  adapter: redis
-  url: <%= ENV.fetch("REDIS_URL") { "redis://localhost:6379/1" } %>
-  channel_prefix: go3_production
+  <<: *default

@@ -12,6 +12,11 @@ import HistoryIcon from '@mui/icons-material/History';
 import { useTranslation } from 'react-i18next';
 import type { ChartOfAccountsNode } from '../utils/buildChartOfAccountsTree';
 import type { CenterType } from '../../centerTypes/centerTypesApi';
+import type {
+  ProposalCategory,
+  ProposalLedger,
+  ProposalAccount,
+} from '../../chartOfAccountsAi/types';
 
 interface AccountDetailPanelProps {
   node: ChartOfAccountsNode | null;
@@ -55,6 +60,96 @@ export const AccountDetailPanel = ({
     );
   }
 
+  const renderField = (label: string, value: React.ReactNode) => (
+    <Box>
+      <Typography variant="caption" color="text.secondary">
+        {label}
+      </Typography>
+      <Typography variant="body2">{value}</Typography>
+    </Box>
+  );
+
+  // ── Draft nodes: read-only preview, no persisted-record fields ──────
+  // Draft raw objects are ProposalCategory/ProposalLedger/ProposalAccount
+  // shapes from the AI's proposal — they have NO relation to real
+  // AccountCategory/Ledger/Account records (no account_category_id,
+  // contra_for_id, allowed_center_types_*, etc.), so the normal
+  // type-specific branches below would either crash or render nonsense.
+  if (node.isDraft) {
+    return (
+      <Paper sx={{ height: '100%', overflow: 'auto' }}>
+        <Box sx={{ p: 3 }}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+            <Typography variant="h5">
+              {node.code} — {node.name}
+            </Typography>
+            <Chip
+              label={tAccounting('aiAssistant.draftItem')}
+              size="small"
+              color="warning"
+              variant="outlined"
+            />
+          </Box>
+          <Typography variant="caption" color="text.secondary" display="block" sx={{ mb: 3 }}>
+            {tAccounting('aiAssistant.draftItemHint')}
+          </Typography>
+
+          <Divider sx={{ mb: 3 }} />
+
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            {renderField(tAccounting('type'),
+              node.type === 'category'
+                ? tAccounting('accountCategory')
+                : node.type === 'ledger'
+                  ? tAccounting('ledger')
+                  : tAccounting('account')
+            )}
+
+            {renderField(tAccounting('code'),
+              <Typography component="span" fontFamily="monospace">{node.code}</Typography>
+            )}
+
+            {renderField(t('name'), node.name)}
+
+            {node.type === 'category' && (() => {
+              const category = node.raw as unknown as ProposalCategory;
+              return (
+                <>
+                  {renderField(tAccounting('system'), node.isSystem ? t('yes') : t('no'))}
+                  {category.type && renderField(tAccounting('type'), category.type)}
+                </>
+              );
+            })()}
+
+            {node.type === 'ledger' && (() => {
+              const ledger = node.raw as unknown as ProposalLedger;
+              const balanceType = BALANCE_TYPE_BY_IDENTIFIER[ledger.category] ?? null;
+              const isBalanceSheet = ['CA', 'LA', 'CL', 'LL', 'OE'].includes(ledger.category);
+              return (
+                <>
+                  {renderField(tAccounting('unexpectedBalance'),
+                    ledger.unexpected_balance ? tAccounting(ledger.unexpected_balance) : '—'
+                  )}
+                  {isBalanceSheet && renderField(tAccounting('isMonetary'),
+                    ledger.is_monetary ? t('yes') : t('no')
+                  )}
+                  {balanceType && renderField(tAccounting('balanceType'), tAccounting(balanceType))}
+                </>
+              );
+            })()}
+
+            {node.type === 'account' && (() => {
+              const account = node.raw as unknown as ProposalAccount;
+              return renderField(tAccounting('acceptsOtherCurrencies'),
+                account.accepts_other_currencies ? t('yes') : t('no')
+              );
+            })()}
+          </Box>
+        </Box>
+      </Paper>
+    );
+  }
+
   const canDelete = !(node.type === 'category' && node.isSystem);
 
   const findNodeById = (type: string, sourceId: number): ChartOfAccountsNode | null => {
@@ -94,15 +189,6 @@ export const AccountDetailPanel = ({
       </Box>
     );
   };
-
-  const renderField = (label: string, value: React.ReactNode) => (
-    <Box>
-      <Typography variant="caption" color="text.secondary">
-        {label}
-      </Typography>
-      <Typography variant="body2">{value}</Typography>
-    </Box>
-  );
 
   return (
     <Paper sx={{ height: '100%', overflow: 'auto' }}>
@@ -159,7 +245,6 @@ export const AccountDetailPanel = ({
 
           {renderField(t('name'), node.name)}
 
-          {/* ─── Category-specific fields ─── */}
           {node.type === 'category' && (() => {
             const category = node.raw as any;
             const balanceType = getCategoryBalanceType(category.identifier);
@@ -178,7 +263,6 @@ export const AccountDetailPanel = ({
             );
           })()}
 
-          {/* ─── Ledger-specific fields ─── */}
           {node.type === 'ledger' && (() => {
             const ledger = node.raw as any;
             const contraNode = ledger.contra_for_id
@@ -208,7 +292,6 @@ export const AccountDetailPanel = ({
             );
           })()}
 
-          {/* ─── Account-specific fields ─── */}
           {node.type === 'account' && (() => {
             const account = node.raw as any;
             const contraNode = account.contra_for_id
@@ -239,7 +322,6 @@ export const AccountDetailPanel = ({
                         <Typography variant="caption" color="text.secondary" sx={{ mb: 0.5 }}>
                           {`${tAccounting('centerLevel')} ${index + 1}:`} {renderCenterTypes(account[key])}
                         </Typography>
-                        
                       </Box>
                     ))}
                   </Box>
