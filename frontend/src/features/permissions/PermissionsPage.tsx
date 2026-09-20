@@ -16,6 +16,8 @@ import {
   alpha,
 } from '@mui/material';
 import { useTranslation } from 'react-i18next';
+import { useSelector } from 'react-redux';
+import type { RootState } from '../../app/store';
 import { useGetGrantablePermissionsQuery, useGetPermissionsQuery } from './permissionsApi';
 import { useGetMembersQuery } from '../members/membersApi';
 import { useGetRolesQuery } from '../roles/rolesApi';
@@ -77,6 +79,7 @@ export const PermissionsPage = () => {
   const orgId = parseInt(organizationId || '0', 10);
   const { openTab } = useTabManager();
   const navigate = useNavigate();
+  const currentUser = useSelector((state: RootState) => state.auth.user);
 
   const [isAddPermissionModalOpen, setIsAddPermissionModalOpen] = useState(false);
 
@@ -91,7 +94,6 @@ export const PermissionsPage = () => {
 
   // ─── Data Fetching ──────────────────────────────────────────────────────
 
-  // Grantable permissions (for both tabs)
   const {
     data: grantablePermissions,
     isLoading: isLoadingGrantable,
@@ -99,7 +101,6 @@ export const PermissionsPage = () => {
     refetch: refetchGrantable,
   } = useGetGrantablePermissionsQuery(orgId, { skip: !orgId });
 
-  // By Permission tab - permissions filtered by selected code
   const {
     data: permissionsByCode,
     isLoading: isLoadingPermissionsByCode,
@@ -110,7 +111,6 @@ export const PermissionsPage = () => {
     { skip: !orgId || !selectedPermissionCode }
   );
 
-  // Members tab - all permissions (no code filter)
   const {
     data: allPermissions,
     isLoading: isLoadingAllPermissions,
@@ -207,6 +207,13 @@ export const PermissionsPage = () => {
     });
   }, [selectedMemberId, allPermissions, roles, groups, departments]);
 
+  // Is the currently-selected member (in the "By Member" tab) the signed-in user?
+  const isSelectedMemberCurrentUser = useMemo(() => {
+    if (!selectedMemberId || !currentUser || !members) return false;
+    const member = members.find((m) => m.id === selectedMemberId);
+    return !!member && member.user_id === currentUser.id;
+  }, [selectedMemberId, currentUser, members]);
+
   // ─── Handlers ────────────────────────────────────────────────────────────
   const handlePermissionSelect = (code: string) => {
     setSelectedPermissionCode(code);
@@ -230,7 +237,9 @@ export const PermissionsPage = () => {
 
   const handleRetry = () => {
     refetchGrantable();
-    refetchPermissionsByCode();
+    if (selectedPermissionCode) {
+      refetchPermissionsByCode();
+    }
     refetchAllPermissions();
     refetchMembers();
     refetchRoles();
@@ -242,9 +251,16 @@ export const PermissionsPage = () => {
     setIsAddPermissionModalOpen(true);
   };
 
+  // The "By Member" flow never selects a permission code, so the
+  // permissionsByCode query is skipped (never started) in that context.
+  // Calling its refetch() in that state throws "Cannot refetch a query
+  // that has not been started yet." — only refetch it when it's actually
+  // running.
   const handlePermissionAdded = () => {
     refetchAllPermissions();
-    refetchPermissionsByCode();
+    if (selectedPermissionCode) {
+      refetchPermissionsByCode();
+    }
   };
 
   const handleViewHistory = () => {
@@ -330,6 +346,8 @@ export const PermissionsPage = () => {
                     grantees={permissionsByCode || []}
                     resolvedMembers={resolvedMembers}
                     abilities={selectedPermissionAbilities}
+                    allPermissions={allPermissions || []}
+                    grantablePermissions={grantablePermissions || []}
                     onGranteeAdded={handleGranteeAdded}
                     onGranteeRemoved={handleGranteeRemoved}
                     onViewHistory={handleViewHistory}
@@ -368,13 +386,17 @@ export const PermissionsPage = () => {
                     indirectPermissions={memberPermissions.indirect}
                     organizationId={orgId}
                     groups={groups || []}
-                    roles={roles || []}  // Add this
+                    roles={roles || []}
                     permissionNameMap={permissionNameMap}
+                    grantablePermissions={grantablePermissions || []}
+                    isCurrentUserMember={isSelectedMemberCurrentUser}
                     onPermissionRevoked={() => {
                       refetchAllPermissions();
-                      refetchPermissionsByCode();
+                      if (selectedPermissionCode) {
+                        refetchPermissionsByCode();
+                      }
                       refetchGroups();
-                      refetchRoles();  // Add this to refresh roles after department changes
+                      refetchRoles();
                     }}
                     onAddPermissionClick={handleAddPermissionClick}
                   />

@@ -8,6 +8,7 @@ export interface GrantablePermission {
   name: string;
   abilities: string[];
   tags: string[];
+  perquisites: string[];
 }
 
 export interface Permission {
@@ -25,6 +26,12 @@ export interface GrantPermissionRequest {
   code: string;
   grantee_type: 'Member' | 'Role' | 'Department' | 'Group';
   grantee_id: number;
+}
+
+export interface BulkGrantPermissionRequest {
+  grantee_type: 'Member' | 'Role' | 'Department' | 'Group';
+  grantee_id: number;
+  codes: string[];
 }
 
 export interface PermissionVersion {
@@ -118,6 +125,24 @@ export const permissionsApi = createApi({
       ],
     }),
 
+    // POST /organizations/:organizationId/permissions/bulk
+    // Grants several permission codes to one grantee in a single request.
+    // The server auto-resolves and grants any missing prerequisites.
+    bulkGrantPermissions: builder.mutation<
+      Permission[],
+      { organizationId: number; data: BulkGrantPermissionRequest }
+    >({
+      query: ({ organizationId, data }) => ({
+        url: `/organizations/${organizationId}/permissions/bulk`,
+        method: 'POST',
+        body: data,
+      }),
+      invalidatesTags: [
+        { type: 'Permission', id: 'LIST' },
+        { type: 'GrantablePermission', id: 'LIST' },
+      ],
+    }),
+
     // DELETE /organizations/:organizationId/permissions/:id
     revokePermission: builder.mutation<
       Permission,
@@ -142,6 +167,7 @@ export const {
   useGetGrantablePermissionsQuery,
   useGetPermissionsQuery,
   useGrantPermissionMutation,
+  useBulkGrantPermissionsMutation,
   useRevokePermissionMutation,
   useGetPermissionVersionsQuery,
 } = permissionsApi;

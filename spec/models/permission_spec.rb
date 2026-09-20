@@ -39,4 +39,14 @@ RSpec.describe Permission, type: :model do
       expect(permission.versions.last.event).to eq("destroy")
     end
   end
+
+  describe ".dependents_for" do
+    it "returns permissions that list the given code as a prerequisite" do
+      expect(Permission.dependents_for(Permission::ACCOUNTING_VIEW_ACCOUNTS)).to include(Permission::ACCOUNTING_MANAGE_ACCOUNTS)
+    end
+
+    it "returns an empty array for a code nothing depends on" do
+      expect(Permission.dependents_for(Permission::ORG_ADMIN)).to eq([])
+    end
+  end
 end

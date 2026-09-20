@@ -85,6 +85,7 @@ Rails.application.routes.draw do
     resources :permissions, only: [ :index, :create, :destroy ] do
       collection do
         get :grantable
+        post :bulk
       end
     end
 

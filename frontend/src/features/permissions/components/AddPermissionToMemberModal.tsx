@@ -1,6 +1,6 @@
 // src/features/permissions/components/AddPermissionToMemberModal.tsx
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import {
   Dialog,
   DialogTitle,
@@ -15,14 +15,20 @@ import {
   List,
   ListItem,
   ListItemButton,
+  ListItemIcon,
   ListItemText,
+  Checkbox,
+  Chip,
+  Tooltip,
   alpha,
 } from '@mui/material';
+import LockIcon from '@mui/icons-material/Lock';
 import SearchIcon from '@mui/icons-material/Search';
 import { useTranslation } from 'react-i18next';
-import { useGrantPermissionMutation } from '../permissionsApi';
+import { useBulkGrantPermissionsMutation } from '../permissionsApi';
 import { useToast } from '../../../contexts/ToastContext';
 import type { GrantablePermission } from '../types';
+import { Padding } from '@mui/icons-material';
 
 interface AddPermissionToMemberModalProps {
   open: boolean;
@@ -50,8 +56,46 @@ export const AddPermissionToMemberModal = ({
   const { showSuccess, showError } = useToast();
 
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedPermission, setSelectedPermission] = useState<GrantablePermission | null>(null);
-  const [grantPermission, { isLoading }] = useGrantPermissionMutation();
+  const [selectedCodes, setSelectedCodes] = useState<Set<string>>(new Set());
+  const [bulkGrantPermissions, { isLoading }] = useBulkGrantPermissionsMutation();
+
+  const permissionsByCode = useMemo(() => {
+    return grantablePermissions.reduce((acc, perm) => {
+      acc[perm.code] = perm;
+      return acc;
+    }, {} as Record<string, GrantablePermission>);
+  }, [grantablePermissions]);
+
+  // Reset selection whenever the modal is (re)opened for a member
+  useEffect(() => {
+    if (open) {
+      setSelectedCodes(new Set());
+      setSearchQuery('');
+    }
+  }, [open, memberId]);
+
+  // Recursively resolve all prerequisite codes for a given code
+  const getAllPrerequisites = (code: string, seen: Set<string> = new Set()): string[] => {
+    if (seen.has(code)) return [];
+    seen.add(code);
+
+    const direct = permissionsByCode[code]?.perquisites || [];
+    return direct.reduce<string[]>(
+      (acc, prereqCode) => [...acc, prereqCode, ...getAllPrerequisites(prereqCode, seen)],
+      []
+    );
+  };
+
+  // Codes that are currently "locked" because they're a prerequisite of
+  // another selected permission — can't be unchecked on their own.
+  const lockedCodes = useMemo(() => {
+    const locked = new Set<string>();
+    selectedCodes.forEach((code) => {
+      getAllPrerequisites(code).forEach((prereqCode) => locked.add(prereqCode));
+    });
+    return locked;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedCodes, grantablePermissions]);
 
   // Filter permissions based on search and exclude already granted ones
   const availablePermissions = useMemo(() => {
@@ -69,40 +113,51 @@ export const AddPermissionToMemberModal = ({
     );
   }, [grantablePermissions, existingDirectPermissions, searchQuery]);
 
-  const handleSelectPermission = (perm: GrantablePermission) => {
-    setSelectedPermission(perm);
-  };
+  const handleToggle = (perm: GrantablePermission) => {
+    setSelectedCodes((prev) => {
+      const next = new Set(prev);
 
-  const handleClearSelection = () => {
-    setSelectedPermission(null);
+      if (next.has(perm.code)) {
+        if (lockedCodes.has(perm.code)) {
+          // Required by another selected permission — no-op
+          return prev;
+        }
+        next.delete(perm.code);
+      } else {
+        next.add(perm.code);
+        getAllPrerequisites(perm.code).forEach((prereqCode) => next.add(prereqCode));
+      }
+
+      return next;
+    });
   };
 
   const handleSave = async () => {
-    if (!selectedPermission) return;
+    if (selectedCodes.size === 0) return;
 
     try {
-      await grantPermission({
+      await bulkGrantPermissions({
         organizationId,
         data: {
-          code: selectedPermission.code,
           grantee_type: 'Member',
           grantee_id: memberId,
+          codes: Array.from(selectedCodes),
         },
       }).unwrap();
 
       showSuccess(tPermissions('permissionGranted'));
-      setSelectedPermission(null);
+      setSelectedCodes(new Set());
       setSearchQuery('');
       onPermissionAdded();
       onClose();
     } catch (error: any) {
-      console.error('Failed to grant permission:', error);
+      console.error('Failed to grant permissions:', error);
       showError(error?.data?.errors?.[0] || tPermissions('grantPermissionFailed'));
     }
   };
 
   const handleClose = () => {
-    setSelectedPermission(null);
+    setSelectedCodes(new Set());
     setSearchQuery('');
     onClose();
   };
@@ -132,41 +187,43 @@ export const AddPermissionToMemberModal = ({
             }}
           />
 
+          {selectedCodes.size > 0 && (
+            <Typography variant="caption" color="text.secondary">
+              {tPermissions('selectedPermissionsCount', { count: selectedCodes.size })}
+            </Typography>
+          )}
+
           {/* Available Permissions List */}
-          {!selectedPermission ? (
-            <Box
-              sx={{
-                maxHeight: 300,
-                overflow: 'auto',
-                border: (theme) => `1px solid ${theme.palette.divider}`,
-                borderRadius: 1,
-                '&::-webkit-scrollbar': {
-                  width: '6px',
-                },
-                '&::-webkit-scrollbar-track': {
-                  backgroundColor: 'transparent',
-                },
-                '&::-webkit-scrollbar-thumb': {
-                  backgroundColor: (theme) => alpha(theme.palette.text.secondary, 0.3),
-                  borderRadius: '4px',
-                  '&:hover': {
-                    backgroundColor: (theme) => alpha(theme.palette.text.secondary, 0.5),
-                  },
-                },
-                scrollbarWidth: 'thin',
-              }}
-            >
-              {availablePermissions.length === 0 ? (
-                <Box sx={{ p: 2, textAlign: 'center' }}>
-                  <Typography color="text.secondary">
-                    {searchQuery.trim()
-                      ? tPermissions('noPermissionsFound')
-                      : tPermissions('noAvailablePermissionsToGrant')}
-                  </Typography>
-                </Box>
-              ) : (
-                <List disablePadding>
-                  {availablePermissions.map((perm) => (
+          <Box
+            sx={{
+              maxHeight: 340,
+              overflow: 'auto',
+              border: (theme) => `1px solid ${theme.palette.divider}`,
+              borderRadius: 1,
+              '&::-webkit-scrollbar': { width: '6px' },
+              '&::-webkit-scrollbar-track': { backgroundColor: 'transparent' },
+              '&::-webkit-scrollbar-thumb': {
+                backgroundColor: (theme) => alpha(theme.palette.text.secondary, 0.3),
+                borderRadius: '4px',
+              },
+              scrollbarWidth: 'thin',
+            }}
+          >
+            {availablePermissions.length === 0 ? (
+              <Box sx={{ p: 2, textAlign: 'center' }}>
+                <Typography color="text.secondary">
+                  {searchQuery.trim()
+                    ? tPermissions('noPermissionsFound')
+                    : tPermissions('noAvailablePermissionsToGrant')}
+                </Typography>
+              </Box>
+            ) : (
+              <List disablePadding>
+                {availablePermissions.map((perm) => {
+                  const isChecked = selectedCodes.has(perm.code);
+                  const isLocked = isChecked && lockedCodes.has(perm.code);
+
+                  return (
                     <ListItem
                       key={perm.code}
                       disablePadding
@@ -176,48 +233,49 @@ export const AddPermissionToMemberModal = ({
                         },
                       }}
                     >
-                      <ListItemButton onClick={() => handleSelectPermission(perm)} sx={{ py: 1, px: 2 }}>
+                      <ListItemButton
+                        onClick={() => handleToggle(perm)}
+                        sx={{ py: 0.5, px: 1 }}
+                        disabled={isLocked}
+                      >
+                        <ListItemIcon sx={{ minWidth: 36 }}>
+                          <Checkbox
+                            edge="start"
+                            checked={isChecked}
+                            disabled={isLocked}
+                            tabIndex={-1}
+                            disableRipple
+                          />
+                        </ListItemIcon>
                         <ListItemText
                           primary={
-                            <Typography variant="body2">{perm.name}</Typography>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                              <Typography variant="body2">{perm.name}</Typography>
+                              {isLocked && (
+                                <Tooltip title={tPermissions('requiredByOtherSelection')}>
+                                  <Chip
+                                    icon={<LockIcon fontSize="small" />}
+                                    label={tPermissions('prerequisite')}
+                                    size="small"
+                                    variant="outlined"
+                                    sx={{ height: 20, fontSize: '0.625rem' }}
+                                  />
+                                </Tooltip>
+                              )}
+                            </Box>
+                          }
+                          secondary={
+                            perm.abilities.map((ability) => {
+                            return <><Typography variant="caption" color="text.secondary"> {ability} </Typography> <br /> </> })
                           }
                         />
                       </ListItemButton>
                     </ListItem>
-                  ))}
-                </List>
-              )}
-            </Box>
-          ) : (
-            /* Selected Permission Preview */
-            <Box
-              sx={{
-                p: 2,
-                border: (theme) => `1px solid ${theme.palette.primary.main}`,
-                borderRadius: 1,
-                bgcolor: (theme) => alpha(theme.palette.primary.main, 0.04),
-              }}
-            >
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
-                <Typography variant="subtitle2" fontWeight={600}>
-                  {selectedPermission.name}
-                </Typography>
-                <Button size="small" onClick={handleClearSelection} color="primary">
-                  {tPermissions('changePermission')}
-                </Button>
-              </Box>
-              <Typography variant="subtitle2" color="text.secondary" sx={{ mt: 1 }}>
-                {tPermissions('abilities')}:
-              </Typography>
-              <Box sx={{ mt: 0.5 }}>
-                {selectedPermission.abilities.map((ability) => (
-                  <Typography key={ability} variant="body2" color="text.secondary" sx={{ py: 0.25 }}>
-                    • {ability}
-                  </Typography>
-                ))}
-              </Box>
-            </Box>
-          )}
+                  );
+                })}
+              </List>
+            )}
+          </Box>
         </Box>
       </DialogContent>
 
@@ -228,10 +286,10 @@ export const AddPermissionToMemberModal = ({
         <Button
           onClick={handleSave}
           variant="contained"
-          disabled={!selectedPermission || isLoading}
+          disabled={selectedCodes.size === 0 || isLoading}
           startIcon={isLoading ? <CircularProgress size={20} /> : null}
         >
-          {tPermissions('grantPermission')}
+          {tPermissions('grantSelectedPermissions')}
         </Button>
       </DialogActions>
     </Dialog>

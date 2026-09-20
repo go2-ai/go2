@@ -237,6 +237,61 @@ RSpec.describe 'Permissions API', type: :request do
     end
   end
 
+  path '/organizations/{organization_id}/permissions/bulk' do
+    parameter name: :organization_id, in: :path, type: :integer, description: 'Organization ID', required: true
+
+    post 'Grant multiple permissions in one request' do
+      tags 'Permissions'
+      consumes 'application/json'
+      produces 'application/json'
+
+      parameter name: :params, in: :body, schema: {
+        type: :object,
+        properties: {
+          grantee_type: { type: :string, enum: %w[Member Role Department Group] },
+          grantee_id: { type: :integer, example: 1 },
+          codes: { type: :array, items: { type: :string } }
+        },
+        required: %w[grantee_type grantee_id codes]
+      }
+
+      response '200', 'Permissions granted, including auto-resolved prerequisites' do
+        let(:organization_id) { organization.id }
+        let(:params) do
+          {
+            grantee_type: 'Member',
+            grantee_id: admin_member.id,
+            codes: [ Permission::ACCOUNTING_MANAGE_ACCOUNTS ]
+          }
+        end
+
+        run_test! do |response|
+          data = JSON.parse(response.body)
+          codes = data.map { |p| p['code'] }
+          expect(codes).to include(Permission::ACCOUNTING_MANAGE_ACCOUNTS, Permission::ACCOUNTING_VIEW_ACCOUNTS)
+        end
+      end
+
+      response '403', 'Not authorized' do
+        let(:organization_id) { organization.id }
+        let(:unauthorized_user) { create(:user) }
+        let(:params) do
+          {
+            grantee_type: 'Member',
+            grantee_id: admin_member.id,
+            codes: [ Permission::ACCOUNTING_VIEW_ACCOUNTS ]
+          }
+        end
+
+        before { sign_in unauthorized_user }
+
+        run_test! do |response|
+          expect(response).to have_http_status(:forbidden)
+        end
+      end
+    end
+  end
+
   path '/organizations/{organization_id}/permissions/{id}' do
     parameter name: :organization_id, in: :path, type: :integer, description: 'Organization ID', required: true
     parameter name: :id, in: :path, type: :integer, description: 'Permission ID', required: true
@@ -278,6 +333,19 @@ RSpec.describe 'Permissions API', type: :request do
         end
       end
 
+      response '403', 'Cannot revoke own Organization Admin permission' do
+        let(:organization_id) { organization.id }
+        let(:self_admin_permission) do
+          Permission.find_by(code: Permission::ORG_ADMIN, grantee: admin_member, organization: organization)
+        end
+        let(:id) { self_admin_permission.id }
+
+        run_test! do |response|
+          expect(response).to have_http_status(:forbidden)
+          expect(Permission.find_by(id: self_admin_permission.id)).not_to be_nil
+        end
+      end
+
       response '403', 'Not authorized' do
         let(:organization_id) { organization.id }
         let(:unauthorized_user) { create(:user) }
@@ -290,6 +358,23 @@ RSpec.describe 'Permissions API', type: :request do
 
         run_test! do |response|
           expect(response).to have_http_status(:forbidden)
+        end
+      end
+
+      response '403', 'Cannot revoke a prerequisite while a dependent permission is still granted' do
+        let(:organization_id) { organization.id }
+        let(:view_permission) do
+          create(:permission, organization:, code: Permission::ACCOUNTING_VIEW_ACCOUNTS, grantee: admin_member)
+        end
+        let(:id) { view_permission.id }
+
+        before do
+          create(:permission, organization:, code: Permission::ACCOUNTING_MANAGE_ACCOUNTS, grantee: admin_member)
+        end
+
+        run_test! do |response|
+          expect(response).to have_http_status(:forbidden)
+          expect(Permission.find_by(id: view_permission.id)).not_to be_nil
         end
       end
     end

@@ -1,6 +1,6 @@
 // src/features/permissions/components/GranteeManagementView.tsx
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import {
   Box,
   Typography,
@@ -43,7 +43,7 @@ import { useGrantPermissionMutation, useRevokePermissionMutation } from '../perm
 import { useToast } from '../../../contexts/ToastContext';
 import { useConfirm } from '../../../contexts/confirmContext';
 import { MemberAvatar } from '../../members/components/MemberAvatar';
-import type { Permission, ResolvedMember, GranteeType } from '../types';
+import type { Permission, ResolvedMember, GranteeType, GrantablePermission } from '../types';
 
 interface GranteeManagementViewProps {
   permissionCode: string;
@@ -52,6 +52,12 @@ interface GranteeManagementViewProps {
   grantees: Permission[];
   resolvedMembers: ResolvedMember[];
   abilities?: string[];
+  /** All permissions in the org, used to detect grantees that still hold a
+   *  permission dependent on the one being managed here. */
+  allPermissions: Permission[];
+  /** The full grantable-permissions catalog, used to resolve prerequisite
+   *  and dependent relationships. */
+  grantablePermissions: GrantablePermission[];
   onGranteeAdded: () => void;
   onGranteeRemoved: () => void;
   onViewHistory: () => void; 
@@ -78,6 +84,8 @@ export const GranteeManagementView = ({
   grantees,
   resolvedMembers,
   abilities = [],
+  allPermissions,
+  grantablePermissions,
   onGranteeAdded,
   onGranteeRemoved,
   onViewHistory,
@@ -101,6 +109,46 @@ export const GranteeManagementView = ({
   const [grantPermission, { isLoading: isGranting }] = useGrantPermissionMutation();
   const [revokePermission, { isLoading: isRevoking }] = useRevokePermissionMutation();
 
+  // ─── Prerequisite / dependent resolution ────────────────────────────────
+
+  const permissionsByCodeLookup = useMemo(() => {
+    return grantablePermissions.reduce((acc, perm) => {
+      acc[perm.code] = perm;
+      return acc;
+    }, {} as Record<string, GrantablePermission>);
+  }, [grantablePermissions]);
+
+  const getAllPrerequisites = (code: string, seen: Set<string> = new Set()): string[] => {
+    if (seen.has(code)) return [];
+    seen.add(code);
+    const direct = permissionsByCodeLookup[code]?.perquisites || [];
+    return direct.reduce<string[]>(
+      (acc, prereqCode) => [...acc, prereqCode, ...getAllPrerequisites(prereqCode, seen)],
+      []
+    );
+  };
+
+  // codes that would be left without a prerequisite if `permissionCode` were revoked
+  const directDependentCodes = useMemo(() => {
+    return grantablePermissions
+      .filter((perm) => getAllPrerequisites(perm.code).includes(permissionCode))
+      .map((perm) => perm.code);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [permissionCode, grantablePermissions]);
+
+  const getBlockingDependents = (grantee: Permission): Permission[] => {
+    if (directDependentCodes.length === 0) return [];
+    return allPermissions.filter(
+      (p) =>
+        directDependentCodes.includes(p.code) &&
+        p.grantee_type === grantee.grantee_type &&
+        p.grantee_id === grantee.grantee_id
+    );
+  };
+
+  const dependentNames = (blocking: Permission[]) =>
+    blocking.map((p) => permissionsByCodeLookup[p.code]?.name || p.code).join(', ');
+
   // ─── Handlers ────────────────────────────────────────────────────────────
 
   const handleRemoveGrantee = async (permissionId: number, granteeName: string) => {
@@ -117,9 +165,9 @@ export const GranteeManagementView = ({
       await revokePermission({ organizationId, id: permissionId }).unwrap();
       showSuccess(tPermissions('permissionRevoked'));
       onGranteeRemoved();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to revoke permission:', error);
-      showError(tPermissions('revokePermissionFailed'));
+      showError(error?.data?.errors?.[0] || tPermissions('revokePermissionFailed'));
     }
   };
 
@@ -175,7 +223,6 @@ export const GranteeManagementView = ({
     (selectedGranteeType === 'Department' && isLoadingDepartments) ||
     (selectedGranteeType === 'Group' && isLoadingGroups);
 
-  // Filter out already granted entities
   const availableOptions = getGranteeOptions().filter(
     (option) => !grantees.some((g) => g.grantee_id === option.id && g.grantee_type === selectedGranteeType)
   );
@@ -213,13 +260,8 @@ export const GranteeManagementView = ({
           flex: 1,
           overflow: 'auto',
           minHeight: 0,
-          // Modern scrollbar styling
-          '&::-webkit-scrollbar': {
-            width: '6px',
-          },
-          '&::-webkit-scrollbar-track': {
-            backgroundColor: 'transparent',
-          },
+          '&::-webkit-scrollbar': { width: '6px' },
+          '&::-webkit-scrollbar-track': { backgroundColor: 'transparent' },
           '&::-webkit-scrollbar-thumb': {
             backgroundColor: (theme) => alpha(theme.palette.text.secondary, 0.3),
             borderRadius: '4px',
@@ -231,7 +273,7 @@ export const GranteeManagementView = ({
           scrollbarColor: (theme) => `${alpha(theme.palette.text.secondary, 0.3)} transparent`,
         }}
       >
-        {/* Abilities Section - now in scrollable area */}
+        {/* Abilities Section */}
         {abilities.length > 0 && (
           <Box sx={{ mb: 2 }}>
             <Typography variant="subtitle2" color="text.secondary" gutterBottom sx={{ fontWeight: 'bold'}}>
@@ -263,6 +305,9 @@ export const GranteeManagementView = ({
             <Stack spacing={0.5}>
               {grantees.map((grantee) => {
                 const Icon = granteeTypeIcons[grantee.grantee_type];
+                const blockingDependents = getBlockingDependents(grantee);
+                const isBlocked = blockingDependents.length > 0;
+
                 return (
                   <Paper
                     key={grantee.id}
@@ -286,15 +331,23 @@ export const GranteeManagementView = ({
                         sx={{ height: 20, fontSize: '0.625rem' }}
                       />
                     </Box>
-                    <Tooltip title={t('commonActions.revoke')}>
-                      <IconButton
-                        size="small"
-                        color="error"
-                        onClick={() => handleRemoveGrantee(grantee.id, grantee.grantee_name)}
-                        disabled={isRevoking}
-                      >
-                        <DeleteIcon fontSize="small" />
-                      </IconButton>
+                    <Tooltip
+                      title={
+                        isBlocked
+                          ? tPermissions('revokeBlockedByDependents', { names: dependentNames(blockingDependents) })
+                          : t('commonActions.revoke')
+                      }
+                    >
+                      <span>
+                        <IconButton
+                          size="small"
+                          color="error"
+                          onClick={() => handleRemoveGrantee(grantee.id, grantee.grantee_name)}
+                          disabled={isRevoking || isBlocked}
+                        >
+                          <DeleteIcon fontSize="small" />
+                        </IconButton>
+                      </span>
                     </Tooltip>
                   </Paper>
                 );

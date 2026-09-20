@@ -42,7 +42,8 @@ class Permission < ApplicationRecord
           model_t("manage_groups"),
           model_t("manage_permissions")
         ],
-        tags: []
+        tags: [],
+        perquisites: []
       },
       {
         code: ACCOUNTING_MANAGE_SETTINGS,
@@ -50,7 +51,8 @@ class Permission < ApplicationRecord
         abilities: [
           model_t("manage_settings")
         ],
-        tags: %w[accounting]
+        tags: %w[accounting],
+        perquisites: [ ACCOUNTING_VIEW_SETTINGS ]
       },
       {
         code: ACCOUNTING_VIEW_SETTINGS,
@@ -58,7 +60,8 @@ class Permission < ApplicationRecord
         abilities: [
           model_t("view_settings")
         ],
-        tags: %w[accounting]
+        tags: %w[accounting],
+        perquisites: []
       },
       {
         code: ACCOUNTING_MANAGE_CENTERS,
@@ -66,7 +69,8 @@ class Permission < ApplicationRecord
         abilities: [
           model_t("manage_centers")
         ],
-        tags: %w[accounting]
+        tags: %w[accounting],
+        perquisites: [ ACCOUNTING_VIEW_CENTERS ]
       },
       {
         code: ACCOUNTING_VIEW_CENTERS,
@@ -74,7 +78,8 @@ class Permission < ApplicationRecord
         abilities: [
           model_t("view_centers")
         ],
-        tags: %w[accounting]
+        tags: %w[accounting],
+        perquisites: []
       },
       {
         code: ACCOUNTING_MANAGE_ACCOUNTS,
@@ -82,7 +87,8 @@ class Permission < ApplicationRecord
         abilities: [
           model_t("manage_accounts")
         ],
-        tags: %w[accounting]
+        tags: %w[accounting],
+        perquisites: [ ACCOUNTING_VIEW_ACCOUNTS ]
       },
       {
         code: ACCOUNTING_VIEW_ACCOUNTS,
@@ -90,7 +96,8 @@ class Permission < ApplicationRecord
         abilities: [
           model_t("view_accounts")
         ],
-        tags: %w[accounting]
+        tags: %w[accounting],
+        perquisites: []
       },
       {
         code: ACCOUNTING_MANAGE_JOURNAL_ENTRIES,
@@ -98,7 +105,8 @@ class Permission < ApplicationRecord
         abilities: [
           model_t("manage_journal_entries")
         ],
-        tags: %w[accounting]
+        tags: %w[accounting],
+        perquisites: [ ACCOUNTING_VIEW_JOURNAL_ENTRIES ]
       },
       {
         code: ACCOUNTING_VIEW_JOURNAL_ENTRIES,
@@ -106,7 +114,8 @@ class Permission < ApplicationRecord
         abilities: [
           model_t("view_journal_entries")
         ],
-        tags: %w[accounting]
+        tags: %w[accounting],
+        perquisites: []
       },
       {
         code: ACCOUNTING_APPROVE_JOURNAL_ENTRIES,
@@ -114,8 +123,33 @@ class Permission < ApplicationRecord
         abilities: [
           model_t("approve_journal_entries")
         ],
-        tags: %w[accounting]
+        tags: %w[accounting],
+        perquisites: [ ACCOUNTING_VIEW_JOURNAL_ENTRIES ]
       }
     ]
+  end
+
+    # Returns the full (recursively-resolved) list of prerequisite codes for
+  # a given permission code, e.g. prerequisites_for(ACCOUNTING_MANAGE_ACCOUNTS)
+  # => [ACCOUNTING_VIEW_ACCOUNTS]
+  def self.prerequisites_for(code, seen = Set.new)
+    return [] if code.blank? || seen.include?(code)
+
+    seen << code
+    definition = grantable_permissions.find { |p| p[:code] == code }
+    return [] unless definition
+
+    direct = definition[:perquisites] || []
+    direct + direct.flat_map { |prereq_code| prerequisites_for(prereq_code, seen) }
+  end
+
+  # Reverse of prerequisites_for: returns the codes of permissions that
+  # list `code` as a direct or transitive prerequisite -- i.e. permissions
+  # that would be left "dangling" if `code` were revoked while they're
+  # still granted to the same grantee.
+  def self.dependents_for(code)
+    grantable_permissions
+      .select { |p| prerequisites_for(p[:code]).include?(code) }
+      .map { |p| p[:code] }
   end
 end

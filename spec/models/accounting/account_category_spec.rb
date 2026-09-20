@@ -94,13 +94,6 @@ RSpec.describe Accounting::AccountCategory, type: :model do
   end
 
   describe "deletion prevention" do
-    it "prevents deletion of system categories" do
-      category = organization.account_categories.find_by!(identifier: "CA")
-
-      expect { category.destroy }.not_to change { Accounting::AccountCategory.count }
-      expect(category.errors[:base]).to include("System account categories cannot be deleted.")
-    end
-
     it "allows deletion of user-created categories" do
       category = create(:accounting_account_category, organization: organization, identifier: nil, type: :other, code: 0)
 

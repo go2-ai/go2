@@ -97,8 +97,8 @@ RSpec.describe Accounting::JournalEntry, type: :model do
 
       it "is valid for booked state with balanced items" do
         je = build(:accounting_journal_entry, organization: organization, state: :booked)
-        je.items.build(row: 1, account: account, debit: 100, credit: 0)
-        je.items.build(row: 2, account: account, debit: 0, credit: 100)
+        je.items.build(row: 1, account: account, debit: 100, credit: 0, rate: nil)
+        je.items.build(row: 2, account: account, debit: 0, credit: 100, rate: nil)
         expect(je).to be_valid
       end
 

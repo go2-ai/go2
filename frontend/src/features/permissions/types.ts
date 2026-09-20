@@ -2,11 +2,14 @@
 
 // ─── API Response Types ─────────────────────────────────────────────────────
 
+export const ORG_ADMIN_PERMISSION_CODE = 'Organization.admin';
+
 export interface GrantablePermission {
   code: string;
   name: string;
   abilities: string[];
   tags: string[];
+  perquisites: string[];
 }
 
 export type GranteeType = 'Member' | 'Role' | 'Department' | 'Group';
@@ -28,6 +31,12 @@ export interface GrantPermissionRequest {
   code: string;
   grantee_type: GranteeType;
   grantee_id: number;
+}
+
+export interface BulkGrantPermissionRequest {
+  grantee_type: GranteeType;
+  grantee_id: number;
+  codes: string[];
 }
 
 // ─── UI / Component Types ──────────────────────────────────────────────────

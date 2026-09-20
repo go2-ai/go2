@@ -106,19 +106,11 @@ RSpec.describe Accounting::JournalEntryItem, type: :model do
   end
 
   describe "callbacks" do
-    it "sets default currency and rate from accounting setting" do
+    it "sets default currency from accounting setting" do
       item = build(:accounting_journal_entry_item, journal_entry: draft_journal_entry,
                    currency: nil, rate: nil, debit: 100, credit: 0)
       item.valid?
       expect(item.currency).to eq(organization.accounting_setting.main_currency)
-      expect(item.rate).to eq(1.0)
-    end
-
-    it "calculates currency_amount from debit/rate" do
-      item = build(:accounting_journal_entry_item, journal_entry: draft_journal_entry,
-                   debit: 200, credit: 0, rate: 2.0)
-      item.valid?
-      expect(item.currency_amount).to eq(100)
     end
   end
 

@@ -1,5 +1,6 @@
 // src/features/permissions/components/MemberPermissionsDetail.tsx
 
+import { useMemo } from 'react';
 import {
   Box,
   Typography,
@@ -27,7 +28,8 @@ import { useUpdateRoleMutation } from '../../roles/rolesApi';
 import { useUpdateGroupMutation } from '../../groups/groupsApi';
 import { useToast } from '../../../contexts/ToastContext';
 import { useConfirm } from '../../../contexts/confirmContext';
-import type { Permission, GranteeType } from '../types';
+import { ORG_ADMIN_PERMISSION_CODE } from '../types';
+import type { Permission, GranteeType, GrantablePermission } from '../types';
 import type { Group } from '../../groups/groupsApi';
 import type { Role } from '../../roles/rolesApi';
 
@@ -49,6 +51,11 @@ interface MemberPermissionsDetailProps {
   onPermissionRevoked: () => void;
   onAddPermissionClick: () => void;
   permissionNameMap?: Record<string, string>;
+  /** The full grantable-permissions catalog, used to resolve prerequisite
+   *  and dependent relationships for the revoke-guard below. */
+  grantablePermissions?: GrantablePermission[];
+  /** True when the member being viewed is the currently signed-in user. */
+  isCurrentUserMember?: boolean;
 }
 
 const sourceTypeColors = {
@@ -76,6 +83,8 @@ export const MemberPermissionsDetail = ({
   onPermissionRevoked,
   onAddPermissionClick,
   permissionNameMap = {},
+  grantablePermissions = [],
+  isCurrentUserMember = false,
 }: MemberPermissionsDetailProps) => {
   const { t } = useTranslation('shared');
   const { t: tPermissions } = useTranslation('permissions');
@@ -85,6 +94,45 @@ export const MemberPermissionsDetail = ({
   const [revokePermission, { isLoading: isRevokingDirect }] = useRevokePermissionMutation();
   const [updateRole, { isLoading: isUpdatingRole }] = useUpdateRoleMutation();
   const [updateGroup, { isLoading: isUpdatingGroup }] = useUpdateGroupMutation();
+
+  // ─── Prerequisite / dependent resolution ────────────────────────────────
+
+  const permissionsByCodeLookup = useMemo(() => {
+    return grantablePermissions.reduce((acc, perm) => {
+      acc[perm.code] = perm;
+      return acc;
+    }, {} as Record<string, GrantablePermission>);
+  }, [grantablePermissions]);
+
+  const getAllPrerequisites = (code: string, seen: Set<string> = new Set()): string[] => {
+    if (seen.has(code)) return [];
+    seen.add(code);
+    const direct = permissionsByCodeLookup[code]?.perquisites || [];
+    return direct.reduce<string[]>(
+      (acc, prereqCode) => [...acc, prereqCode, ...getAllPrerequisites(prereqCode, seen)],
+      []
+    );
+  };
+
+  // Every code currently granted to this member, direct or indirect — used
+  // to detect whether revoking a given direct permission would strand a
+  // dependent permission the member still holds.
+  const allGrantedCodesForMember = useMemo(() => {
+    return new Set([
+      ...directPermissions.map((p) => p.code),
+      ...indirectPermissions.map((i) => i.permission.code),
+    ]);
+  }, [directPermissions, indirectPermissions]);
+
+  const getBlockingDependentNames = (code: string): string[] => {
+    const dependentCodes = grantablePermissions
+      .filter((perm) => perm.code !== code && getAllPrerequisites(perm.code).includes(code))
+      .map((perm) => perm.code);
+
+    return dependentCodes
+      .filter((dependentCode) => allGrantedCodesForMember.has(dependentCode))
+      .map((dependentCode) => permissionsByCodeLookup[dependentCode]?.name || dependentCode);
+  };
 
   // ─── Direct Permission Actions ──────────────────────────────────────────
 
@@ -105,9 +153,9 @@ export const MemberPermissionsDetail = ({
       await revokePermission({ organizationId, id: permissionId }).unwrap();
       showSuccess(tPermissions('permissionRevoked'));
       onPermissionRevoked();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to revoke permission:', error);
-      showError(tPermissions('revokePermissionFailed'));
+      showError(error?.data?.errors?.[0] || tPermissions('revokePermissionFailed'));
     }
   };
 
@@ -154,7 +202,6 @@ export const MemberPermissionsDetail = ({
     if (!confirmed) return;
 
     try {
-      // Find all roles in this department that have this member assigned
       const departmentRoles = roles.filter(
         (role) => role.department?.id === departmentId && role.member?.id === memberId
       );
@@ -164,7 +211,6 @@ export const MemberPermissionsDetail = ({
         return;
       }
 
-      // Unassign the member from each role
       await Promise.all(
         departmentRoles.map((role) =>
           updateRole({
@@ -243,17 +289,14 @@ export const MemberPermissionsDetail = ({
 
   const isLoading = isRevokingDirect || isUpdatingRole || isUpdatingGroup;
 
-  // Filter out any 'Member' type from indirect permissions
   const filteredIndirectPermissions = indirectPermissions.filter(
     (p) => p.source_type !== 'Member'
   );
 
-  // Helper to get display name for a permission
   const getPermissionDisplayName = (code: string): string => {
     return permissionNameMap[code] || code;
   };
 
-  // Helper to get the button text for indirect permission revocation
   const getRevokeButtonText = (sourceType: GranteeType): string => {
     switch (sourceType) {
       case 'Role':
@@ -266,6 +309,9 @@ export const MemberPermissionsDetail = ({
         return tPermissions('unassign');
     }
   };
+
+  const isSelfOrgAdmin = (permissionCode: string) =>
+    isCurrentUserMember && permissionCode === ORG_ADMIN_PERMISSION_CODE;
 
   // ─── Render ──────────────────────────────────────────────────────────────
 
@@ -318,33 +364,48 @@ export const MemberPermissionsDetail = ({
                 </Typography>
               ) : (
                 <Stack spacing={1}>
-                  {directPermissions.map((perm) => (
-                    <Paper
-                      key={perm.id}
-                      variant="outlined"
-                      sx={{
-                        p: 1.5,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        bgcolor: (theme) => alpha(theme.palette.background.default, 0.3),
-                      }}
-                    >
-                      <Typography variant="body2">
-                        {getPermissionDisplayName(perm.code)}
-                      </Typography>
-                      <Tooltip title={tPermissions('revokeDirectPermission')}>
-                        <IconButton
-                          size="small"
-                          color="error"
-                          onClick={() => handleRevokeDirect(perm.id, perm.code)}
-                          disabled={isLoading}
-                        >
-                          <DeleteIcon fontSize="small" />
-                        </IconButton>
-                      </Tooltip>
-                    </Paper>
-                  ))}
+                  {directPermissions.map((perm) => {
+                    const selfLocked = isSelfOrgAdmin(perm.code);
+                    const blockingNames = getBlockingDependentNames(perm.code);
+                    const isBlocked = blockingNames.length > 0;
+
+                    let tooltipTitle = tPermissions('revokeDirectPermission');
+                    if (selfLocked) {
+                      tooltipTitle = tPermissions('cannotRevokeOwnAdminPermission');
+                    } else if (isBlocked) {
+                      tooltipTitle = tPermissions('revokeBlockedByDependents', { names: blockingNames.join(', ') });
+                    }
+
+                    return (
+                      <Paper
+                        key={perm.id}
+                        variant="outlined"
+                        sx={{
+                          p: 1.5,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          bgcolor: (theme) => alpha(theme.palette.background.default, 0.3),
+                        }}
+                      >
+                        <Typography variant="body2">
+                          {getPermissionDisplayName(perm.code)}
+                        </Typography>
+                        <Tooltip title={tooltipTitle}>
+                          <span>
+                            <IconButton
+                              size="small"
+                              color="error"
+                              onClick={() => handleRevokeDirect(perm.id, perm.code)}
+                              disabled={isLoading || selfLocked || isBlocked}
+                            >
+                              <DeleteIcon fontSize="small" />
+                            </IconButton>
+                          </span>
+                        </Tooltip>
+                      </Paper>
+                    );
+                  })}
                 </Stack>
               )}
             </Box>
