@@ -38,16 +38,44 @@ interface CenterModalProps {
   organizationId: number;
   center?: Center | null;
   preselectedCenterTypeId?: number;
+  /** Limit the selectable center types (e.g. to those an account allows). */
+  allowedCenterTypeIds?: number[];
+  /** Prefill for a new center: digits fill the code, anything else the name. */
+  initialText?: string;
+  /** Called with the created center after a successful create. */
+  onCreated?: (center: Center) => void;
 }
 
-export const CenterModal = ({ open, onClose, organizationId, center, preselectedCenterTypeId }: CenterModalProps) => {
+export const CenterModal = ({
+  open,
+  onClose,
+  organizationId,
+  center,
+  preselectedCenterTypeId: preselectedCenterTypeIdProp,
+  allowedCenterTypeIds,
+  initialText,
+  onCreated,
+}: CenterModalProps) => {
   const { t } = useTranslation('shared');
   const { t: tAccounting } = useTranslation('accounting');
   const { showSuccess, showError } = useToast();
   const { i18n } = useTranslation();
 
   const { allLocales, isReady } = useTranslatableLocales({ organizationId });
-  const { data: centerTypes } = useGetCenterTypesQuery(organizationId, { skip: !organizationId });
+  const { data: allCenterTypes } = useGetCenterTypesQuery(organizationId, { skip: !organizationId });
+
+  const allowedKey = allowedCenterTypeIds?.join(',') ?? '';
+  const centerTypes = useMemo(
+    () => allowedCenterTypeIds && allowedCenterTypeIds.length > 0
+      ? allCenterTypes?.filter((ct) => allowedCenterTypeIds.includes(ct.id))
+      : allCenterTypes,
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [allCenterTypes, allowedKey]
+  );
+
+  // With a single allowed type there is nothing to choose.
+  const preselectedCenterTypeId = preselectedCenterTypeIdProp
+    ?? (allowedCenterTypeIds?.length === 1 ? allowedCenterTypeIds[0] : undefined);
 
   const [createCenter, { isLoading: isCreating }] = useCreateCenterMutation();
   const [updateCenter, { isLoading: isUpdating }] = useUpdateCenterMutation();
@@ -83,14 +111,23 @@ export const CenterModal = ({ open, onClose, organizationId, center, preselected
         ? centerTypes.find((c) => c.id === preselectedCenterTypeId) || null
         : null;
       setSelectedCenterType(ct);
+
+      const text = initialText?.trim() ?? '';
+      const isCode = /^[0-9]+$/.test(text);
+      const name = emptyLocaleMap(allLocales);
+      if (text && !isCode) {
+        const locale = allLocales.includes(i18n.language) ? i18n.language : allLocales[0];
+        if (locale) name[locale] = text;
+      }
+
       setFormData({
-        name: emptyLocaleMap(allLocales),
-        code: '',
+        name,
+        code: isCode ? text : '',
         metadata: {},
       });
     }
     setErrors({});
-  }, [open, center, centerTypes, isReady, preselectedCenterTypeId, allLocales.join(',')]);
+  }, [open, center, centerTypes, isReady, preselectedCenterTypeId, allLocales.join(','), initialText]);
 
   const resolvedMetadataFields: MetadataFieldForInput[] = useMemo(() => {
     if (!selectedCenterType?.metadata) return [];
@@ -179,8 +216,9 @@ export const CenterModal = ({ open, onClose, organizationId, center, preselected
         await updateCenter({ organizationId, id: center!.id, data: payload }).unwrap();
         showSuccess(tAccounting('centerUpdated'));
       } else {
-        await createCenter({ organizationId, data: payload }).unwrap();
+        const created = await createCenter({ organizationId, data: payload }).unwrap();
         showSuccess(tAccounting('centerCreated'));
+        onCreated?.(created);
       }
       onClose();
     } catch (err: any) {

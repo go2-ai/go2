@@ -7,6 +7,7 @@ import { DepartmentsTable } from './components/DepartmentsTable';
 import { DepartmentModal } from './components/DepartmentModal';
 import { useState } from 'react';
 import type { Department } from './types';
+import { useTabLoading } from '../../components/tabs/TabLoadingContext';
 
 export const DepartmentsPage = () => {
   const { t: tDepartments } = useTranslation('departments');
@@ -20,6 +21,7 @@ export const DepartmentsPage = () => {
     orgId, 
     { skip: !orgId || orgId === 0 }
   );
+  useTabLoading(isLoading);
 
   const handleRowClick = (department: Department) => {
     setSelectedDepartment(department);

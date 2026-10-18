@@ -20,6 +20,7 @@ import { useActiveFiscalYear } from '../../../hooks/useActiveFiscalYear';
 import { ExtendedDataGrid } from '../../../components/shared/ExtendedDataGrid';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useTabManager } from '../../../components/tabs/useTabManager';
+import { useTabLoading } from '../../../components/tabs/TabLoadingContext';
 
 
 export const JournalEntriesPage = () => {
@@ -36,7 +37,7 @@ export const JournalEntriesPage = () => {
   const handleRowDoubleClick = (params: GridRowParams) => {
     const journalEntry = params.row as JournalEntry;
     const path = `/app/organizations/${orgId}/accounting/journal-entries/${journalEntry.id}`;
-    openTab('journal-entry-edit', `Journal Entry #${journalEntry.no || journalEntry.id}`, path);
+    openTab('journal-entry-edit', tJE('journalEntryTabTitle', { ref: journalEntry.ref || journalEntry.id }), path);
     navigate(path);
   };
 
@@ -50,6 +51,7 @@ export const JournalEntriesPage = () => {
     { organizationId: orgId, fiscalYearId: activeFiscalYearId ?? undefined },
     { skip: !orgId || !activeFiscalYearId }
   );
+  useTabLoading(isLoading || isFetching);
 
   const columns = useMemo<GridColDef<JournalEntry>[]>(() => {
     const currentLocale = i18n.language;

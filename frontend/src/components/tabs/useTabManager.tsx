@@ -11,6 +11,7 @@ import { useTabDragAndDrop } from './useTabDragAndDrop';
 import { useTabOperations } from './useTabOperations';
 import { useWorkspaceState } from './useWorkspaceState';
 import { pushActivation } from './tabActivation';
+import { TabLoadingProvider } from './TabLoadingContext';
 
 interface TabContextType {
   layout: WorkspaceLayout;
@@ -100,7 +101,11 @@ export function TabProvider({ children }: TabProviderProps) {
     updateTabTitle,
   };
 
-  return <TabContext.Provider value={value}>{children}</TabContext.Provider>;
+  return (
+    <TabContext.Provider value={value}>
+      <TabLoadingProvider>{children}</TabLoadingProvider>
+    </TabContext.Provider>
+  );
 }
 
 export function useTabManager() {

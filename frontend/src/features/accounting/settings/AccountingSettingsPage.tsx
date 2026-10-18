@@ -39,6 +39,7 @@ import { useToast } from '../../../contexts/ToastContext';
 import { useConfirm } from '../../../contexts/confirmContext';
 import { CurrencyModal } from '../currencies/components/CurrencyModal';
 import { CURRENCY_PRESETS } from '../currencies/currencyPresets';
+import { useTabLoading } from '../../../components/tabs/TabLoadingContext';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -76,6 +77,7 @@ export const AccountingSettingsPage = () => {
 
   const hasParent = !!organization?.parent_id;
   const isLoading = isSettingsLoading || isCurrenciesLoading;
+  useTabLoading(isLoading);
 
   const [formData, setFormData] = useState({
     main_currency_id: null as number | null,

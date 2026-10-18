@@ -3,7 +3,8 @@ module Accounting
   class AccountsController < ApplicationController
     def index
       authorize Accounting::Account
-      accounts = current_organization.accounts
+      # full_code reads the ledger and its account category
+      accounts = current_organization.accounts.includes(ledger: :account_category)
 
       render json: AccountBlueprint.render(accounts), status: :ok
     end

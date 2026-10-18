@@ -1,5 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
-import { TextField, Autocomplete, Box, type AutocompleteInputChangeReason } from '@mui/material';
+import { TextField, Autocomplete, Box, type AutocompleteInputChangeReason, type FilterOptionsState } from '@mui/material';
+import AddIcon from '@mui/icons-material/Add';
+import { useTranslation } from 'react-i18next';
 import type { Center } from '../../../centers/centersApi';
 import { createFilterOptions } from '@mui/material';
 
@@ -9,9 +11,21 @@ interface CenterCellProps {
   disabled?: boolean;
   error?: boolean;
   onChange: (centerId: number | null) => void;
+  /** Called with the search text when the user picks "Add center". */
+  onAddNew?: (searchText: string) => void;
 }
 
-export const CenterCell = ({ value, centers, disabled, error, onChange }: CenterCellProps) => {
+// Sentinel option shown when the search has no matches.
+const ADD_NEW_OPTION = { id: -1 } as Center;
+const isAddNew = (option: Center | null | undefined) => option?.id === ADD_NEW_OPTION.id;
+
+const baseFilter = createFilterOptions<Center>({
+  stringify: (option) => `${option.code} ${option.name}`,
+});
+
+export const CenterCell = ({ value, centers, disabled, error, onChange, onAddNew }: CenterCellProps) => {
+  const { t: tJE } = useTranslation('accounting');
+
   const selectedCenter = useMemo(
     () => centers.find(c => c.id === value) ?? null,
     [centers, value]
@@ -33,9 +47,13 @@ export const CenterCell = ({ value, centers, disabled, error, onChange }: Center
     }
   };
 
-  const filterOptions = createFilterOptions<Center>({
-    stringify: (option) => `${option.code} ${option.name}`,
-  });
+  const filterOptions = (options: Center[], state: FilterOptionsState<Center>) => {
+    const filtered = baseFilter(options, state);
+    if (filtered.length === 0 && onAddNew && state.inputValue.trim()) {
+      return [ADD_NEW_OPTION];
+    }
+    return filtered;
+  };
 
   const handleBlur = () => {
     if (inputValue.trim() === '') {
@@ -47,9 +65,17 @@ export const CenterCell = ({ value, centers, disabled, error, onChange }: Center
     <Autocomplete
       options={centers}
       filterOptions={filterOptions}
-      getOptionLabel={(option) => option.code}
-      value={selectedCenter ?? undefined}
-      onChange={(_, newValue) => onChange(newValue?.id ?? null)}
+      getOptionLabel={(option) => (isAddNew(option) ? '' : option.code)}
+      // Keep the Autocomplete controlled (null, never undefined) so a typed
+      // code isn't wiped on blur. Cast only because of `disableClearable`.
+      value={selectedCenter as Center}
+      onChange={(_, newValue) => {
+        if (isAddNew(newValue)) {
+          onAddNew?.(inputValue.trim());
+          return;
+        }
+        onChange(newValue?.id ?? null);
+      }}
       inputValue={inputValue}
       onInputChange={(_, newValue, reason) => handleInputChange(newValue, reason)}
       disabled={disabled}
@@ -109,6 +135,16 @@ export const CenterCell = ({ value, centers, disabled, error, onChange }: Center
       )}
       renderOption={(props, option) => {
         const { key, ...optionProps } = props;
+        if (isAddNew(option)) {
+          return (
+            <li key="__add_new__" {...optionProps}>
+              <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', color: 'primary.main' }}>
+                <AddIcon fontSize="small" />
+                <span>{tJE('addCenterNamed', { text: inputValue.trim() })}</span>
+              </Box>
+            </li>
+          );
+        }
         return (
           <li key={key} {...optionProps}>
             <Box sx={{ display: 'flex', gap: 1 }}>

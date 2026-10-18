@@ -36,6 +36,7 @@ import { useOpenReport } from './useOpenReport';
 import { useToast } from '../../contexts/ToastContext';
 import { useConfirm } from '../../contexts/confirmContext';
 import { parseId, useTabSearchParams } from './useTabSearchParams';
+import { useTabLoading } from '../../components/tabs/TabLoadingContext';
 
 // Path: report-settings?report_key=journal_entry&record_id=42
 export const ReportSettingsPage = () => {
@@ -55,6 +56,7 @@ export const ReportSettingsPage = () => {
   const language = (i18n.language || 'en').split('-')[0];
 
   const { data: templates, isLoading } = useGetReportTemplatesQuery(orgId, { skip: !orgId });
+  useTabLoading(isLoading);
 
   const [updateTemplate] = useUpdateReportTemplateMutation();
   const [deleteTemplate] = useDeleteReportTemplateMutation();

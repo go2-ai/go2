@@ -32,6 +32,7 @@ import {
 } from '../../utils/translationHelper';
 import type { CalendarType } from '../../components/shared/BaseDatePicker';
 import { formatFileSize } from '../documents/formatFileSize';
+import { useTabLoading } from '../../components/tabs/TabLoadingContext';
 
 const CALENDAR_TYPE_OPTIONS = [
   { code: 'gregorian', label: 'Gregorian' },
@@ -63,6 +64,7 @@ export const OrganizationSettingsPage = () => {
   const { data: organization, isLoading: isOrgLoading } = useGetOrganizationQuery(orgId, {
     skip: !orgId,
   });
+  useTabLoading(isOrgLoading);
   const [updateOrganization, { isLoading: isSaving }] = useUpdateOrganizationMutation();
 
   const { allLocales, isReady } = useTranslatableLocales({ organizationId: orgId });

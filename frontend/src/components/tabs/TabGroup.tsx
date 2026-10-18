@@ -11,6 +11,8 @@ import { useNavigate, useParams } from 'react-router-dom';
 
 import type { Tab } from './types';
 import { PageContent } from './PageRegistry';
+import { useIsTabLoading } from './TabLoadingContext';
+import { TabLoadingBar } from './TabLoadingIndicator';
 import { SortableTab } from './SortableTab';
 import { TabContextMenu } from './TabContextMenu';
 import { TabContainerContextMenu } from './TabContainerContextMenu';
@@ -30,6 +32,28 @@ interface TabGroupProps {
   onDuplicateTab: (pageId: string, title: string) => void;
   onCopyLink: () => void;
   onClosePanel?: () => void;
+}
+
+/** Content of one tab, with a progress bar while the page reports loading. */
+function TabPanel({ tab, active }: { tab: Tab; active: boolean }) {
+  const loading = useIsTabLoading(tab.id);
+  return (
+    <Box
+      aria-busy={loading || undefined}
+      sx={{
+        height: '100%',
+        width: '100%',
+        overflow: 'auto',
+        display: active ? 'block' : 'none',
+        position: 'absolute',
+        top: 0,
+        left: 0,
+      }}
+    >
+      <TabLoadingBar loading={loading} />
+      <PageContent pageId={tab.pageId} tabId={tab.id} />
+    </Box>
+  );
 }
 
 export function TabGroup({
@@ -222,20 +246,7 @@ export function TabGroup({
 
         <Box sx={{ flex: 1, position: 'relative', overflow: 'hidden' }}>
           {tabs.map((tab) => (
-            <Box
-              key={tab.id}
-              sx={{
-                height: '100%',
-                width: '100%',
-                overflow: 'auto',
-                display: activeTabId === tab.id ? 'block' : 'none',
-                position: 'absolute',
-                top: 0,
-                left: 0,
-              }}
-            >
-              <PageContent pageId={tab.pageId} tabId={tab.id} />
-            </Box>
+            <TabPanel key={tab.id} tab={tab} active={activeTabId === tab.id} />
           ))}
         </Box>
       </Box>

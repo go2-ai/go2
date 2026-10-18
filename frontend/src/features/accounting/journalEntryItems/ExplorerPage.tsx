@@ -24,6 +24,7 @@ import OpenInNewRoundedIcon from '@mui/icons-material/OpenInNewRounded';
 import { IconButton, Tooltip } from '@mui/material';
 import { useTabManager } from '../../../components/tabs/useTabManager';
 import { FooterStat } from './components/FooterStat';
+import { useTabLoading } from '../../../components/tabs/TabLoadingContext';
 
 
 const fmt = (n: number | null | undefined) =>
@@ -57,6 +58,7 @@ export const ExplorerPage = () => {
 
   const [queryArgs, setQueryArgs] = useState<ExplorerQueryArgs | null>(null);
   const { data, isFetching, isError, error } = useGetExplorerGroupedSummaryQuery(queryArgs!, { skip: !queryArgs });
+  useTabLoading(isFetching);
 
   const { openTab } = useTabManager();
   const navigate = useNavigate();

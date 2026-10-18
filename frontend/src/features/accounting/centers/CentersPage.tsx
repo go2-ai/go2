@@ -29,6 +29,7 @@ import { ExtendedDataGrid } from '../../../components/shared/ExtendedDataGrid';
 import { useToast } from '../../../contexts/ToastContext';
 import { useConfirm } from '../../../contexts/confirmContext';
 import { useTabManager } from '../../../components/tabs/useTabManager';
+import { useTabLoading } from '../../../components/tabs/TabLoadingContext';
 
 export const CentersPage = () => {
   const { t } = useTranslation('shared');
@@ -55,6 +56,7 @@ export const CentersPage = () => {
     { organizationId: orgId, centerTypeId: centerTypeId ?? undefined },
     { skip: !orgId }
   );
+  useTabLoading(isLoading);
 
   const { data: fullCenter } = useGetCenterQuery(
     { organizationId: orgId, id: fetchCenterId! },

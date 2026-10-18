@@ -26,6 +26,7 @@ import { FiscalYearModal } from './components/FiscalYearModal';
 import { useToast } from '../../contexts/ToastContext';
 import { useConfirm } from '../../contexts/confirmContext';
 import { useTabManager } from '../../components/tabs/useTabManager';
+import { useTabLoading } from '../../components/tabs/TabLoadingContext';
 
 export const FiscalYearsPage = () => {
   const { t } = useTranslation('shared');
@@ -44,6 +45,7 @@ export const FiscalYearsPage = () => {
   const [selectedForMenu, setSelectedForMenu] = useState<FiscalYear | null>(null);
 
   const { data: fiscalYears, isLoading, error, refetch } = useGetFiscalYearsQuery(orgId, { skip: !orgId });
+  useTabLoading(isLoading);
   const [deleteFiscalYear] = useDeleteFiscalYearMutation();
 
   // Sort by start_date descending

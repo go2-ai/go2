@@ -45,6 +45,7 @@ import { formatFileSize } from './formatFileSize';
 import { getFileTypeConfig } from './fileTypeConfig';
 import { DocumentUploader } from './components/DocumentUploader';
 import { useDocumentUpload } from './hooks/useDocumentUpload';
+import { useTabLoading } from '../../components/tabs/TabLoadingContext';
 
 export const DocumentsPage = () => {
   const { organizationId } = useParams<{ organizationId: string }>();
@@ -81,6 +82,7 @@ export const DocumentsPage = () => {
       refetchOnMountOrArgChange: true,
     }
   );
+  useTabLoading(isLoading || isFetching);
 
   const [deleteDocument] = useDeleteDocumentMutation();
   const { uploadFiles: uploadFilesFromDrop } = useDocumentUpload({

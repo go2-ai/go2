@@ -4,7 +4,19 @@ class VersionsController < ApplicationController
   before_action :authorize_organization!
 
   def index
-    @versions = if params[:record_type].present? && params[:record_id].present?
+    @versions = if params[:record_type] == "Accounting::JournalEntry" && params[:record_id].present?
+                  # A journal entry's change log includes the changes of its items
+                  journal_entry = @organization.journal_entries.find_by(id: params[:record_id])
+                  return render json: { errors: [ "Record not found" ] }, status: :not_found unless journal_entry
+
+                  own = PaperTrail::Version.where(item_type: "Accounting::JournalEntry", item_id: journal_entry.id)
+                  items = Accounting::JournalEntryItem.versions_for_journal_entry(journal_entry.id)
+                  PaperTrail::Version
+                    .includes([ :item ])
+                    .where(id: own.select(:id)).or(PaperTrail::Version.where(id: items.select(:id)))
+                    .order(created_at: :desc, id: :desc)
+                    .limit(params[:limit] || 200)
+    elsif params[:record_type].present? && params[:record_id].present?
                   # Get versions for a specific record (timeline)
                   PaperTrail::Version
                     .includes([ :item ])

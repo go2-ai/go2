@@ -94,13 +94,15 @@ export interface JournalEntryPrint {
 }
 
 export interface JournalEntryPayload {
+  /** Fiscal year selected in the UI; the server only allows writes inside it. */
+  active_fiscal_year_id?: number;
   date?: string;
   effective_date?: string;
   fiscal_year_id?: number;
   state?: 'draft' | 'booked';
   entry_type?: 'normal';
-  description_en?: string;
-  description_fa?: string;
+  /** One field per organization locale, e.g. description_en */
+  [key: `description_${string}`]: string;
   items_attributes?: Array<{
     id?: number;
     row?: number;
@@ -116,8 +118,7 @@ export interface JournalEntryPayload {
     currency_id?: number;
     rate?: number | null;
     currency_amount?: number | null;
-    description_en?: string;
-    description_fa?: string;
+    [key: `description_${string}`]: string;
     _destroy?: boolean;
   }>;
 }
@@ -125,7 +126,7 @@ export interface JournalEntryPayload {
 export const journalEntriesApi = createApi({
   reducerPath: 'journalEntriesApi',
   baseQuery: baseQueryWithCsrf,
-  tagTypes: ['JournalEntry'],
+  tagTypes: ['JournalEntry', 'JournalEntryPrint'],
   endpoints: (builder) => ({
     getJournalEntries: builder.query<
       JournalEntry[],
@@ -161,7 +162,10 @@ export const journalEntriesApi = createApi({
     >({
       query: ({ organizationId, id }) =>
         `/organizations/${organizationId}/accounting/journal_entries/${id}?view=print`,
-      providesTags: (result, error, { id }) => [{ type: 'JournalEntry', id }],
+      providesTags: (result, error, { id }) => [
+        { type: 'JournalEntry', id },
+        { type: 'JournalEntryPrint', id },
+      ],
     }),
 
     createJournalEntry: builder.mutation<
@@ -185,18 +189,28 @@ export const journalEntriesApi = createApi({
         method: 'PATCH',
         body: data,
       }),
+      // The response is the saved entry, so put it in the cache instead of
+      // refetching it (a refetch would reload all rows of an open editor).
       invalidatesTags: (result, error, { id }) => [
-        { type: 'JournalEntry', id },
+        { type: 'JournalEntryPrint', id },
         { type: 'JournalEntry', id: 'LIST' },
       ],
+      async onQueryStarted({ organizationId, id }, { dispatch, queryFulfilled }) {
+        try {
+          const { data } = await queryFulfilled;
+          dispatch(journalEntriesApi.util.upsertQueryData('getJournalEntry', { organizationId, id }, data));
+        } catch {
+          // failed saves leave the cache untouched
+        }
+      },
     }),
 
     deleteJournalEntry: builder.mutation<
       void,
-      { organizationId: number; id: number }
+      { organizationId: number; id: number; activeFiscalYearId: number }
     >({
-      query: ({ organizationId, id }) => ({
-        url: `/organizations/${organizationId}/accounting/journal_entries/${id}`,
+      query: ({ organizationId, id, activeFiscalYearId }) => ({
+        url: `/organizations/${organizationId}/accounting/journal_entries/${id}?active_fiscal_year_id=${activeFiscalYearId}`,
         method: 'DELETE',
       }),
       invalidatesTags: [{ type: 'JournalEntry', id: 'LIST' }],

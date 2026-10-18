@@ -7,6 +7,7 @@ import { VersionTimeline } from './components/VersionTimeline';
 import { useTabManager } from '../../components/tabs/useTabManager';
 import { useCurrentTabId } from '../../components/tabs/TabIdContext';
 import { useParams } from 'react-router-dom';
+import { useTabLoading } from '../../components/tabs/TabLoadingContext';
 
 export const RecordHistoryPage: React.FC = () => {
   const { t } = useTranslation('versions');
@@ -34,6 +35,7 @@ export const RecordHistoryPage: React.FC = () => {
     { organizationId: orgId, recordType, recordId },
     { skip: !recordType || !recordId, refetchOnMountOrArgChange: true }
   );
+  useTabLoading(isLoading);
 
   useEffect(() => {
     if (versions && versions.length > 0 && !titleUpdatedRef.current && tabId) {
@@ -82,6 +84,7 @@ export const RecordHistoryPage: React.FC = () => {
       >
         <VersionTimeline
           versions={versions || []}
+          recordType={recordType}
           isLoading={isLoading}
           error={error}
           onRetry={refetch}

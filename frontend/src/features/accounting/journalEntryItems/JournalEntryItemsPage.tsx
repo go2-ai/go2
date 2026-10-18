@@ -16,6 +16,7 @@ import CurrencyExchangeRoundedIcon from '@mui/icons-material/CurrencyExchangeRou
 import OpenInNewRoundedIcon from '@mui/icons-material/OpenInNewRounded';
 import { FooterStat } from './components/FooterStat';
 import { useTabManager } from '../../../components/tabs/useTabManager';
+import { useTabLoading } from '../../../components/tabs/TabLoadingContext';
 
 const fmt = (n: number | null | undefined) =>
   n === null || n === undefined
@@ -47,6 +48,7 @@ export const JournalEntryItemsPage = () => {
     { organizationId: orgId, fiscalYearId: activeFiscalYearId!, filters },
     { skip: !orgId || !activeFiscalYearId }
   );
+  useTabLoading(isFetching);
 
   const rows = items ?? [];
 
@@ -86,10 +88,10 @@ export const JournalEntryItemsPage = () => {
     const journalEntryId = row.journal_entry?.id;
     if (!journalEntryId) return;
 
-    const no = row.journal_entry?.no || journalEntryId;
+    const ref = row.journal_entry?.ref || journalEntryId;
     const path = `/app/organizations/${orgId}/accounting/journal-entries/${journalEntryId}?focus_item_id=${row.id}`;
 
-    openTab('journal-entry-edit', `Journal Entry #${no}`, path);
+    openTab('journal-entry-edit', tAccounting('journalEntryTabTitle', { ref }), path);
     navigate(path);
   };
 

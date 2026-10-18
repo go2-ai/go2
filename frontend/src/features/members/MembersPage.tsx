@@ -7,6 +7,7 @@ import { useGetMembersQuery, useGetMemberQuery } from './membersApi';
 import { MembersTable } from './components/MembersTable';
 import { MemberModal } from './components/MemberModal';
 import type { Member } from './types';
+import { useTabLoading } from '../../components/tabs/TabLoadingContext';
 
 export const MembersPage = () => {
   const { t: tMembers } = useTranslation('members');
@@ -20,6 +21,7 @@ export const MembersPage = () => {
     orgId,
     { skip: !orgId || orgId === 0 }
   );
+  useTabLoading(isLoading);
 
   const { data: selectedMember } = useGetMemberQuery(
     { organizationId: orgId, memberId: selectedMemberId! },

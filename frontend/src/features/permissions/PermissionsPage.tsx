@@ -32,6 +32,7 @@ import { MemberPermissionsDetail } from './components/MemberPermissionsDetail';
 import { AddPermissionToMemberModal } from './components/AddPermissionToMemberModal';
 import { useTabManager } from '../../components/tabs/useTabManager';
 import { useNavigate } from 'react-router-dom';
+import { useTabLoading } from '../../components/tabs/TabLoadingContext';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -157,6 +158,7 @@ export const PermissionsPage = () => {
     isLoadingRoles ||
     isLoadingGroups ||
     isLoadingDepartments;
+  useTabLoading(!!isLoading);
 
   // ─── Get selected permission details ────────────────────────────────────
   const selectedPermission = useMemo(() => {

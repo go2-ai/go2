@@ -58,6 +58,24 @@ class Organization < ApplicationRecord
     currency = currencies.create!(name: "US Dollar", abr: "USD", decimal_digits: 2) if currencies.empty?
     accounting_setting.update!(main_currency: currency)
     create_system_account_categories!
+    create_default_fiscal_year!
+  end
+
+  # Creates a fiscal year covering Jan 1 - Dec 31 of the current year,
+  # named in the organization's own locale.
+  def create_default_fiscal_year!
+    return if fiscal_years.exists?
+
+    today = Date.current
+    name = FiscalYear.model_t("default_name", year: today.year, locale: locale)
+
+    Mobility.with_locale(locale) do
+      fiscal_years.create!(
+        name: name,
+        start_date: today.beginning_of_year,
+        finish_date: today.end_of_year
+      )
+    end
   end
 
   # Methods

@@ -19,4 +19,6 @@ export interface Version {
   user_avatar?: string;
   user_initial?: string;
   object_data?: any;
+  /** Context for versions of child records, e.g. { row: 3 } for a journal entry item. */
+  subrecord_label?: { row?: number } | null;
 }

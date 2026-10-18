@@ -1,5 +1,7 @@
 // frontend/src/features/accounting/journalEntries/components/JournalEntryGrid.tsx
 import { useMemo, useCallback } from 'react';
+import type { EditableGridApi } from '../../../../components/editableGrid/types';
+import type { ContextMenuAction } from '../../../../components/editableGrid/RowContextMenu';
 import { EditableGrid } from '../../../../components/editableGrid/EditableGrid';
 import type { ColumnDef } from '../../../../components/editableGrid/types';
 import type { JournalEntryRow } from './types';
@@ -14,6 +16,21 @@ import { CurrencyCell } from './cells/CurrencyCell';
 import { RateCell } from './cells/RateCell';
 import { CurrencyAmountCell } from './cells/CurrencyAmountCell';
 import { DescriptionCell } from './cells/DescriptionCell';
+import { accountSelectionUpdates, allowedCenterTypeIds } from '../utils/accountSelection';
+import { useTranslatableLocales } from '../../../../hooks/useTranslatableLocales';
+import './cells/cellDisplay.css';
+
+// Intl.NumberFormat is expensive to create; reuse one per number of decimals.
+const numberFormats = new Map<number, Intl.NumberFormat>();
+const formatAmount = (value: number | null | undefined, digits: number): string => {
+  if (value === null || value === undefined || value === 0) return '';
+  let format = numberFormats.get(digits);
+  if (!format) {
+    format = new Intl.NumberFormat('en-US', { minimumFractionDigits: digits, maximumFractionDigits: digits });
+    numberFormats.set(digits, format);
+  }
+  return format.format(value);
+};
 
 type FinancialKey = 'debit' | 'credit' | 'rate' | 'currencyAmount';
 
@@ -26,7 +43,13 @@ interface JournalEntryGridProps {
   mainCurrencyId: number | null;
   mainCurrencyDecimalDigits: number;
   readOnly?: boolean;
+  /** Replaces all rows (drag & drop reordering). */
   onChange: (rows: JournalEntryRow[]) => void;
+  /**
+   * Applies a patch computed from the row's latest state. Must be stable
+   * (it is captured by memoized cells).
+   */
+  onRowUpdate: (rowId: string, update: (row: JournalEntryRow) => Partial<JournalEntryRow>) => void;
   onFieldChange: (rowId: string, key: FinancialKey, value: number | null) => void;
   getRowError?: (row: JournalEntryRow) => string | null;
   onCellClick?: (rowId: string, columnKey: string, event?: React.MouseEvent) => void;
@@ -38,6 +61,15 @@ interface JournalEntryGridProps {
   selectedRowIds?: Set<string>;
   onAddRow?: () => void;
   footer?: React.ReactNode;
+  contextMenuActions?: (row: JournalEntryRow) => ContextMenuAction[];
+  apiRef?: React.MutableRefObject<EditableGridApi | null>;
+  onRowHeaderMouseDown?: (rowId: string, event: React.MouseEvent) => void;
+  onSelectAll?: () => void;
+  selectAllLabel?: string;
+  /** Open the "add account" flow for a row, prefilled with the search text. */
+  onAddAccount?: (rowId: string, searchText: string) => void;
+  /** Open the "add center" flow for a row's center level. */
+  onAddCenter?: (rowId: string, level: number, centerTypeIds: number[], searchText: string) => void;
 }
 
 export const JournalEntryGrid = ({
@@ -50,6 +82,7 @@ export const JournalEntryGrid = ({
   mainCurrencyDecimalDigits,
   readOnly,
   onChange,
+  onRowUpdate,
   onFieldChange,
   getRowError,
   onCellClick,
@@ -61,31 +94,34 @@ export const JournalEntryGrid = ({
   selectedRowIds,
   onAddRow,
   footer,
+  onAddAccount,
+  onAddCenter,
+  contextMenuActions,
+  apiRef,
+  onRowHeaderMouseDown,
+  onSelectAll,
+  selectAllLabel,
 }: JournalEntryGridProps) => {
   const { t: tJE } = useTranslation('accounting');
   const { t } = useTranslation('shared');
+  const { primaryLocale } = useTranslatableLocales({ organizationId });
 
-  const updateCell = useCallback((rowId: string, key: string, value: any) => {
-    onChange(rows.map(r => r.id === rowId ? { ...r, [key]: value } : r));
-  }, [rows, onChange]);
+  // Lookups for the read-only cell views
+  const accountsById = useMemo(() => new Map(accounts.map(a => [a.id, a])), [accounts]);
+  const centersById = useMemo(() => new Map(centers.map(c => [c.id, c])), [centers]);
+  const currenciesById = useMemo(() => new Map(currencies.map(c => [c.id, c])), [currencies]);
 
-  const updateRow = useCallback((rowId: string, updates: Partial<JournalEntryRow>) => {
-    onChange(rows.map(r => r.id === rowId ? { ...r, ...updates } : r));
-  }, [rows, onChange]);
+  // These only depend on the stable onRowUpdate, so `columns` (and with it
+  // every memoized row) is not rebuilt when row data changes.
+  const updateCell = useCallback((rowId: string, key: string, value: unknown) => {
+    onRowUpdate(rowId, () => ({ [key]: value } as Partial<JournalEntryRow>));
+  }, [onRowUpdate]);
 
   // Immediate (non-blur) clear of the opposite debit/credit field. Deliberately
   // bypasses applyFieldChange — that recalculation still only runs on blur.
   const clearOppositeFinancial = useCallback((rowId: string, oppositeKey: 'debit' | 'credit') => {
-    const row = rows.find(r => r.id === rowId);
-    if (row && row[oppositeKey] != null) {
-      updateCell(rowId, oppositeKey, null);
-    }
-  }, [rows, updateCell]);
-
-  const getCenterTypeIds = (allowedTypes: number[] | null | undefined): number[] => {
-    if (!allowedTypes || allowedTypes.length === 0) return [];
-    return allowedTypes;
-  };
+    onRowUpdate(rowId, (row) => (row[oppositeKey] != null ? { [oppositeKey]: null } : {}));
+  }, [onRowUpdate]);
 
   const columns = useMemo<ColumnDef<JournalEntryRow>[]>(() => {
     const cols: ColumnDef<JournalEntryRow>[] = [
@@ -95,6 +131,15 @@ export const JournalEntryGrid = ({
         width: 100,
         cellType: 'custom',
         align: 'center',
+        isEditable: () => !readOnly,
+        renderDisplay: (row) => {
+          const account = row.accountId ? accountsById.get(row.accountId) : undefined;
+          return (
+            <span className="je-display-code" title={account?.name}>
+              {account ? (account.full_code || account.code) : ''}
+            </span>
+          );
+        },
         renderCell: (row) => (
           <AccountCell
             value={row.accountId}
@@ -102,34 +147,13 @@ export const JournalEntryGrid = ({
             disabled={readOnly}
             onChange={(accountId) => {
               const selectedAccount = accounts.find(a => a.id === accountId);
-              const acceptsOther = selectedAccount?.accepts_other_currencies ?? false;
-
-              if (!acceptsOther) {
-                updateRow(row.id, {
-                  accountId,
-                  currencyId: mainCurrencyId,
-                  rate: null,
-                  currencyAmount: null,
-                  center1Id: null,
-                  center2Id: null,
-                  center3Id: null,
-                  center4Id: null,
-                  center5Id: null,
-                  center6Id: null,
-                });
-              } else {
-                updateRow(row.id, {
-                  accountId,
-                  currencyId: row.currencyId ?? mainCurrencyId,
-                  center1Id: null,
-                  center2Id: null,
-                  center3Id: null,
-                  center4Id: null,
-                  center5Id: null,
-                  center6Id: null,
-                });
-              }
+              onRowUpdate(row.id, (current) => (
+                current.accountId === accountId
+                  ? {}
+                  : accountSelectionUpdates(current, selectedAccount, accountId, mainCurrencyId)
+              ));
             }}
+            onAddNew={onAddAccount && !readOnly ? (text) => onAddAccount(row.id, text) : undefined}
             error={row.errors?.account}
           />
         ),
@@ -138,7 +162,6 @@ export const JournalEntryGrid = ({
 
     for (let i = 1; i <= centerLevels; i++) {
       const centerKey = `center${i}Id` as keyof JournalEntryRow;
-      const allowedCenterTypesKey = `allowed_center_types_${i}`;
 
       cols.push({
         key: `center${i}`,
@@ -146,11 +169,15 @@ export const JournalEntryGrid = ({
         width: 110,
         cellType: 'custom',
         align: 'center',
+        isEditable: (row) => allowedCenterTypeIds(row.accountId ? accountsById.get(row.accountId) : undefined, i).length > 0,
+        renderDisplay: (row) => {
+          const centerId = row[centerKey] as number | null;
+          const center = centerId ? centersById.get(centerId) : undefined;
+          return <span className="je-display-code" title={center?.name}>{center?.code ?? ''}</span>;
+        },
         renderCell: (row) => {
           const selectedAccount = accounts.find(a => a.id === row.accountId);
-          const allowedTypes = getCenterTypeIds(
-            selectedAccount?.[allowedCenterTypesKey as keyof Account] as number[] | null | undefined
-          );
+          const allowedTypes = allowedCenterTypeIds(selectedAccount, i);
           const availableCenters = allowedTypes.length > 0
             ? centers.filter(c => allowedTypes.includes(c.center_type.id))
             : [];
@@ -162,6 +189,9 @@ export const JournalEntryGrid = ({
               centers={availableCenters}
               disabled={readOnly || !isEnabled}
               onChange={(centerId) => updateCell(row.id, centerKey as string, centerId)}
+              onAddNew={onAddCenter && !readOnly && isEnabled
+                ? (text) => onAddCenter(row.id, i, allowedTypes, text)
+                : undefined}
               error={row.errors?.centers?.[i]}
             />
           );
@@ -175,6 +205,12 @@ export const JournalEntryGrid = ({
       width: 400,
       cellType: 'custom',
       align: 'center',
+      renderDisplay: (row) => {
+        const text = row.description?.[primaryLocale]
+          || Object.values(row.description ?? {}).find(v => v?.trim())
+          || '';
+        return <span className="je-display-text" title={text || undefined}>{text}</span>;
+      },
       renderCell: (row) => (
         <DescriptionCell
           value={row.description}
@@ -191,6 +227,11 @@ export const JournalEntryGrid = ({
       width: 130,
       align: 'center',
       cellType: 'custom',
+      renderDisplay: (row) => (
+        <span className="je-display-num je-display-num--strong je-display-num--debit">
+          {formatAmount(row.debit, mainCurrencyDecimalDigits)}
+        </span>
+      ),
       renderCell: (row) => (
         <DebitCreditCell
           value={row.debit}
@@ -210,6 +251,11 @@ export const JournalEntryGrid = ({
       width: 130,
       align: 'center',
       cellType: 'custom',
+      renderDisplay: (row) => (
+        <span className="je-display-num je-display-num--strong je-display-num--credit">
+          {formatAmount(row.credit, mainCurrencyDecimalDigits)}
+        </span>
+      ),
       renderCell: (row) => (
         <DebitCreditCell
           value={row.credit}
@@ -229,6 +275,10 @@ export const JournalEntryGrid = ({
       width: 100,
       align: 'center',
       cellType: 'custom',
+      isEditable: (row) => !readOnly && (accountsById.get(row.accountId ?? -1)?.accepts_other_currencies ?? false),
+      renderDisplay: (row) => (
+        <span className="je-display-center">{currenciesById.get(row.currencyId ?? -1)?.abr ?? ''}</span>
+      ),
       renderCell: (row) => {
         const selectedAccount = accounts.find(a => a.id === row.accountId);
         const acceptsOther = selectedAccount?.accepts_other_currencies ?? false;
@@ -239,11 +289,11 @@ export const JournalEntryGrid = ({
             currencies={currencies}
             disabled={readOnly || !acceptsOther}
             onChange={(currencyId) => {
-              updateRow(row.id, {
+              onRowUpdate(row.id, () => ({
                 currencyId,
                 rate: null,
                 currencyAmount: null,
-              });
+              }));
             }}
           />
         );
@@ -256,6 +306,17 @@ export const JournalEntryGrid = ({
       width: 130,
       align: 'center',
       cellType: 'custom',
+      isEditable: (row) => !readOnly && row.currencyId !== mainCurrencyId,
+      renderDisplay: (row) => {
+        const currency = currenciesById.get(row.currencyId ?? -1);
+        const digits = currency?.decimal_digits ?? mainCurrencyDecimalDigits;
+        const isCredit = row.credit != null;
+        return (
+          <span className={`je-display-num je-display-num--strong ${isCredit ? 'je-display-num--credit' : 'je-display-num--debit'}`}>
+            {row.currencyAmount ? `${row.currencyAmount < 0 ? '-' : ''}${formatAmount(Math.abs(row.currencyAmount), digits)}` : ''}
+          </span>
+        );
+      },
       renderCell: (row) => {
         const selectedCurrency = currencies.find(c => c.id === row.currencyId);
         const decimalDigits = selectedCurrency?.decimal_digits ?? mainCurrencyDecimalDigits;
@@ -280,6 +341,10 @@ export const JournalEntryGrid = ({
       width: 100,
       align: 'center',
       cellType: 'custom',
+      isEditable: (row) => !readOnly && row.currencyId !== mainCurrencyId,
+      renderDisplay: (row) => (
+        <span className="je-display-num">{row.rate === null || row.rate === undefined ? '' : String(row.rate)}</span>
+      ),
       renderCell: (row) => {
         const selectedCurrency = currencies.find(c => c.id === row.currencyId);
         const isMainCurrency = selectedCurrency?.id === mainCurrencyId;
@@ -296,7 +361,8 @@ export const JournalEntryGrid = ({
     });
 
     return cols;
-  }, [accounts, centers, currencies, centerLevels, mainCurrencyId, mainCurrencyDecimalDigits, readOnly, updateCell, updateRow, onFieldChange, clearOppositeFinancial, tJE, organizationId]);
+  }, [accounts, centers, currencies, centerLevels, mainCurrencyId, mainCurrencyDecimalDigits, readOnly, updateCell, onRowUpdate, onFieldChange, clearOppositeFinancial, tJE, organizationId, onAddAccount, onAddCenter,
+      accountsById, centersById, currenciesById, primaryLocale]);
 
   return (
     <EditableGrid
@@ -316,44 +382,11 @@ export const JournalEntryGrid = ({
       onAddRow={onAddRow}
       emptyStateLabel={t('commonActions.addNewRow')}
       footer={footer}
-      onAddRowAfter={(rowId) => {
-        const index = rows.findIndex(r => r.id === rowId);
-        if (index === -1) return;
-        const newRow: JournalEntryRow = {
-          id: `row-${Date.now()}-${Math.random()}`,
-          row: rows.length + 1,
-          accountId: null,
-          center1Id: null,
-          center2Id: null,
-          center3Id: null,
-          center4Id: null,
-          center5Id: null,
-          center6Id: null,
-          debit: null,
-          credit: null,
-          currencyId: mainCurrencyId,
-          rate: null,
-          currencyAmount: null,
-          description: {},
-          errors: {},
-          financialEditOrder: [],
-        };
-        const newRows = [...rows];
-        newRows.splice(index + 1, 0, newRow);
-        onChange(newRows.map((r, i) => ({ ...r, row: i + 1 })));
-      }}
-      onDuplicateRow={(rowId) => {
-        const index = rows.findIndex(r => r.id === rowId);
-        if (index === -1) return;
-        const newRow = { ...rows[index], id: `row-${Date.now()}-${Math.random()}`, row: rows.length + 1 };
-        const newRows = [...rows];
-        newRows.splice(index + 1, 0, newRow);
-        onChange(newRows.map((r, i) => ({ ...r, row: i + 1 })));
-      }}
-      onDeleteRow={(rowId) => {
-        const newRows = rows.filter(r => r.id !== rowId);
-        onChange(newRows.map((r, i) => ({ ...r, row: i + 1 })));
-      }}
+      contextMenuActions={contextMenuActions}
+      apiRef={apiRef}
+      onRowHeaderMouseDown={onRowHeaderMouseDown}
+      onSelectAll={onSelectAll}
+      selectAllLabel={selectAllLabel}
     />
   );
 };

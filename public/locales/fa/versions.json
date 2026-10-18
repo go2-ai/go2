@@ -8,6 +8,8 @@
     "historyDescription": "تاریخچه تغییرات برای {{name}}",
     "historyTabTitle": "تاریخچه ({{name}})",
     "noVersionsFound": "هنوز تغییری ثبت نشده است.",
+    "relatedRecord": "ردیف",
+    "rowLabel": "ردیف {{row}}",
     "tryAgain": "دوباره تلاش کنید",
     "updated": "به‌روزرسانی شده"
   }

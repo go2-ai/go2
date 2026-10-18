@@ -10,6 +10,8 @@ import IconButton from '@mui/material/IconButton';
 import MuiTab, { type TabProps } from '@mui/material/Tab';
 import { useTheme } from '@mui/material/styles';
 import { useState } from 'react';
+import { useIsTabLoading } from './TabLoadingContext';
+import { TabTitleSpinner } from './TabLoadingIndicator';
 
 interface SortableTabProps extends TabProps {
   tab: Tab;
@@ -26,6 +28,7 @@ export function SortableTab({
   ...rest
 }: SortableTabProps) {
   const [isHovered, setIsHovered] = useState(false);
+  const loading = useIsTabLoading(tab.id);
   const theme = useTheme();
   const {
     attributes,
@@ -61,6 +64,7 @@ export function SortableTab({
             zIndex: 2,
           }}
         >
+          <TabTitleSpinner loading={loading} />
           {tab.pinned && (
             <PushPinIcon
               sx={{

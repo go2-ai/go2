@@ -16,6 +16,7 @@
       "edit": "Edit",
       "print": "Print",
       "rename": "Rename",
+      "retry": "Retry",
       "revoke": "Revoke",
       "save": "Save",
       "unarchive": "Unarchive",
@@ -41,6 +42,9 @@
           "number": "Number",
           "text": "Text"
         }
+      },
+      "tabs": {
+        "loading": "Loading…"
       }
     },
     "confirmPassword": "Password repeat",

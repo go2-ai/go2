@@ -7,6 +7,7 @@ import { useGetRolesQuery, useGetRoleQuery } from './rolesApi';
 import { RolesTable } from './components/RolesTable';
 import { RoleModal } from './components/RoleModal';
 import type { Role } from './rolesApi';
+import { useTabLoading } from '../../components/tabs/TabLoadingContext';
 
 export const RolesPage = () => {
   const { t: tRoles } = useTranslation('roles');
@@ -21,6 +22,7 @@ export const RolesPage = () => {
     orgId.toString(),
     { skip: !orgId || orgId === 0 }
   );
+  useTabLoading(isLoading);
 
   const { data: selectedRole } = useGetRoleQuery(
     { organizationId: orgId.toString(), id: selectedRoleId! },

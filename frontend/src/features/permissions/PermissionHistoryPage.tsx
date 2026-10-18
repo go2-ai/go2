@@ -27,6 +27,7 @@ import {
 import { useTranslation } from 'react-i18next';
 import { formatDistanceToNow, format } from 'date-fns';
 import { useGetPermissionVersionsQuery, useGetGrantablePermissionsQuery } from './permissionsApi';
+import { useTabLoading } from '../../components/tabs/TabLoadingContext';
 
 const granteeTypeIcons = {
   Member: PersonIcon,
@@ -72,6 +73,7 @@ export const PermissionHistoryPage = () => {
 
   // ─── Loading / Error States ─────────────────────────────────────────────
 
+  useTabLoading(isLoading);
   if (isLoading) {
     return (
       <Container maxWidth={false} sx={{ py: 4 }}>

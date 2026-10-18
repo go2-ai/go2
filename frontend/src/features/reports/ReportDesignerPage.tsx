@@ -13,6 +13,7 @@ import { REPORT_FONT_FAMILIES } from './reportEngine';
 import { useReportData } from './useReportData';
 import { useReportSetup } from './useReportSetup';
 import { parseId, useTabSearchParams } from './useTabSearchParams';
+import { useTabLoading } from '../../components/tabs/TabLoadingContext';
 
 // Path: report-designer?template_id=1&record_id=42 (record_id is optional and
 // provides sample data for field detection and the preview).
@@ -62,6 +63,7 @@ export const ReportDesignerPage = () => {
   }
 
   // The designer reads its template and sample data once, so wait for both.
+  useTabLoading(templateLoading || sample.isLoading || !fontsReady);
   if (templateLoading || sample.isLoading || !fontsReady) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>

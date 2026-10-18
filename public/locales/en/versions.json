@@ -8,6 +8,8 @@
     "historyDescription": "Change log of {{type}} \"{{name}}\"",
     "historyTabTitle": "History ({{name}})",
     "noVersionsFound": "No changes recorded yet.",
+    "relatedRecord": "Item",
+    "rowLabel": "Row {{row}}",
     "tryAgain": "Try again",
     "updated": "Updated"
   }

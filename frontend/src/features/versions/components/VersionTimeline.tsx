@@ -31,6 +31,8 @@ import type { Version, VersionChange } from '../types';
 
 interface VersionTimelineProps {
   versions: Version[];
+  /** Type of the record whose log is shown; versions of other types are its child records. */
+  recordType?: string;
   isLoading?: boolean;
   error?: any;
   onRetry?: () => void;
@@ -41,6 +43,7 @@ const EXCLUDED_FIELDS = ['created_at', 'updated_at'];
 
 export const VersionTimeline: React.FC<VersionTimelineProps> = ({
   versions,
+  recordType,
   isLoading,
   error,
   onRetry,
@@ -208,6 +211,15 @@ export const VersionTimeline: React.FC<VersionTimelineProps> = ({
                       size="small"
                       color={getEventColor(version.event) as any}
                     />
+                    {recordType && version.item_type !== recordType && (
+                      <Chip
+                        label={version.subrecord_label?.row != null
+                          ? t('rowLabel', { row: version.subrecord_label.row })
+                          : t('relatedRecord')}
+                        size="small"
+                        variant="outlined"
+                      />
+                    )}
                   </Box>
 
                   {filteredChanges.length > 0 && (

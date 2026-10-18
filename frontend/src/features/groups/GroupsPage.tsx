@@ -8,6 +8,7 @@ import { useGetGroupsQuery, useGetGroupQuery } from './groupsApi';
 import { GroupsTable } from './components/GroupsTable';
 import { GroupModal } from './components/GroupModal';
 import type { Group } from './groupsApi';
+import { useTabLoading } from '../../components/tabs/TabLoadingContext';
 
 export const GroupsPage = () => {
   const { t: tGroups } = useTranslation('groups');
@@ -21,6 +22,7 @@ export const GroupsPage = () => {
     orgId,
     { skip: !orgId || orgId === 0 }
   );
+  useTabLoading(isLoading);
 
   const { data: selectedGroup } = useGetGroupQuery(
     { organizationId: orgId, id: selectedGroupId! },

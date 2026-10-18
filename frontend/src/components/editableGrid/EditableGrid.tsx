@@ -1,89 +1,255 @@
 // frontend/src/components/editableGrid/EditableGrid.tsx
-import { useMemo, useState, useRef } from 'react';
+import { memo, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { Box, Paper, Button, Typography } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
-import { DndContext, closestCenter, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
+import { DndContext, closestCenter, PointerSensor, useSensor, useSensors, type DragEndEvent } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy, useSortable, arrayMove } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { useVirtualizer } from '@tanstack/react-virtual';
-import type { ColumnDef, EditableGridProps, GridRow } from './types';
+import {
+  CELL_DISPLAY_ATTR,
+  CELL_FOCUSABLE_SELECTOR,
+  GRID_CELL_ATTR,
+  type ColumnDef,
+  type EditableGridProps,
+  type GridRow,
+} from './types';
 import { useEditableGrid } from './useEditableGrid';
-import { RowHeader } from './RowHeader';
+import { RowHeader, ROW_HEADER_WIDTH } from './RowHeader';
 import { RowContextMenu, type ContextMenuAction } from './RowContextMenu';
 import { ResizableColumnHeader } from './ResizableColumnHeader';
-import { useTheme } from '@mui/material/styles';
-import { keyframes } from '@mui/material/styles';
+import { alpha, useTheme } from '@mui/material/styles';
+import { creditColor, debitColor } from '../../theme/amountColors';
+import './editableGrid.css';
 
-interface SortableRowProps {
-  row: GridRow;
+/** Rows rendered above/below the viewport. */
+const OVERSCAN = 3;
+
+interface GridCellProps<T extends GridRow> {
+  row: T;
   rowIndex: number;
-  hasError: boolean;
-  errorMessage?: string | null;
-  isSelected?: boolean;
-  onContextMenu: (e: React.MouseEvent) => void;
-  onRowMouseDown?: (e: React.MouseEvent) => void;
-  children: React.ReactNode;
+  col: ColumnDef<T>;
+  width: number;
+  readOnly: boolean;
+  isActive: boolean;
+  isBlinking: boolean;
+  onCellMouseDown: (rowId: string, colKey: string, e: React.MouseEvent) => void;
+  onCellFocus: (rowId: string, colKey: string) => void;
 }
 
-const SortableRow = ({
+/**
+ * A cell. With `col.renderDisplay` it shows a cheap read-only view and only
+ * mounts the editor (`col.renderCell`) while it is the active cell; focus is
+ * then moved into the editor.
+ */
+const GridCell = <T extends GridRow>({
   row,
   rowIndex,
-  hasError,
-  errorMessage,
-  isSelected,
-  onContextMenu,
-  onRowMouseDown,
-  children,
-}: SortableRowProps) => {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: row.id });
+  col,
+  width,
+  readOnly,
+  isActive,
+  isBlinking,
+  onCellMouseDown,
+  onCellFocus,
+}: GridCellProps<T>) => {
+  const ref = useRef<HTMLDivElement | null>(null);
+  // Set when the user activates this cell (click/Tab), so the editor that
+  // mounts next takes the focus.
+  const wantsFocus = useRef(false);
 
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    opacity: isDragging ? 0.4 : 1,
-    display: 'flex',
-    height: '100%',
+  const hasDisplay = !!col.renderDisplay;
+  const editable = !readOnly && (col.isEditable?.(row) ?? true);
+  const editing = !hasDisplay || (isActive && editable);
+
+  useLayoutEffect(() => {
+    if (!hasDisplay || !editing || !wantsFocus.current) return;
+    wantsFocus.current = false;
+    const target = ref.current?.querySelector(CELL_FOCUSABLE_SELECTOR) as HTMLElement | null;
+    if (!target || target.hasAttribute(CELL_DISPLAY_ATTR)) return;
+    target.focus({ preventScroll: true });
+    if (target instanceof HTMLInputElement) target.select();
+  }, [hasDisplay, editing]);
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if (hasDisplay && !editing && editable && e.button === 0) {
+      // We move the focus into the editor ourselves once it is mounted; the
+      // default focus would land on the display, which is replaced.
+      e.preventDefault();
+      wantsFocus.current = true;
+    }
+    onCellMouseDown(row.id, col.key, e);
   };
 
+  const handleFocus = () => {
+    if (hasDisplay && !editing && editable) wantsFocus.current = true;
+    onCellFocus(row.id, col.key);
+  };
+
+  const className = [
+    'eg-cell',
+    `eg-cell--${col.align ?? 'left'}`,
+    readOnly && 'eg-cell--readonly',
+    isActive && 'eg-cell--active',
+    isBlinking && 'eg-cell--blink',
+  ].filter(Boolean).join(' ');
+
+  let content: React.ReactNode;
+  if (editing) {
+    content = col.renderCell ? col.renderCell(row) : String(row[col.key] ?? '');
+  } else {
+    content = (
+      <div
+        {...{ [CELL_DISPLAY_ATTR]: '' }}
+        className={`eg-display${editable ? '' : ' eg-display--disabled'}`}
+        tabIndex={editable ? 0 : -1}
+        aria-disabled={editable ? undefined : true}
+      >
+        {col.renderDisplay!(row)}
+      </div>
+    );
+  }
+
   return (
-    <div ref={setNodeRef} style={style} {...attributes}>
-      <RowHeader
-        rowIndex={rowIndex}
-        hasError={hasError}
-        errorMessage={errorMessage}
-        isSelected={isSelected}
-        onContextMenu={onContextMenu}
-        onMouseDown={onRowMouseDown}
-        dragHandleProps={listeners}
-      />
-      {children}
+    <div
+      ref={ref}
+      {...{ [GRID_CELL_ATTR]: '' }}
+      data-row-id={row.id}
+      data-row-index={rowIndex}
+      data-col-key={col.key}
+      className={className}
+      style={{ width }}
+      onMouseDown={handleMouseDown}
+      onFocus={handleFocus}
+    >
+      {content}
     </div>
   );
 };
 
-export const EditableGrid = <T extends GridRow = GridRow>({
-  rows,
+interface GridRowViewProps<T extends GridRow> {
+  row: T;
+  rowIndex: number;
+  start: number;
+  rowHeight: number;
+  columns: ColumnDef<T>[];
+  columnWidths: Record<string, number>;
+  readOnly: boolean;
+  errorMessage: string | null;
+  isSelected: boolean;
+  /** Key of the active cell when it is in this row, otherwise null. */
+  activeCellKey: string | null;
+  /** Comma-separated keys of blinking cells in this row ('' if none). */
+  blinkingKeys: string;
+  onCellMouseDown: (rowId: string, colKey: string, e: React.MouseEvent) => void;
+  onCellFocus: (rowId: string, colKey: string) => void;
+  onHeaderMouseDown: (rowId: string, e: React.MouseEvent) => void;
+  onRowContextMenu: (rowId: string, e: React.MouseEvent) => void;
+}
+
+/**
+ * One grid row. Memoized so that a change to one row (or to the active cell)
+ * only re-renders the rows it affects. All props must be primitives, stable
+ * callbacks, or objects whose identity only changes when their content does.
+ */
+const GridRowViewInner = <T extends GridRow>({
+  row,
+  rowIndex,
+  start,
+  rowHeight,
   columns,
-  onChange,
+  columnWidths,
+  readOnly,
+  errorMessage,
+  isSelected,
+  activeCellKey,
+  blinkingKeys,
+  onCellMouseDown,
+  onCellFocus,
+  onHeaderMouseDown,
   onRowContextMenu,
-  rowHeight = 36,
-  headerHeight = 36,
-  readOnly = false,
-  getRowError,
-  onCellClick,
-  onActiveCellChange,
-  blinkingCells,
-  onAddRowAfter,
-  onAddRowBefore,
-  onDuplicateRow,
-  onDeleteRow,
-  onAddRow,
-  emptyStateLabel,
-  selectedRowId,
-  selectedCellKey,
-  selectedRowIds,
-  footer,
-}: EditableGridProps<T>) => {
+}: GridRowViewProps<T>) => {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: row.id });
+  const blinking = blinkingKeys ? blinkingKeys.split(',') : [];
+
+  return (
+    <div
+      className={`eg-row${isSelected ? ' eg-row--selected' : ''}`}
+      // Position via inline style: as an `sx` value every scroll offset
+      // would generate (and keep) a new CSS rule.
+      style={{ transform: `translateY(${start}px)`, height: rowHeight }}
+    >
+      <div
+        ref={setNodeRef}
+        className="eg-row-inner"
+        style={{
+          transform: CSS.Transform.toString(transform),
+          transition,
+          opacity: isDragging ? 0.4 : 1,
+        }}
+        {...attributes}
+        // Focusable on click (so the row can be the target of row-level
+        // shortcuts) but kept out of the Tab order.
+        tabIndex={-1}
+        data-grid-row={row.id}
+      >
+        <RowHeader
+          rowIndex={rowIndex}
+          hasError={!!errorMessage}
+          errorMessage={errorMessage}
+          isSelected={isSelected}
+          onContextMenu={(e) => onRowContextMenu(row.id, e)}
+          onMouseDown={(e) => onHeaderMouseDown(row.id, e)}
+          dragHandleProps={listeners}
+        />
+        {columns.map((col) => (
+          <GridCell
+            key={col.key}
+            row={row}
+            rowIndex={rowIndex}
+            col={col}
+            width={columnWidths[col.key] ?? col.width}
+            readOnly={readOnly}
+            isActive={activeCellKey === col.key}
+            isBlinking={blinking.includes(col.key)}
+            onCellMouseDown={onCellMouseDown}
+            onCellFocus={onCellFocus}
+          />
+        ))}
+      </div>
+    </div>
+  );
+};
+
+const GridRowView = memo(GridRowViewInner) as typeof GridRowViewInner;
+
+export const EditableGrid = <T extends GridRow = GridRow>(props: EditableGridProps<T>) => {
+  const {
+    rows,
+    columns,
+    onChange,
+    onRowContextMenu,
+    rowHeight = 36,
+    headerHeight = 36,
+    readOnly = false,
+    getRowError,
+    blinkingCells,
+    onAddRowAfter,
+    onAddRowBefore,
+    onDuplicateRow,
+    onDeleteRow,
+    onAddRow,
+    emptyStateLabel,
+    selectedRowId,
+    selectedCellKey,
+    selectedRowIds,
+    footer,
+    contextMenuActions,
+    apiRef,
+    onSelectAll,
+    selectAllLabel,
+  } = props;
+
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }));
 
   const {
@@ -93,19 +259,20 @@ export const EditableGrid = <T extends GridRow = GridRow>({
     addRowAfter,
     addRowBefore,
     deleteRow,
-  } = useEditableGrid(rows as T[], onChange as any);
+  } = useEditableGrid(rows as T[], onChange as (rows: T[]) => void);
 
   const [columnWidths, setColumnWidths] = useState<Record<string, number>>({});
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const theme = useTheme();
 
-  const getColumnWidth = (col: ColumnDef<T>): number => {
-    return columnWidths[col.key] ?? col.width;
-  };
+  // Latest props for the stable callbacks handed to memoized rows.
+  const latest = useRef(props);
+  latest.current = props;
+
+  const getColumnWidth = (col: ColumnDef<T>): number => columnWidths[col.key] ?? col.width;
 
   const totalWidth = useMemo(
-    () => 40 + columns.reduce((sum, col) => sum + getColumnWidth(col), 0),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    () => ROW_HEADER_WIDTH + columns.reduce((sum, col) => sum + (columnWidths[col.key] ?? col.width), 0),
     [columns, columnWidths]
   );
 
@@ -113,10 +280,27 @@ export const EditableGrid = <T extends GridRow = GridRow>({
     count: rows.length,
     getScrollElement: () => scrollRef.current,
     estimateSize: () => rowHeight,
-    overscan: 8,
+    overscan: OVERSCAN,
+    // The sticky header sits above the rows inside the scroll container
+    scrollMargin: headerHeight,
+    scrollPaddingStart: headerHeight,
   });
 
-  const handleDragEnd = (event: any) => {
+  useEffect(() => {
+    if (!apiRef) return;
+    apiRef.current = {
+      scrollToRow: (index: number) => rowVirtualizer.scrollToIndex(index, { align: 'auto' }),
+    };
+    return () => { apiRef.current = null; };
+  }, [apiRef, rowVirtualizer]);
+
+  // dnd-kit recomputes its context whenever `items` changes identity, which
+  // would re-render every row; only give it a new array when ids change.
+  const idsKey = rows.map(r => r.id).join('|');
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const itemIds = useMemo(() => rows.map(r => r.id), [idsKey]);
+
+  const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
     if (!over || active.id === over.id) return;
 
@@ -128,118 +312,116 @@ export const EditableGrid = <T extends GridRow = GridRow>({
     onChange(newRows as T[]);
   };
 
-  const handleDuplicate = (rowId: string) => {
-    if (onDuplicateRow) {
-      onDuplicateRow(rowId);
-    } else {
-      duplicateRow(rowId);
-    }
-  };
-
-  const handleAddAfter = (rowId: string) => {
-    if (onAddRowAfter) {
-      onAddRowAfter(rowId);
-    } else {
-      addRowAfter(rowId, {});
-    }
-  };
-
-  const handleAddBefore = (rowId: string) => {
-    if (onAddRowBefore) {
-      onAddRowBefore(rowId);
-    } else {
-      addRowBefore(rowId, {});
-    }
-  };
-
-  const handleDelete = (rowId: string) => {
-    if (onDeleteRow) {
-      onDeleteRow(rowId);
-    } else {
-      deleteRow(rowId);
-    }
-  };
-
-  const handleDeleteMultiple = (ids: Set<string>) => {
-    const newRows = rows.filter(r => !ids.has(r.id));
-    onChange(newRows.map((r, i) => ({ ...r, row: i + 1 })) as T[]);
-  };
-
-  const buildContextActions = (row: T): ContextMenuAction[] => {
+  const buildDefaultActions = (row: T): ContextMenuAction[] => {
     const actions: ContextMenuAction[] = [
-      { label: 'Duplicate', onClick: () => handleDuplicate(row.id) },
-      { label: 'Add Row After', onClick: () => handleAddAfter(row.id) },
-      { label: 'Add Row Before', onClick: () => handleAddBefore(row.id) },
-      { label: 'Delete Row', onClick: () => handleDelete(row.id) },
+      { label: 'Duplicate', onClick: () => (onDuplicateRow ? onDuplicateRow(row.id) : duplicateRow(row.id)) },
+      { label: 'Add Row After', onClick: () => (onAddRowAfter ? onAddRowAfter(row.id) : addRowAfter(row.id, {})) },
+      { label: 'Add Row Before', onClick: () => (onAddRowBefore ? onAddRowBefore(row.id) : addRowBefore(row.id, {})) },
+      { label: 'Delete Row', onClick: () => (onDeleteRow ? onDeleteRow(row.id) : deleteRow(row.id)) },
     ];
 
     const isMultiSelected = !!selectedRowIds && selectedRowIds.size > 1 && selectedRowIds.has(row.id);
     if (isMultiSelected) {
       actions.push({
         label: `Delete Selected Rows (${selectedRowIds!.size})`,
-        onClick: () => handleDeleteMultiple(selectedRowIds!),
+        onClick: () => {
+          const newRows = rows.filter(r => !selectedRowIds!.has(r.id));
+          onChange(newRows.map((r, i) => ({ ...r, row: i + 1 })) as T[]);
+        },
       });
     }
 
-    if (onRowContextMenu) {
-      return [...onRowContextMenu(row), ...actions];
-    }
-
-    return actions;
+    return onRowContextMenu ? [...onRowContextMenu(row), ...actions] : actions;
   };
 
   const contextActions = useMemo(() => {
     if (!contextMenu) return [];
     const row = rows.find(r => r.id === contextMenu.rowId);
     if (!row) return [];
-    return buildContextActions(row);
+    return contextMenuActions ? contextMenuActions(row) : buildDefaultActions(row);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [contextMenu, rows, selectedRowIds]);
+  }, [contextMenu, rows, selectedRowIds, contextMenuActions]);
 
+  // ── Stable callbacks for memoized rows ────────────────────────────────
+  const handleCellMouseDown = useCallback((rowId: string, colKey: string, e: React.MouseEvent) => {
+    latest.current.onCellClick?.(rowId, colKey, e);
+  }, []);
 
-  const cellHighlight = keyframes`
-    0% {
-      background-color: rgba(255, 193, 7, 0.45);
-      box-shadow: inset 0 0 0 2px rgba(255, 193, 7, 0.65);
+  const handleCellFocus = useCallback((rowId: string, colKey: string) => {
+    latest.current.onActiveCellChange?.(rowId, colKey);
+  }, []);
+
+  const handleHeaderMouseDown = useCallback((rowId: string, e: React.MouseEvent) => {
+    const { selectedRowIds: ids, selectedRowId: activeId, selectedCellKey: cellKey, columns: cols } = latest.current;
+    if (e.button === 2) {
+      const alreadySelected = ids ? ids.has(rowId) : activeId === rowId;
+      if (alreadySelected) return;
     }
-    100% {
-      background-color: rgba(255, 193, 7, 0);
-      box-shadow: inset 0 0 0 2px rgba(255, 193, 7, 0);
+    if (latest.current.onRowHeaderMouseDown) {
+      latest.current.onRowHeaderMouseDown(rowId, e);
+      return;
     }
-  `;
+    latest.current.onCellClick?.(rowId, cellKey ?? cols[0]?.key ?? '', e);
+  }, []);
+
+  const handleRowContextMenu = useCallback((rowId: string, e: React.MouseEvent) => {
+    e.preventDefault();
+    setContextMenu({ x: e.clientX, y: e.clientY, rowId });
+  }, [setContextMenu]);
 
   const isRowSelected = (rowId: string): boolean =>
     selectedRowIds ? selectedRowIds.has(rowId) : selectedRowId === rowId;
 
+  // Theme colors for the plain-CSS rows/cells (editableGrid.css)
+  const cssVars = useMemo(() => ({
+    '--eg-divider': theme.palette.divider,
+    '--eg-hover': theme.palette.action.hover,
+    '--eg-active': theme.palette.secondary.main,
+    '--eg-selected-bg': `${theme.palette.primary.dark}22`,
+    '--eg-header-selected-bg': theme.palette.action.selected,
+    '--eg-primary': theme.palette.primary.main,
+    '--eg-error': theme.palette.error.main,
+    '--eg-text': theme.palette.text.primary,
+    '--eg-text-secondary': theme.palette.text.secondary,
+    '--eg-text-disabled': theme.palette.text.disabled,
+    '--eg-disabled-bg': theme.palette.action.disabledBackground,
+    '--eg-icon': theme.palette.action.active,
+    '--eg-debit': debitColor(theme),
+    '--eg-credit': creditColor(theme),
+    '--eg-paper': theme.palette.background.paper,
+    // Font size of MUI inputs, so read-only cells can match the editors
+    '--eg-input-font-size': theme.typography.body1.fontSize,
+    '--eg-header-bg': alpha(theme.palette.text.primary, theme.palette.mode === 'dark' ? 0.06 : 0.04),
+    '--eg-scroll-thumb': alpha(theme.palette.text.secondary, 0.3),
+    '--eg-scroll-thumb-hover': alpha(theme.palette.text.secondary, 0.5),
+    '--eg-chip-bg': alpha(theme.palette.text.primary, 0.08),
+  }) as React.CSSProperties, [theme]);
+
   return (
     <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-      <SortableContext items={rows.map(r => r.id)} strategy={verticalListSortingStrategy}>
-        <Paper sx={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-          <Box sx={{ flex: 1, minHeight: 0, overflowX: 'auto', overflowY: 'hidden', display: 'flex', flexDirection: 'column' }}>
-            <Box sx={{ width: totalWidth, flexShrink: 0, flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
+      <SortableContext items={itemIds} strategy={verticalListSortingStrategy}>
+        <Paper style={cssVars} sx={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+          {/* One scroll container for both directions, so the vertical
+              scrollbar is always visible; the header sticks to its top. */}
+          <div ref={scrollRef} className="eg-scroll">
+            <div className="eg-content" style={{ width: totalWidth }}>
               {/* Header */}
-              <Box sx={{
-                display: 'flex',
-                height: headerHeight,
-                borderBottom: 1,
-                borderColor: 'divider',
-                fontWeight: 'bold',
-                flexShrink: 0,
-                bgcolor: 'background.paper',
-              }}>
-                <Box sx={{ width: 40, flexShrink: 0 }} />
+              <div className="eg-header" style={{ height: headerHeight }}>
+                <div className="eg-header__corner" style={{ width: ROW_HEADER_WIDTH }}>
+                  {onSelectAll && rows.length > 0 ? (
+                    <button
+                      type="button"
+                      className="eg-select-all"
+                      onClick={onSelectAll}
+                      aria-label={selectAllLabel}
+                      title={selectAllLabel}
+                    >
+                      #
+                    </button>
+                  ) : '#'}
+                </div>
                 {columns.map((col) => (
-                  <Box
-                    key={col.key}
-                    sx={{
-                      width: getColumnWidth(col),
-                      display: 'flex',
-                      alignItems: 'center',
-                      borderRight: 1,
-                      borderColor: 'divider',
-                      flexShrink: 0,
-                    }}
-                  >
+                  <div key={col.key} className="eg-header__cell" style={{ width: getColumnWidth(col) }}>
                     <ResizableColumnHeader
                       title={col.title}
                       width={getColumnWidth(col)}
@@ -248,13 +430,13 @@ export const EditableGrid = <T extends GridRow = GridRow>({
                         setColumnWidths(prev => ({ ...prev, [col.key]: newWidth }));
                       }}
                     />
-                  </Box>
+                  </div>
                 ))}
-              </Box>
+              </div>
 
               {/* Rows */}
               {rows.length === 0 ? (
-                <Box sx={{ flex: 1, minHeight: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', p: 4 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', p: 4 }}>
                   <Button
                     variant="outlined"
                     startIcon={<AddIcon />}
@@ -265,85 +447,34 @@ export const EditableGrid = <T extends GridRow = GridRow>({
                   </Button>
                 </Box>
               ) : (
-                <Box ref={scrollRef} sx={{ flex: 1, minHeight: 0, overflowY: 'auto', overflowX: 'hidden', position: 'relative' }}>
+                <>
                   <div style={{ height: rowVirtualizer.getTotalSize(), position: 'relative', width: '100%' }}>
                     {rowVirtualizer.getVirtualItems().map((virtualRow) => {
                       const row = rows[virtualRow.index];
-                      const errorMessage = getRowError?.(row);
-                      const selected = isRowSelected(row.id);
+                      const blinkingKeys = blinkingCells && blinkingCells.size > 0
+                        ? columns.filter(c => blinkingCells.has(`${row.id}-${c.key}`)).map(c => c.key).join(',')
+                        : '';
 
                       return (
-                        <Box
+                        <GridRowView
                           key={row.id}
-                          sx={{
-                            position: 'absolute',
-                            top: 0,
-                            left: 0,
-                            width: '100%',
-                            transform: `translateY(${virtualRow.start}px)`,
-                            display: 'flex',
-                            height: rowHeight,
-                            borderBottom: 1,
-                            borderColor: 'divider',
-                            backgroundColor: selected ? `${theme.palette.primary.dark}22` : 'transparent',
-                          }}
-                        >
-                          <SortableRow
-                            row={row}
-                            rowIndex={virtualRow.index}
-                            hasError={!!errorMessage}
-                            errorMessage={errorMessage}
-                            isSelected={selected}
-                            onRowMouseDown={(e) => {
-                              if (e.button === 2) {
-                                const alreadySelected = selectedRowIds
-                                  ? selectedRowIds.has(row.id)
-                                  : selectedRowId === row.id;
-                                if (alreadySelected) return;
-                              }
-                              onCellClick?.(row.id, selectedCellKey ?? columns[0]?.key ?? '', e);
-                            }}
-                            onContextMenu={(e) => {
-                              e.preventDefault();
-                              setContextMenu({ x: e.clientX, y: e.clientY, rowId: row.id });
-                            }}
-                          >
-                            {columns.map((col) => {
-                              const cellId = `${row.id}-${col.key}`;
-                              const isBlinking = blinkingCells?.has(cellId) ?? false;
-                              const isSelectedCell = selectedRowId === row.id && selectedCellKey === col.key;
-                              return (
-                                <Box
-                                  key={col.key}
-                                  sx={{
-                                    width: getColumnWidth(col),
-                                    px: 0,
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: col.align === 'right' ? 'flex-end' : col.align === 'center' ? 'center' : 'flex-start',
-                                    borderRight: 1,
-                                    borderColor: 'divider',
-                                    cursor: readOnly ? 'default' : 'pointer',
-                                    flexShrink: 0,
-                                    overflow: 'hidden',
-                                    transition: 'box-shadow 0.08s ease-in-out, background-color 0.08s ease-in-out',
-                                    ...(isSelectedCell && {
-                                      boxShadow: (theme) => `inset 0 0 0 2px ${theme.palette.secondary.main}`,
-                                      bgcolor: 'action.hover',
-                                    }),
-                                    ...(isBlinking && {
-                                      animation: `${cellHighlight} 1.4s ease-out`,
-                                    }),
-                                  }}
-                                  onMouseDown={(e) => onCellClick?.(row.id, col.key, e)}
-                                  onFocus={() => onActiveCellChange?.(row.id, col.key)}
-                                >
-                                  {col.renderCell ? col.renderCell(row) : String(row[col.key] ?? '')}
-                                </Box>
-                              );
-                            })}
-                          </SortableRow>
-                        </Box>
+                          row={row}
+                          rowIndex={virtualRow.index}
+                          // Offsets include the header (scrollMargin)
+                          start={virtualRow.start - headerHeight}
+                          rowHeight={rowHeight}
+                          columns={columns}
+                          columnWidths={columnWidths}
+                          readOnly={readOnly}
+                          errorMessage={getRowError?.(row) ?? null}
+                          isSelected={isRowSelected(row.id)}
+                          activeCellKey={selectedRowId === row.id ? (selectedCellKey ?? null) : null}
+                          blinkingKeys={blinkingKeys}
+                          onCellMouseDown={handleCellMouseDown}
+                          onCellFocus={handleCellFocus}
+                          onHeaderMouseDown={handleHeaderMouseDown}
+                          onRowContextMenu={handleRowContextMenu}
+                        />
                       );
                     })}
                   </div>
@@ -356,7 +487,7 @@ export const EditableGrid = <T extends GridRow = GridRow>({
                         display: 'flex',
                         alignItems: 'center',
                         height: rowHeight,
-                        pl: '8px',
+                        paddingInlineStart: '8px',
                         color: 'text.secondary',
                         cursor: 'pointer',
                         borderBottom: 1,
@@ -365,7 +496,7 @@ export const EditableGrid = <T extends GridRow = GridRow>({
                         '&:hover': {
                           bgcolor: 'action.hover',
                           color: 'primary.main',
-                          pl: '10px',
+                          paddingInlineStart: '10px',
                         },
                       }}
                     >
@@ -375,10 +506,10 @@ export const EditableGrid = <T extends GridRow = GridRow>({
                       </Typography>
                     </Box>
                   )}
-                </Box>
+                </>
               )}
-            </Box>
-          </Box>
+            </div>
+          </div>
 
           {/* Footer */}
           {footer && (

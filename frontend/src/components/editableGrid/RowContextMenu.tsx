@@ -1,9 +1,11 @@
-import { Menu, MenuItem } from '@mui/material';
+import { Menu, MenuItem, ListItemText, Typography } from '@mui/material';
 
 export interface ContextMenuAction {
   label: string;
   onClick: () => void;
   disabled?: boolean;
+  /** Keyboard shortcut hint shown on the right, e.g. "F6". */
+  shortcut?: string;
 }
 
 interface RowContextMenuProps {
@@ -25,8 +27,14 @@ export const RowContextMenu = ({ anchorPoint, actions, onClose }: RowContextMenu
           key={index}
           disabled={action.disabled}
           onClick={() => { action.onClick(); onClose(); }}
+          dense
         >
-          {action.label}
+          <ListItemText>{action.label}</ListItemText>
+          {action.shortcut && (
+            <Typography variant="body2" color="text.secondary" sx={{ ml: 3, fontFamily: 'monospace' }}>
+              {action.shortcut}
+            </Typography>
+          )}
         </MenuItem>
       ))}
     </Menu>

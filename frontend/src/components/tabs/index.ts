@@ -8,4 +8,6 @@ export { TabWorkspace } from './TabWorkspace';
 export { RouteSynchronizer } from './RouteSynchronizer';
 export { TabProvider, useTabManager } from './useTabManager';
 export { useCurrentTabId } from './TabIdContext';
+export { TabLoadingProvider, useTabLoading, useIsTabLoading } from './TabLoadingContext';
+export { PageLoading } from './TabLoadingIndicator';
 export * from './types';

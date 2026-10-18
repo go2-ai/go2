@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react';
 import { TextField, useTheme } from '@mui/material';
+import { creditColor, debitColor } from '../../../../../theme/amountColors';
+import { useCellBuffer, parseNumericText } from './useCellBuffer';
 
 interface CurrencyAmountCellProps {
   value: number | null;
@@ -26,45 +27,13 @@ export const CurrencyAmountCell = ({
     return pattern.test(raw);
   };
 
-  const [isFocused, setIsFocused] = useState(false);
-  const [inputValue, setInputValue] = useState<string>(
-    value === null || value === undefined ? '' : String(value)
-  );
-
-  useEffect(() => {
-    if (!isFocused) {
-      setInputValue(value === null || value === undefined ? '' : String(value));
-    }
-  }, [value, isFocused]);
-
-  const handleFocus = (e: React.FocusEvent<HTMLInputElement>) => {
-    setIsFocused(true);
-    setInputValue(value === null || value === undefined ? '' : String(value));
-    const input = e.target;
-    requestAnimationFrame(() => input.select());
-  };
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const raw = e.target.value.replace(/,/g, '');
-
-    if (!isValidPartialNumber(raw)) {
-      return;
-    }
-
-    setInputValue(raw);
-  };
-
-  const handleBlur = () => {
-    setIsFocused(false);
-
-    let parsed: number | null = null;
-    if (inputValue !== '' && inputValue !== '-') {
-      const num = parseFloat(inputValue);
-      parsed = isNaN(num) ? null : num;
-    }
-
-    onChange?.(parsed);
-  };
+  const { isFocused, buffer, handlers, dirtyAttr } = useCellBuffer({
+    value,
+    toEditText: (val) => (val === null || val === undefined ? '' : String(val)),
+    isValidPartial: isValidPartialNumber,
+    parse: parseNumericText,
+    onCommit: (parsed) => onChange?.(parsed),
+  });
 
   const formatDisplay = (val: number | null): string => {
     if (val === null || val === undefined) return '';
@@ -76,19 +45,18 @@ export const CurrencyAmountCell = ({
     })}`;
   };
 
-  const colorValue = isCredit ? theme.palette.primary.light : theme.palette.error.main;
+  const colorValue = isCredit ? creditColor(theme) : debitColor(theme);
 
   return (
     <TextField
-      value={isFocused ? inputValue : formatDisplay(value)}
-      onChange={handleChange}
-      onFocus={handleFocus}
-      onBlur={handleBlur}
+      value={isFocused ? buffer : formatDisplay(value)}
+      {...handlers}
       variant="standard"
       fullWidth
       disabled={disabled}
       error={error}
       inputProps={{
+        ...dirtyAttr,
         style: {
           textAlign: 'right',
           color: colorValue,

@@ -15,7 +15,8 @@ export const versionsApi = createApi({
       recordId: number;
       limit?: number;
     }>({
-      query: ({ organizationId, recordType, recordId, limit = 50 }) => ({
+      // A journal entry's log includes its items, so allow more than one page of 50
+      query: ({ organizationId, recordType, recordId, limit = 200 }) => ({
         url: `/organizations/${organizationId}/versions`,
         params: {
           record_type: recordType,

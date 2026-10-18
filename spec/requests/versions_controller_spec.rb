@@ -126,6 +126,54 @@ RSpec.describe 'Versions API', type: :request do
         end
       end
 
+      response '200', 'Returns a journal entry change log including its items' do
+        include_context 'with org admin user'
+
+        schema type: :array, items: version_schema
+
+        let(:fiscal_year) { create(:fiscal_year, organization:) }
+        let(:account) do
+          category = organization.account_categories.find_by!(identifier: 'CA')
+          ledger = create(:accounting_ledger, account_category: category, code: '10')
+          create(:accounting_account, ledger:, code: '01', name: { en: 'Cash' })
+        end
+        let(:journal_entry) { create(:accounting_journal_entry, organization:, fiscal_year:, date: fiscal_year.start_date) }
+        let(:other_entry) { create(:accounting_journal_entry, organization:, fiscal_year:, date: fiscal_year.start_date) }
+        let(:organization_id) { organization.id }
+        let(:record_type) { 'Accounting::JournalEntry' }
+        let(:record_id) { journal_entry.id }
+
+        let!(:kept_item) { journal_entry.items.create!(row: 1, account:, debit: 100, credit: 0) }
+        let!(:deleted_item) { journal_entry.items.create!(row: 2, account:, debit: 0, credit: 100) }
+        let!(:unrelated_item) { other_entry.items.create!(row: 1, account:, debit: 5, credit: 0) }
+
+        before do
+          kept_item.update!(debit: 150)
+          deleted_item.destroy!
+          # Versions written before metadata existed are still found
+          kept_item.versions.where(event: 'create').update_all(metadata: {})
+        end
+
+        run_test! do |response|
+          data = JSON.parse(response.body)
+          item_versions = data.select { |v| v['item_type'] == 'Accounting::JournalEntryItem' }
+
+          expect(item_versions.map { |v| [ v['item_id'], v['event'] ] }).to contain_exactly(
+            [ kept_item.id, 'create' ], [ kept_item.id, 'update' ],
+            [ deleted_item.id, 'create' ], [ deleted_item.id, 'destroy' ]
+          )
+          expect(data.any? { |v| v['item_type'] == 'Accounting::JournalEntry' }).to be(true)
+          expect(data.none? { |v| v['item_id'] == unrelated_item.id && v['item_type'] == 'Accounting::JournalEntryItem' }).to be(true)
+
+          destroyed = item_versions.find { |v| v['event'] == 'destroy' }
+          expect(destroyed['subrecord_label']).to eq('row' => 2)
+
+          created = item_versions.find { |v| v['item_id'] == kept_item.id && v['event'] == 'create' }
+          account_change = created['changes'].find { |c| c['field'] == 'account_id' }
+          expect(account_change['to']).to eq("#{account.full_code} - Cash")
+        end
+      end
+
       response '400', 'Invalid request - missing parameters' do
         include_context 'with org admin user'
 

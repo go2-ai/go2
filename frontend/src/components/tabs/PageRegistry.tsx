@@ -1,7 +1,9 @@
 // src/components/tabs/PageRegistry.tsx
 
 import { PAGE_DEFINITIONS } from './pageDefinitions';
+import { Suspense } from 'react';
 import { TabIdContext } from './TabIdContext';
+import { PageLoading } from './TabLoadingIndicator';
 import { Box, Typography } from '@mui/material';
 
 export const PAGE_REGISTRY: Record<string, React.ComponentType> = Object.fromEntries(
@@ -22,7 +24,10 @@ export function PageContent({ pageId, tabId }: { pageId: string; tabId?: string 
   return (
     <Box sx={{ height: '100%', width: '100%', overflow: 'auto', bgcolor: 'background.default' }}>
       <TabIdContext.Provider value={tabId ?? null}>
-        <Component />
+        {/* Fallback for pages that load lazily (code splitting) */}
+        <Suspense fallback={<PageLoading />}>
+          <Component />
+        </Suspense>
       </TabIdContext.Provider>
     </Box>
   );

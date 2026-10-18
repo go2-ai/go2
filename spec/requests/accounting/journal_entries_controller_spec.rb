@@ -80,6 +80,8 @@ RSpec.describe 'Accounting::JournalEntries API', openapi_spec: 'v1/accounting.ya
   create_journal_entry_schema = {
     type: :object,
     properties: {
+      active_fiscal_year_id: { type: :integer, example: 1,
+                               description: 'Fiscal year selected in the UI. Writes are only allowed inside it.' },
       date: { type: :string, format: :date, example: '2024-06-15' },
       effective_date: { type: :string, format: :date, example: '2024-06-15' },
       fiscal_year_id: { type: :integer, example: 1 },
@@ -191,6 +193,7 @@ RSpec.describe 'Accounting::JournalEntries API', openapi_spec: 'v1/accounting.ya
         let(:organization_id) { organization.id }
         let(:params) do
           {
+            active_fiscal_year_id: fiscal_year.id,
             date: '2024-06-15',
             effective_date: '2024-06-15',
             fiscal_year_id: fiscal_year.id,
@@ -244,6 +247,7 @@ RSpec.describe 'Accounting::JournalEntries API', openapi_spec: 'v1/accounting.ya
         let(:organization_id) { organization.id }
         let(:params) do
           {
+            active_fiscal_year_id: fiscal_year.id,
             date: nil,
             fiscal_year_id: fiscal_year.id
           }
@@ -346,7 +350,7 @@ RSpec.describe 'Accounting::JournalEntries API', openapi_spec: 'v1/accounting.ya
                  fiscal_year: fiscal_year, date: Date.new(2024, 3, 1))
         end
         let(:id) { je.id }
-        let(:params) { { description_en: 'Updated Entry' } }
+        let(:params) { { active_fiscal_year_id: fiscal_year.id, description_en: 'Updated Entry' } }
 
         before do
           create(:permission, code: Permission::ACCOUNTING_MANAGE_JOURNAL_ENTRIES,
@@ -378,6 +382,9 @@ RSpec.describe 'Accounting::JournalEntries API', openapi_spec: 'v1/accounting.ya
     delete 'Delete a journal entry' do
       tags 'Journal Entries'
       produces 'application/json'
+      parameter name: :active_fiscal_year_id, in: :query, type: :integer, required: true,
+                description: 'Fiscal year selected in the UI. Only entries inside it can be deleted.'
+      let(:active_fiscal_year_id) { fiscal_year.id }
 
       response '200', 'Deleted successfully' do
         schema journal_entry_schema
@@ -395,6 +402,21 @@ RSpec.describe 'Accounting::JournalEntries API', openapi_spec: 'v1/accounting.ya
 
         run_test! do |response|
           expect(Accounting::JournalEntry.find_by(id: je.id)).to be_nil
+        end
+      end
+
+      response '422', 'Approved entries must be unapproved first' do
+        let!(:je) { create_journal_entry_in_state(organization, fiscal_year, account, :approved) }
+        let(:id) { je.id }
+
+        before do
+          create(:permission, code: Permission::ACCOUNTING_MANAGE_JOURNAL_ENTRIES,
+                 grantee: member, organization: organization)
+        end
+
+        run_test! do |response|
+          expect(JSON.parse(response.body)['errors']).to include(/must be unapproved before/)
+          expect(Accounting::JournalEntry.exists?(je.id)).to be(true)
         end
       end
     end

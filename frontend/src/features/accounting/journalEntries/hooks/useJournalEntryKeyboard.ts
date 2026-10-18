@@ -1,224 +1,140 @@
 // frontend/src/features/accounting/journalEntries/hooks/useJournalEntryKeyboard.ts
-import { useEffect, useCallback, useRef } from 'react';
-import type { JournalEntryRow } from '../components/types';
+import { useEffect, useRef } from 'react';
+import {
+  closestCell,
+  hasHighlightedOption,
+  isPopupOpen,
+  isTextEntry,
+} from '../utils/gridNavigation';
 
-interface UseJournalEntryKeyboardProps {
-  rows: JournalEntryRow[];
-  selectedRowId: string | null;
-  selectedCellKey: string | null;
-  selectedRowIds: Set<string>;
-  selectionAnchorId: string | null;
-  onRowsChange: (rows: JournalEntryRow[]) => void;
-  onCellChange: (rowId: string, key: string, value: any) => void;
-  onSelectionChange: (ids: Set<string>, anchorId?: string | null) => void;
-  // Updates which row/cell is "active" (focus ring, F-key target) WITHOUT
-  // touching the multi-row selection set. Used by shift+arrow extension.
-  onActiveCellChange: (rowId: string, cellKey: string) => void;
-  onRowDuplicate: (rowId: string) => void;
-  onRowAddAfter: (rowId: string) => void;
-  onBalance: () => void;
-  onSwapDebitCredit: (rowId: string) => void;
-  onSwapRate: (rowId: string) => void;
+export interface JournalEntryKeyboardActions {
+  copyCellAbove: () => void;      // F4
+  copyRowAbove: () => void;       // F3
+  duplicateRows: () => void;      // F6
+  balance: () => void;            // F8
+  swapRate: () => void;           // F9
+  swapDebitCredit: () => void;    // F10
+  insertRow: () => void;          // Insert, Ctrl+Enter
+  deleteRows: () => void;         // Delete (row mode), Ctrl+Delete
+  undo: () => void;               // Ctrl+Z
+  redo: () => void;               // Ctrl+Y, Ctrl+Shift+Z
+  save: () => void;               // Ctrl+S
+  saveDraft: () => void;          // Ctrl+Alt+S (Ctrl+Shift+S is Edge's web capture)
+  openHelp: () => void;           // Ctrl+/
+  moveVertical: (direction: 1 | -1, extendSelection: boolean) => void; // ↑ ↓ (Shift)
+  moveHorizontal: (direction: 1 | -1) => void;                         // Enter, Shift+Enter
 }
 
-export const useJournalEntryKeyboard = ({
-  rows,
-  selectedRowId,
-  selectedCellKey,
-  selectedRowIds,
-  selectionAnchorId,
-  onRowsChange,
-  onCellChange,
-  onSelectionChange,
-  onActiveCellChange,
-  onRowDuplicate,
-  onRowAddAfter,
-  onBalance,
-  onSwapDebitCredit,
-  onSwapRate,
-}: UseJournalEntryKeyboardProps) => {
-  const rowsRef = useRef(rows);
-  rowsRef.current = rows;
+/** Pending (uncommitted) typing in the cell that holds `el`. */
+const dirtyEditor = (el: Element | null): HTMLElement | null =>
+  (el?.closest('[data-dirty="true"]') as HTMLElement | null) ?? null;
 
-  const selectedRowIdRef = useRef(selectedRowId);
-  selectedRowIdRef.current = selectedRowId;
+/**
+ * Commits what is being typed in the focused cell (cells commit on blur) and
+ * keeps the focus where it was, so a hotkey acts on the typed value.
+ */
+const commitFocusedCell = (el: Element | null) => {
+  if (!(el instanceof HTMLElement) || !dirtyEditor(el)) return;
+  el.blur();
+  el.focus();
+};
 
-  const selectedCellKeyRef = useRef(selectedCellKey);
-  selectedCellKeyRef.current = selectedCellKey;
-
-  const selectedRowIdsRef = useRef(selectedRowIds);
-  selectedRowIdsRef.current = selectedRowIds;
-
-  const selectionAnchorIdRef = useRef(selectionAnchorId);
-  selectionAnchorIdRef.current = selectionAnchorId;
-
-  // Internal clipboard for row copy/paste (Ctrl+C / Ctrl+V).
-  const clipboardRef = useRef<JournalEntryRow[] | null>(null);
-
-  const copyFromAboveCell = useCallback(() => {
-    const rowId = selectedRowIdRef.current;
-    const cellKey = selectedCellKeyRef.current;
-    if (!rowId || !cellKey) return;
-
-    const currentIndex = rowsRef.current.findIndex(r => r.id === rowId);
-    if (currentIndex <= 0) return;
-
-    const aboveRow = rowsRef.current[currentIndex - 1];
-    const value = aboveRow[cellKey as keyof JournalEntryRow];
-    onCellChange(rowId, cellKey, value);
-  }, [onCellChange]);
-
-  const copyFromAboveRow = useCallback(() => {
-    const rowId = selectedRowIdRef.current;
-    if (!rowId) return;
-
-    const currentIndex = rowsRef.current.findIndex(r => r.id === rowId);
-    if (currentIndex <= 0) return;
-
-    const aboveRow = rowsRef.current[currentIndex - 1];
-
-    onCellChange(rowId, 'accountId', aboveRow.accountId);
-    for (let i = 1; i <= 6; i++) {
-      onCellChange(rowId, `center${i}Id`, aboveRow[`center${i}Id` as keyof JournalEntryRow]);
-    }
-    onCellChange(rowId, 'description', { ...aboveRow.description });
-    onCellChange(rowId, 'debit', aboveRow.debit);
-    onCellChange(rowId, 'credit', aboveRow.credit);
-    onCellChange(rowId, 'currencyId', aboveRow.currencyId);
-    onCellChange(rowId, 'rate', aboveRow.rate);
-  }, [onCellChange]);
-
-  // Shift+ArrowUp / Shift+ArrowDown: extend the selection from the anchor
-  // row toward the new active row, keeping every row between anchor and the
-  // new active row selected (including the row the user was already on).
-  const extendSelection = useCallback((direction: 1 | -1) => {
-    const activeId = selectedRowIdRef.current;
-    if (!activeId) return;
-
-    const currentRows = rowsRef.current;
-    const currentIndex = currentRows.findIndex(r => r.id === activeId);
-    if (currentIndex === -1) return;
-
-    const anchorId = selectionAnchorIdRef.current ?? activeId;
-    const anchorIndex = currentRows.findIndex(r => r.id === anchorId);
-    const resolvedAnchorIndex = anchorIndex === -1 ? currentIndex : anchorIndex;
-
-    const newIndex = Math.min(Math.max(currentIndex + direction, 0), currentRows.length - 1);
-    const [start, end] = resolvedAnchorIndex <= newIndex
-      ? [resolvedAnchorIndex, newIndex]
-      : [newIndex, resolvedAnchorIndex];
-
-    const newSelection = new Set(currentRows.slice(start, end + 1).map(r => r.id));
-
-    // Order matters: update the selection set first, then move the active
-    // cell WITHOUT resetting the selection (onActiveCellChange never touches
-    // selectedRowIds — that's the whole point of it existing separately
-    // from the click handler).
-    onSelectionChange(newSelection, currentRows[resolvedAnchorIndex].id);
-    onActiveCellChange(currentRows[newIndex].id, selectedCellKeyRef.current ?? 'account');
-  }, [onSelectionChange, onActiveCellChange]);
-
-  const copySelectedRows = useCallback(() => {
-    const ids = selectedRowIdsRef.current.size > 0
-      ? selectedRowIdsRef.current
-      : new Set(selectedRowIdRef.current ? [selectedRowIdRef.current] : []);
-    if (ids.size === 0) return;
-
-    const copied = rowsRef.current.filter(r => ids.has(r.id));
-    if (copied.length > 0) {
-      clipboardRef.current = copied.map(r => ({ ...r }));
-    }
-  }, []);
-
-  const pasteRows = useCallback(() => {
-    const clip = clipboardRef.current;
-    if (!clip || clip.length === 0) return;
-
-    const currentRows = rowsRef.current;
-    const ids = selectedRowIdsRef.current;
-    let insertAfterIndex = currentRows.length - 1;
-
-    if (ids.size > 0) {
-      const indices = currentRows
-        .map((r, i) => (ids.has(r.id) ? i : -1))
-        .filter(i => i !== -1);
-      if (indices.length > 0) insertAfterIndex = Math.max(...indices);
-    } else if (selectedRowIdRef.current) {
-      const idx = currentRows.findIndex(r => r.id === selectedRowIdRef.current);
-      if (idx !== -1) insertAfterIndex = idx;
-    }
-
-    const pasted = clip.map(r => ({
-      ...r,
-      id: `row-${Date.now()}-${Math.random()}`,
-    }));
-
-    const newRows = [...currentRows];
-    newRows.splice(insertAfterIndex + 1, 0, ...pasted);
-    const renumbered = newRows.map((r, i) => ({ ...r, row: i + 1 }));
-
-    onRowsChange(renumbered);
-    onSelectionChange(new Set(pasted.map(r => r.id)), pasted[0]?.id ?? null);
-    if (pasted[0]) {
-      onActiveCellChange(pasted[0].id, selectedCellKeyRef.current ?? 'account');
-    }
-  }, [onRowsChange, onSelectionChange, onActiveCellChange]);
-
-  const handleKeyDown = useCallback((e: KeyboardEvent) => {
-    const isCtrlOrCmd = e.ctrlKey || e.metaKey;
-
-    if (isCtrlOrCmd && (e.key === 'c' || e.key === 'C')) {
-      e.preventDefault();
-      copySelectedRows();
-      return;
-    }
-    if (isCtrlOrCmd && (e.key === 'v' || e.key === 'V')) {
-      e.preventDefault();
-      pasteRows();
-      return;
-    }
-    if (e.shiftKey && (e.key === 'ArrowUp' || e.key === 'ArrowDown')) {
-      e.preventDefault();
-      extendSelection(e.key === 'ArrowDown' ? 1 : -1);
-      return;
-    }
-
-    switch (e.key) {
-      case 'F4':
-        e.preventDefault();
-        copyFromAboveCell();
-        break;
-      case 'F5':
-        e.preventDefault();
-        copyFromAboveRow();
-        break;
-      case 'F6':
-        e.preventDefault();
-        if (selectedRowIdRef.current) {
-          onRowDuplicate(selectedRowIdRef.current);
-        }
-        break;
-      case 'F8':
-        e.preventDefault();
-        onBalance();
-        break;
-      case 'F9':
-        e.preventDefault();
-        if (selectedRowIdRef.current) {
-          onSwapRate(selectedRowIdRef.current);
-        }
-        break;
-      case 'F10':
-        e.preventDefault();
-        if (selectedRowIdRef.current) {
-          onSwapDebitCredit(selectedRowIdRef.current);
-        }
-        break;
-    }
-  }, [copyFromAboveCell, copyFromAboveRow, onRowDuplicate, onBalance, onSwapDebitCredit, onSwapRate, copySelectedRows, pasteRows, extendSelection]);
+/**
+ * Keyboard shortcuts of the journal entry editor.
+ *
+ * The listener is attached to the editor's root element (not the document):
+ * every open journal entry tab stays mounted in the tab workspace, so a
+ * document listener would apply a hotkey to all of them. Dialogs and popups
+ * are rendered in portals outside the root, so they are naturally excluded.
+ */
+export const useJournalEntryKeyboard = (
+  /** The editor root element (from a callback ref, so it can appear later). */
+  root: HTMLElement | null,
+  actions: JournalEntryKeyboardActions,
+  enabled = true,
+) => {
+  const actionsRef = useRef(actions);
+  actionsRef.current = actions;
 
   useEffect(() => {
-    document.addEventListener('keydown', handleKeyDown, true);
-    return () => document.removeEventListener('keydown', handleKeyDown, true);
-  }, [handleKeyDown]);
+    if (!root || !enabled) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const a = actionsRef.current;
+      const target = e.target as HTMLElement;
+      const inCell = !!closestCell(target);
+      const typing = isTextEntry(target);
+      // Header fields (No, date, description) keep their native keys.
+      const inHeaderField = typing && !inCell;
+      const mod = e.ctrlKey || e.metaKey;
+
+      const handle = (action: () => void) => {
+        e.preventDefault();
+        e.stopPropagation();
+        action();
+      };
+
+      // Ctrl+Alt+S: save as draft. Skipped for AltGr (reported as Ctrl+Alt on
+      // Windows), which some keyboard layouts use to type characters.
+      if (mod && e.altKey && !e.shiftKey && e.code === 'KeyS' && !e.getModifierState('AltGraph')) {
+        return handle(a.saveDraft);
+      }
+
+      if (mod && !e.altKey) {
+        // Physical keys (e.code), so the shortcuts also work with a Persian
+        // keyboard layout, where e.key would be e.g. "س" instead of "s".
+        const key = ({ KeyS: 's', KeyZ: 'z', KeyY: 'y', Slash: '/' } as Record<string, string>)[e.code]
+          ?? e.key.toLowerCase();
+        // Ctrl+Shift+S is left to the browser (Edge web capture, Firefox screenshot)
+        if (key === 's' && !e.shiftKey) return handle(a.save);
+        if (key === '/') return handle(a.openHelp);
+        if (key === 'z' || key === 'y') {
+          // Let the browser undo uncommitted typing and header field edits.
+          if (inHeaderField || dirtyEditor(target)) return;
+          return handle(key === 'y' || e.shiftKey ? a.redo : a.undo);
+        }
+        if (e.key === 'Delete' && !inHeaderField) return handle(a.deleteRows);
+        if (e.key === 'Enter' && !inHeaderField) return handle(a.insertRow);
+        return;
+      }
+
+      const withCommit = (action: () => void) => handle(() => {
+        commitFocusedCell(target);
+        action();
+      });
+
+      switch (e.key) {
+        case 'F3': return withCommit(a.copyRowAbove);
+        case 'F4': return withCommit(a.copyCellAbove);
+        case 'F6': return withCommit(a.duplicateRows);
+        case 'F8': return withCommit(a.balance);
+        case 'F9': return withCommit(a.swapRate);
+        case 'F10': return withCommit(a.swapDebitCredit);
+        case 'Insert':
+          if (inHeaderField) return;
+          return handle(a.insertRow);
+        case 'Delete':
+          // In a cell Delete edits text; rows are deleted only in row mode
+          // (a row header was clicked, so no cell has focus).
+          if (inCell || typing) return;
+          return handle(a.deleteRows);
+        case 'ArrowUp':
+        case 'ArrowDown': {
+          if (e.altKey || inHeaderField) return;          // Alt+↓ opens a dropdown
+          if (isPopupOpen(target)) return;                // move within the open list
+          return handle(() => a.moveVertical(e.key === 'ArrowDown' ? 1 : -1, e.shiftKey));
+        }
+        case 'Enter': {
+          if (!inCell || e.altKey) return;
+          if (hasHighlightedOption(target)) return;       // Enter picks the option
+          return handle(() => a.moveHorizontal(e.shiftKey ? -1 : 1));
+        }
+      }
+    };
+
+    // Capture phase so the grid sees the key before inputs/selects react
+    // to it (e.g. a closed Select would otherwise open on ArrowDown).
+    root.addEventListener('keydown', handleKeyDown, true);
+    return () => root.removeEventListener('keydown', handleKeyDown, true);
+  }, [root, enabled]);
 };

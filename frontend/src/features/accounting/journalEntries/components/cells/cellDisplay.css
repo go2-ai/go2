@@ -1,0 +1,50 @@
+/* Read-only views of journal entry cells (see JournalEntryGrid renderDisplay). */
+
+.je-display-text {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Account/center codes: same font, size and alignment as the autocomplete
+   editor, so activating a cell doesn't make the text jump. */
+.je-display-code {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--eg-input-font-size, 1rem);
+  font-weight: 400;
+  text-align: start;
+}
+
+.je-display-num {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: monospace;
+  text-align: right;
+  direction: ltr;
+}
+
+.je-display-num--strong {
+  font-weight: 600;
+}
+
+.je-display-num--debit {
+  color: var(--eg-debit);
+}
+
+.je-display-num--credit {
+  color: var(--eg-credit);
+}
+
+.je-display-center {
+  flex: 1;
+  text-align: center;
+}

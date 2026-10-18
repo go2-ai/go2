@@ -32,6 +32,7 @@ import { useToast } from '../../../contexts/ToastContext';
 import { useConfirm } from '../../../contexts/confirmContext';
 import { useTabManager } from '../../../components/tabs/useTabManager';
 import { Tooltip } from '@mui/material';
+import { useTabLoading } from '../../../components/tabs/TabLoadingContext';
 
 export const CenterTypesPage = () => {
   const { t } = useTranslation('shared');
@@ -51,6 +52,7 @@ export const CenterTypesPage = () => {
   const [selectedForMenu, setSelectedForMenu] = useState<CenterType | null>(null);
 
   const { data: centerTypes, isLoading, error, refetch } = useGetCenterTypesQuery(orgId, { skip: !orgId });
+  useTabLoading(isLoading);
   const [deleteCenterType] = useDeleteCenterTypeMutation();
 
   // Filter and sort by first_code

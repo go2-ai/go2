@@ -37,6 +37,7 @@ import { useConfirm } from '../../../contexts/confirmContext';
 import { useTabManager } from '../../../components/tabs/useTabManager';
 import type { Proposal } from '../chartOfAccountsAi/types';
 import { buildDraftTree } from '../chartOfAccountsAi/utils/buildDraftTree';
+import { useTabLoading } from '../../../components/tabs/TabLoadingContext';
 
 export const ChartOfAccountsPage = () => {
   const { t } = useTranslation('shared');
@@ -71,6 +72,7 @@ export const ChartOfAccountsPage = () => {
   const [deleteAccount] = useDeleteAccountMutation();
 
   const isLoading = isLoadingCategories || isLoadingLedgers || isLoadingAccounts;
+  useTabLoading(isLoading);
   const centerLevels = settings?.center_levels ?? 3;
 
   // ─── AI availability gate ───────────────────────────────────────────────

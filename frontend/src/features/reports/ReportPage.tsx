@@ -5,6 +5,7 @@ import { useGetReportTemplateQuery } from '../reportTemplates/reportTemplatesApi
 import { ReportViewer } from './components/ReportViewer';
 import { useReportData } from './useReportData';
 import { parseId, useTabSearchParams } from './useTabSearchParams';
+import { useTabLoading } from '../../components/tabs/TabLoadingContext';
 
 // Path: reports?template_id=1&report_key=journal_entry&record_id=42
 export const ReportPage = () => {
@@ -31,6 +32,7 @@ export const ReportPage = () => {
     );
   }
 
+  useTabLoading(templateLoading || report.isLoading);
   if (templateLoading || report.isLoading) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>

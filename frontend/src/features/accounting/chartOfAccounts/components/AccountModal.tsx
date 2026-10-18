@@ -45,6 +45,16 @@ interface AccountModalProps {
   account?: Account | null;
   parentLedgerId?: number;
   parentLedgerFullCode?: string;
+  /**
+   * Prefill for a new account. A full account code (ledger prefix + account
+   * code) selects the ledger and fills the code; a ledger code selects just the
+   * ledger. Anything else is ignored.
+   */
+  initialCode?: string;
+  /** Prefill for the name (in the current UI language) of a new account. */
+  initialName?: string;
+  /** Called with the created account after a successful create. */
+  onCreated?: (account: Account) => void;
 }
 
 export const AccountModal = ({
@@ -54,8 +64,11 @@ export const AccountModal = ({
   account,
   parentLedgerId,
   parentLedgerFullCode,
+  initialCode,
+  initialName,
+  onCreated,
 }: AccountModalProps) => {
-  const { t } = useTranslation('shared');
+  const { t, i18n } = useTranslation('shared');
   const { t: tAccounting } = useTranslation('accounting');
   const { showSuccess, showError } = useToast();
 
@@ -107,6 +120,11 @@ export const AccountModal = ({
     codeSuffix?: string;
   }>({});
 
+  // ledgers/categories are only needed to resolve `initialCode`; depending on
+  // them otherwise would reset the form whenever they refetch.
+  const prefillLedgers = initialCode ? ledgers : undefined;
+  const prefillCategories = initialCode ? categories : undefined;
+
   useEffect(() => {
     if (!open || !isReady) return;
 
@@ -132,10 +150,32 @@ export const AccountModal = ({
       });
       setShowContraField(account.contra_for_id !== null);
     } else {
+      // Resolve a prefilled code into ledger + account code suffix.
+      let prefillLedgerId: number | null = parentLedgerId ?? null;
+      let prefillSuffix = '';
+      const code = initialCode?.trim() ?? '';
+      if (!parentLedgerId && /^[0-9]+$/.test(code) && prefillLedgers && prefillCategories) {
+        const prefix = code.slice(0, prefixSegments);
+        const ledger = prefillLedgers.find((l) => {
+          const category = prefillCategories.find((c) => c.id === l.account_category_id);
+          return `${category?.code ?? ''}${l.code}` === prefix;
+        });
+        if (ledger && (code.length === prefixSegments || code.length === totalSegments)) {
+          prefillLedgerId = ledger.id;
+          prefillSuffix = code.slice(prefixSegments);
+        }
+      }
+
+      const name = emptyLocaleMap(allLocales);
+      if (initialName?.trim()) {
+        const locale = allLocales.includes(i18n.language) ? i18n.language : allLocales[0];
+        if (locale) name[locale] = initialName.trim();
+      }
+
       setFormData({
-        name: emptyLocaleMap(allLocales),
-        ledger_id: parentLedgerId ?? null,
-        codeSuffix: '',
+        name,
+        ledger_id: prefillLedgerId,
+        codeSuffix: prefillSuffix,
         contra_for_id: null,
         accepts_other_currencies: false,
         allowed_center_types: emptyLevels,
@@ -143,7 +183,8 @@ export const AccountModal = ({
       setShowContraField(false);
     }
     setErrors({});
-  }, [open, account, isReady, allLocales.join(','), parentLedgerId, centerLevels, prefixSegments]);
+  }, [open, account, isReady, allLocales.join(','), parentLedgerId, centerLevels, prefixSegments,
+      totalSegments, initialCode, initialName, prefillLedgers, prefillCategories]);
 
   const selectedLedger = useMemo(
     () => ledgers?.find((l) => l.id === formData.ledger_id) ?? null,
@@ -245,11 +286,12 @@ export const AccountModal = ({
         }).unwrap();
         showSuccess(tAccounting('accountUpdated'));
       } else {
-        await createAccount({
+        const created = await createAccount({
           organizationId,
           data: payload,
         }).unwrap();
         showSuccess(tAccounting('accountCreated'));
+        onCreated?.(created);
       }
       onClose();
     } catch (err: any) {

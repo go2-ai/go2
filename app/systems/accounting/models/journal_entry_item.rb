@@ -2,7 +2,11 @@
 module Accounting
   class JournalEntryItem < ApplicationRecord
     include TranslationHelper
-    has_paper_trail
+    # The parent id is stored with every version so the journal entry's
+    # change log can include item changes, also after an item was deleted.
+    has_paper_trail meta: {
+      metadata: ->(item) { { journal_entry_id: item.journal_entry_id } }
+    }
 
     extend Mobility
     translates :description
@@ -17,6 +21,47 @@ module Accounting
     belongs_to :center4, class_name: "Accounting::Center", optional: true
     belongs_to :center5, class_name: "Accounting::Center", optional: true
     belongs_to :center6, class_name: "Accounting::Center", optional: true
+
+    # ── Change log ────────────────────────────────────────────────────────
+    # Versions of items whose parent is the given journal entry. Older
+    # versions have no metadata; their parent id is in the stored attributes
+    # (object = attributes before the change, object_changes for creates).
+    def self.versions_for_journal_entry(journal_entry_id)
+      id = journal_entry_id.to_s
+      PaperTrail::Version
+        .where(item_type: name)
+        .where(
+          "versions.metadata->>'journal_entry_id' = :id " \
+          "OR versions.object_changes->'journal_entry_id'->>1 = :id " \
+          "OR (versions.object IS NOT NULL AND (versions.object::jsonb)->>'journal_entry_id' = :id)",
+          id: id
+        )
+    end
+
+    # Short label for the change log, e.g. the row number.
+    def self.version_label(version)
+      attrs = version.object.present? ? (JSON.parse(version.object) rescue {}) : {}
+      row = version.item&.row || attrs["row"] || version.changes.dig("row", 1)
+      row.present? ? { row: row } : nil
+    end
+
+    # Readable values for reference fields in the change log.
+    def self.version_display_value(field, value)
+      return value if value.blank?
+
+      case field
+      when "account_id"
+        account = Accounting::Account.includes(ledger: :account_category).find_by(id: value)
+        account ? "#{account.full_code} - #{account.name}" : value
+      when /\Acenter\d_id\z/
+        center = Accounting::Center.find_by(id: value)
+        center ? "#{center.code} - #{center.name}" : value
+      when "currency_id"
+        Accounting::Currency.find_by(id: value)&.abr || value
+      else
+        value
+      end
+    end
 
     # ── Delegations ───────────────────────────────────────────────────────
     delegate :organization, :fiscal_year, :state, to: :journal_entry, allow_nil: true

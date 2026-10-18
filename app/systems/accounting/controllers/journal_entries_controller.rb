@@ -4,6 +4,13 @@ module Accounting
     # Blueprint views that clients may request with ?view=
     SHOW_VIEWS = %w[show print].freeze
 
+    # Associations the item serializers read (account code/name, currency abr,
+    # center codes for print), loaded up front instead of one query per item.
+    ITEM_INCLUDES = [
+      :currency, :center1, :center2, :center3, :center4, :center5, :center6,
+      { account: { ledger: :account_category } }
+    ].freeze
+
     before_action :set_journal_entry, only: [ :show, :update, :destroy, :approve, :unapprove ]
 
     def index
@@ -33,6 +40,10 @@ module Accounting
       journal_entry = current_organization.journal_entries.new(permitted_params)
       journal_entry.creator = current_member
       authorize journal_entry
+      return unless load_active_fiscal_year
+
+      journal_entry.fiscal_year ||= @active_fiscal_year
+      journal_entry.active_fiscal_year = @active_fiscal_year
 
       ActiveRecord::Base.transaction do
         if journal_entry.save
@@ -45,6 +56,9 @@ module Accounting
 
     def update
       authorize @journal_entry
+      return unless load_active_fiscal_year
+
+      @journal_entry.active_fiscal_year = @active_fiscal_year
 
       ActiveRecord::Base.transaction do
         if @journal_entry.update(permitted_params)
@@ -56,7 +70,19 @@ module Accounting
     end
 
     def destroy
+      # Approved entries must be unapproved first. Checked before the destroy
+      # policy (which also rejects them) so the user gets a clear message
+      # instead of a generic "not authorized".
+      if @journal_entry.approved?
+        authorize @journal_entry, :show?
+        return render json: { errors: [ Accounting::JournalEntry.model_t("errors.unapprove_before_delete") ] },
+                      status: :unprocessable_content
+      end
+
       authorize @journal_entry
+      return unless load_active_fiscal_year
+
+      @journal_entry.active_fiscal_year = @active_fiscal_year
 
       if @journal_entry.destroy
         render json: Accounting::JournalEntryBlueprint.render(@journal_entry, view: :show), status: :ok
@@ -88,7 +114,21 @@ module Accounting
     private
 
     def set_journal_entry
-      @journal_entry = current_organization.journal_entries.find(params[:id])
+      @journal_entry = current_organization.journal_entries
+                                            .includes(:creator, items: ITEM_INCLUDES)
+                                            .find(params[:id])
+    end
+
+    # Writes are scoped to the fiscal year the user has selected in the UI,
+    # sent as `active_fiscal_year_id` (body or query string). Renders a 422 and
+    # returns false when it is missing or does not belong to the organization.
+    def load_active_fiscal_year
+      @active_fiscal_year = current_organization.fiscal_years.find_by(id: params[:active_fiscal_year_id])
+      return true if @active_fiscal_year
+
+      render json: { errors: [ Accounting::JournalEntry.model_t("errors.active_fiscal_year_required") ] },
+             status: :unprocessable_content
+      false
     end
 
     def permitted_params

@@ -19,6 +19,11 @@ module Accounting
 
     accepts_nested_attributes_for :items, allow_destroy: true
 
+    # The fiscal year the user is currently working in. When set (the
+    # controller always sets it for create/update/destroy), changes are only
+    # allowed if they stay entirely inside this fiscal year.
+    attr_accessor :active_fiscal_year
+
     # ── Enums ─────────────────────────────────────────────────────────────
     enum :state, { draft: 0, booked: 1, approved: 2 }
     enum :entry_type, { normal: 0, beginning: 1, ending: 2 }
@@ -28,12 +33,20 @@ module Accounting
     validates :effective_date, presence: true
     validates :fiscal_year, presence: true
     validates :organization, presence: true
+    validates :no, presence: true, on: :update
 
     validate :date_within_fiscal_year
     validate :items_present_for_booked_or_approved
     validate :debit_equals_credit_for_booked_or_approved
+    validate :restricted_to_active_fiscal_year, if: -> { active_fiscal_year.present? }
+    validate :no_unique_in_fiscal_year
+    validate :ref_unique_in_fiscal_year
 
     # ── Callbacks ─────────────────────────────────────────────────────────
+    before_validation :normalize_no
+    before_validation :preload_item_references
+    before_destroy :ensure_destroyable_in_active_fiscal_year, prepend: true
+    before_destroy :ensure_not_approved_on_destroy, prepend: true
     before_validation :set_default_effective_date, on: :create
     before_save :recalculate_totals
     before_create :assign_sequential_numbers
@@ -53,6 +66,62 @@ module Accounting
                                   start_date: fiscal_year.start_date,
                                   finish_date: fiscal_year.finish_date))
       end
+    end
+
+    # Create: the entry must be placed in the active fiscal year.
+    # Update: the entry must already belong to the active fiscal year, must not
+    # be moved out of it, and both the old and the new date must fall inside it.
+    # (The new date is checked by date_within_fiscal_year once fiscal_year is
+    # known to be the active one.)
+    def restricted_to_active_fiscal_year
+      if persisted? && fiscal_year_id_in_database != active_fiscal_year.id
+        errors.add(:base, model_t("errors.not_in_active_fiscal_year",
+                                  fiscal_year: active_fiscal_year.name))
+        return
+      end
+
+      if fiscal_year_id != active_fiscal_year.id
+        errors.add(:base, model_t("errors.fiscal_year_must_be_active",
+                                  fiscal_year: active_fiscal_year.name))
+        return
+      end
+
+      return unless persisted?
+
+      original_date = date_in_database
+      if original_date.present? && !date_in_active_fiscal_year?(original_date)
+        errors.add(:base, model_t("errors.original_date_outside_active_fiscal_year",
+                                  date: original_date,
+                                  start_date: active_fiscal_year.start_date,
+                                  finish_date: active_fiscal_year.finish_date))
+      end
+    end
+
+    def ensure_not_approved_on_destroy
+      return unless state_in_database == "approved"
+
+      errors.add(:base, model_t("errors.unapprove_before_delete"))
+      throw :abort
+    end
+
+    def ensure_destroyable_in_active_fiscal_year
+      return if active_fiscal_year.blank?
+
+      if fiscal_year_id_in_database != active_fiscal_year.id
+        errors.add(:base, model_t("errors.not_in_active_fiscal_year",
+                                  fiscal_year: active_fiscal_year.name))
+      elsif !date_in_active_fiscal_year?(date_in_database)
+        errors.add(:base, model_t("errors.original_date_outside_active_fiscal_year",
+                                  date: date_in_database,
+                                  start_date: active_fiscal_year.start_date,
+                                  finish_date: active_fiscal_year.finish_date))
+      end
+
+      throw :abort if errors.any?
+    end
+
+    def date_in_active_fiscal_year?(value)
+      value.present? && value.between?(active_fiscal_year.start_date, active_fiscal_year.finish_date)
     end
 
     def items_present_for_booked_or_approved
@@ -78,17 +147,94 @@ module Accounting
       self.credit = items.reject(&:marked_for_destruction?).sum(&:credit)
     end
 
+    # `no` and `ref` must each be unique within a fiscal year.
+    def no_unique_in_fiscal_year
+      return if no.blank? || fiscal_year_id.blank?
+      return unless new_record? || will_save_change_to_no? || will_save_change_to_fiscal_year_id?
+
+      if same_fiscal_year_entries.exists?(no: no.to_s.strip)
+        errors.add(:base, model_t("errors.no_taken", no: no))
+      end
+    end
+
+    def ref_unique_in_fiscal_year
+      return if ref.blank? || fiscal_year_id.blank?
+      return unless will_save_change_to_ref? || will_save_change_to_fiscal_year_id?
+
+      if same_fiscal_year_entries.exists?(ref: ref)
+        errors.add(:base, model_t("errors.ref_taken", ref: ref))
+      end
+    end
+
+    def same_fiscal_year_entries
+      self.class.where(fiscal_year_id: fiscal_year_id).where.not(id: id)
+    end
+
+    def normalize_no
+      self.no = no.to_s.strip.presence
+    end
+
+    # Item validations read each item's account, currency and centers. Load
+    # them with one query per table instead of one query per item, which
+    # matters for entries with hundreds of rows.
+    ITEM_REFERENCES = {
+      account: Accounting::Account,
+      currency: Accounting::Currency,
+      center1: Accounting::Center, center2: Accounting::Center, center3: Accounting::Center,
+      center4: Accounting::Center, center5: Accounting::Center, center6: Accounting::Center
+    }.freeze
+
+    def preload_item_references
+      pending = items.reject(&:marked_for_destruction?)
+      return if pending.empty?
+
+      ITEM_REFERENCES.values.uniq.each do |klass|
+        names = ITEM_REFERENCES.select { |_, k| k == klass }.keys
+        ids = names.flat_map { |name| pending.map { |item| item.public_send("#{name}_id") } }.compact.uniq
+        next if ids.empty?
+
+        records = klass.where(id: ids).index_by(&:id)
+        pending.each do |item|
+          names.each do |name|
+            association = item.association(name)
+            id = item.public_send("#{name}_id")
+            next if association.loaded? && association.target&.id == id
+
+            association.target = records[id] if id
+          end
+        end
+      end
+    end
+
+    # `ref` is always assigned by the system. `no` keeps the user-entered value
+    # (already validated as unique) or defaults to the first free number
+    # starting at `ref`.
     def assign_sequential_numbers
+      # Serialize numbering per fiscal year so concurrent creates don't collide.
+      FiscalYear.lock.find(fiscal_year_id)
+
       self.ref = next_sequential_number
-      self.no = ref
+      self.no = next_free_no(ref.to_i) if no.blank?
       self.daily_no = next_daily_number
     end
 
     def next_sequential_number
-      last = organization.journal_entries
-                .where(fiscal_year: fiscal_year)
-                .maximum(:ref)
-      (last.to_i + 1).to_s
+      (max_numeric(:ref) + 1).to_s
+    end
+
+    def next_free_no(start)
+      taken = same_fiscal_year_entries.pluck(:no).to_set
+      candidate = start
+      candidate += 1 while taken.include?(candidate.to_s)
+      candidate.to_s
+    end
+
+    # ref/no are strings; compare them numerically so "10" sorts after "9".
+    def max_numeric(column)
+      self.class.where(fiscal_year_id: fiscal_year_id)
+          .where("#{column} ~ '^[0-9]+$'")
+          .maximum(Arel.sql("#{column}::bigint"))
+          .to_i
     end
 
     def next_daily_number

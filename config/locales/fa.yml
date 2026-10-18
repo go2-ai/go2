@@ -144,8 +144,15 @@ fa:
         code_already_taken: "قبلاً برای این نوع مرکز ثبت شده است"
     accounting/journal_entry:
       errors:
+        active_fiscal_year_required: "ابتدا یک سال مالی فعال انتخاب کنید"
         date_outside_fiscal_year: "باید در بازه سال مالی باشد (%{start_date} تا %{finish_date})"
+        fiscal_year_must_be_active: "اسناد حسابداری فقط در سال مالی فعال (%{fiscal_year}) قابل ثبت هستند"
+        no_taken: "شماره %{no} قبلاً برای سند دیگری در این سال مالی استفاده شده است"
+        not_in_active_fiscal_year: "این سند متعلق به سال مالی دیگری است. برای تغییر آن، سال مالی سند را انتخاب کنید (سال فعال: %{fiscal_year})"
+        original_date_outside_active_fiscal_year: "تاریخ فعلی این سند (%{date}) خارج از سال مالی فعال است (%{start_date} تا %{finish_date})"
         items_required: "حداقل یک ردیف الزامی است"
+        ref_taken: "مرجع %{ref} قبلاً برای سند دیگری در این سال مالی استفاده شده است"
+        unapprove_before_delete: "سند تأیید شده را باید ابتدا از حالت تأیید خارج کنید، سپس حذف کنید"
         unbalanced: "جمع بدهکار و بستانکار باید برابر باشد"
     accounting/journal_entry_item:
       errors:
@@ -158,6 +165,7 @@ fa:
       errors:
         code_length_mismatch: "باید دقیقاً %{length} کاراکتر باشد"
     fiscal_year:
+      default_name: "سال مالی %{year}"
       errors:
         start_date_not_after_finish_date: "باید قبل یا برابر تاریخ پایان باشد"
         gap_or_overlap: "باید دقیقاً یک روز بعد از تاریخ پایان سال مالی قبلی باشد (%{previous_finish_date})"

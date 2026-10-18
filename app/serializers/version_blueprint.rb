@@ -13,6 +13,11 @@ class VersionBlueprint < Blueprinter::Base
       version.record_display_name
     end
 
+    # e.g. { row: 3 } for journal entry item versions in a journal entry's log
+    field :subrecord_label do |version|
+      version.subrecord_label
+    end
+
     field :changes do |version|
       version.display_changes
     end
