@@ -11,6 +11,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@ariana-reports/react": "0.2.0",
     "@dnd-kit/core": "^6.3.1",
     "@dnd-kit/sortable": "^10.0.0",
     "@dnd-kit/utilities": "^3.2.2",
@@ -40,7 +41,6 @@
     "react-redux": "^9.2.0",
     "react-resizable-panels": "^4.12.3",
     "react-router-dom": "^7.9.5",
-    "stimulsoft-reports-js": "^2026.3.3",
     "stylis-plugin-rtl": "^2.1.1"
   },
   "devDependencies": {

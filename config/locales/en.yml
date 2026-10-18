@@ -199,6 +199,11 @@ en:
       manage_journal_entries: Add, update, or delete journal entries
       view_journal_entries: View journal entries
       approve_journal_entries: Approve or unapprove journal entries
+    report_template:
+      copy_name: "%{name} (Copy)"
+      errors:
+        invalid_json: must be a valid JSON report template
+        too_large: is too large (maximum is %{size})
   onboarding:
     description: Your organization is where you'll manage your team, projects, and resources. You can always change this later.
     error_message: There was an error creating your organization. Please try again.

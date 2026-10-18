@@ -195,6 +195,11 @@ fa:
       manage_journal_entries: ایجاد، ویرایش یا حذف اسناد حسابداری
       view_journal_entries: مشاهده اسناد حسابداری
       approve_journal_entries: تایید یا لغو تایید اسناد حسابداری
+    report_template:
+      copy_name: "%{name} (کپی)"
+      errors:
+        invalid_json: باید یک قالب گزارش JSON معتبر باشد
+        too_large: بیش از حد بزرگ است (حداکثر %{size})
   onboarding:
     description: سازمان شما جایی است که تیم، پروژه‌ها و منابع خود را مدیریت خواهید کرد. همیشه می‌توانید این را بعداً تغییر دهید.
     error_message: خطایی در ایجاد سازمان شما رخ داد. لطفاً دوباره تلاش کنید.

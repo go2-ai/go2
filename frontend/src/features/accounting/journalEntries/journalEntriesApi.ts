@@ -45,6 +45,54 @@ export interface JournalEntry {
   items: JournalEntryItem[];
 }
 
+/** GET journal_entries/:id?view=print — the data printed by report templates. */
+export interface JournalEntryPrintItem {
+  id: number;
+  row: number;
+  account_id: number | null;
+  account_code: string | null;
+  account_name: string | null;
+  description: string | null;
+  debit: number;
+  credit: number;
+  currency_id: number;
+  /** Currency code of the item, e.g. "USD". */
+  abr: string;
+  currency: string;
+  rate: number | null;
+  currency_amount: number | null;
+  center_1_code: string | null;
+  center_1_name: string | null;
+  center_2_code: string | null;
+  center_2_name: string | null;
+  center_3_code: string | null;
+  center_3_name: string | null;
+  center_4_code: string | null;
+  center_4_name: string | null;
+  center_5_code: string | null;
+  center_5_name: string | null;
+  center_6_code: string | null;
+  center_6_name: string | null;
+}
+
+export interface JournalEntryPrint {
+  id: number;
+  no: string;
+  ref: string;
+  description: string | null;
+  date: string;
+  creator: string | null;
+  organization_name: string;
+  /** Main currency of the organization (debit and credit are in it). */
+  currency: {
+    abr: string;
+    name: string | null;
+    names: Record<string, string>;
+    decimal_digits: number;
+  } | null;
+  items: JournalEntryPrintItem[];
+}
+
 export interface JournalEntryPayload {
   date?: string;
   effective_date?: string;
@@ -108,7 +156,7 @@ export const journalEntriesApi = createApi({
     }),
 
     getJournalEntryForPrint: builder.query<
-      JournalEntry,
+      JournalEntryPrint,
       { organizationId: number; id: number }
     >({
       query: ({ organizationId, id }) =>

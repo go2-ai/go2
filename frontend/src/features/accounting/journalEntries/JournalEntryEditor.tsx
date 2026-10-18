@@ -21,7 +21,6 @@ import {
   useCreateJournalEntryMutation,
   useUpdateJournalEntryMutation,
   useGetJournalEntryQuery,
-  useGetJournalEntryForPrintQuery
 } from './journalEntriesApi';
 import { useGetAccountsQuery } from '../accounts/accountsApi';
 import { useGetCentersQuery } from '../centers/centersApi';
@@ -91,11 +90,6 @@ export const JournalEntryEditor = ({ journalEntryId, focusItemId }: JournalEntry
     isLoading: isLoadingJournalEntry,
     error: journalEntryFetchError,
   } = useGetJournalEntryQuery(
-    { organizationId: orgId, id: journalEntryId! },
-    { skip: !journalEntryId }
-  );
-
-  const { data: printJournalEntry } = useGetJournalEntryForPrintQuery(
     { organizationId: orgId, id: journalEntryId! },
     { skip: !journalEntryId }
   );
@@ -592,7 +586,7 @@ export const JournalEntryEditor = ({ journalEntryId, focusItemId }: JournalEntry
                   </Tooltip>
                   <ReportSplitButton
                     reportKey="journal_entry"
-                    reportData={printJournalEntry || { id: editingId, date, description, items: rows.map((row) => ({ row: row.row, account_id: row.accountId, debit: row.debit, credit: row.credit })) }}
+                    recordId={editingId}
                     reportTitle={`Journal Entry #${editingId}`}
                   />
                 </>

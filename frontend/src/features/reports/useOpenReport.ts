@@ -1,8 +1,7 @@
 import { useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useTabManager } from '../../components/tabs/useTabManager';
-import { useGetReportTemplatesQuery } from '../reportTemplates/reportTemplatesApi';
-import { setReportData } from './reportDataStore';
+import { findDefaultTemplate, useGetReportTemplatesQuery } from '../reportTemplates/reportTemplatesApi';
 
 export const useOpenReport = () => {
   const navigate = useNavigate();
@@ -12,35 +11,27 @@ export const useOpenReport = () => {
 
   const { data: templates } = useGetReportTemplatesQuery(orgId, { skip: !orgId });
 
+  /**
+   * Opens a report tab for a record. The report page loads the record's data
+   * itself (see useReportData), so the tab survives page refreshes.
+   */
   const openReport = useCallback(
-    (
-      reportKey: string,
-      data: Record<string, any>,
-      title?: string,
-      templateId?: number
-    ) => {
-      let template;
-
-      if (templateId) {
-        // Use specific template
-        template = templates?.find((t) => t.id === templateId);
-      } else {
-        // Use default template for this report key
-        template = templates?.find(
-          (t) => t.report_key === reportKey && t.is_default
-        );
-      }
+    (reportKey: string, recordId: number, title?: string, templateId?: number) => {
+      const template = templateId
+        ? templates?.find((t) => t.id === templateId)
+        : findDefaultTemplate(templates, reportKey);
 
       if (!template) {
         console.error(`No template found for report key: ${reportKey} (templateId: ${templateId || 'default'})`);
         return;
       }
 
-      // Generate a unique data key and store the data in memory
-      const dataKey = `report_${Date.now()}`;
-      setReportData(dataKey, data);
-
-      const path = `/app/organizations/${orgId}/reports?template_id=${template.id}&report_key=${reportKey}&data_key=${dataKey}`;
+      const params = new URLSearchParams({
+        template_id: String(template.id),
+        report_key: reportKey,
+        record_id: String(recordId),
+      });
+      const path = `/app/organizations/${orgId}/reports?${params.toString()}`;
 
       openTab('reports', title || `Report: ${reportKey}`, path);
       navigate(path);

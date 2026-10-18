@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import {
   Button,
   Box,
@@ -24,26 +24,25 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useTabManager } from '../../components/tabs/useTabManager';
-import { useCurrentTabId } from '../../components/tabs/TabIdContext';
 import {
+  apiErrorMessage,
   useGetReportTemplatesQuery,
   useUpdateReportTemplateMutation,
   useDeleteReportTemplateMutation,
-  useCreateReportTemplateMutation,
-  type ReportTemplate,
+  useCopyReportTemplateMutation,
+  type ReportTemplateSummary,
 } from '../reportTemplates/reportTemplatesApi';
 import { useOpenReport } from './useOpenReport';
 import { useToast } from '../../contexts/ToastContext';
 import { useConfirm } from '../../contexts/confirmContext';
-import { getReportData } from './reportDataStore';
+import { parseId, useTabSearchParams } from './useTabSearchParams';
 
+// Path: report-settings?report_key=journal_entry&record_id=42
 export const ReportSettingsPage = () => {
   const { t } = useTranslation('shared');
-  const { t: tReports } = useTranslation('reports');
-  const { i18n } = useTranslation();
+  const { t: tReports, i18n } = useTranslation('reports');
   const { organizationId } = useParams<{ organizationId: string }>();
-  const { layout } = useTabManager();
-  const tabId = useCurrentTabId();
+  const searchParams = useTabSearchParams();
   const { openReport } = useOpenReport();
   const { showSuccess, showError } = useToast();
   const confirm = useConfirm();
@@ -51,58 +50,35 @@ export const ReportSettingsPage = () => {
   const { openTab } = useTabManager();
 
   const orgId = parseInt(organizationId || '0', 10);
+  const reportKey = searchParams.get('report_key') || '';
+  const recordId = parseId(searchParams.get('record_id'));
+  const language = (i18n.language || 'en').split('-')[0];
 
-  const { reportKey, reportData } = useMemo(() => {
-    const tab = layout.panels
-      .flatMap((p) => p.tabs)
-      .find((tab) => tab.id === tabId);
-
-    if (!tab?.path) return { reportKey: '', reportData: {} };
-
-    const url = new URL(tab.path, window.location.origin);
-    const dataKey = url.searchParams.get('data_key') || '';
-    return {
-      reportKey: url.searchParams.get('report_key') || '',
-      reportData: dataKey ? getReportData(dataKey) || {} : {},
-    };
-  }, [layout, tabId]);
-
-  const { data: templates, isLoading, refetch } = useGetReportTemplatesQuery(orgId, {
-    skip: !orgId,
-  });
+  const { data: templates, isLoading } = useGetReportTemplatesQuery(orgId, { skip: !orgId });
 
   const [updateTemplate] = useUpdateReportTemplateMutation();
   const [deleteTemplate] = useDeleteReportTemplateMutation();
-  const [createTemplate] = useCreateReportTemplateMutation();
+  const [copyTemplate] = useCopyReportTemplateMutation();
 
   const [renamingId, setRenamingId] = useState<number | null>(null);
   const [renameName, setRenameName] = useState('');
 
-  const reportTemplates =
-    templates?.filter((t) => t.report_key === reportKey) || [];
+  const reportTemplates = templates?.filter((t) => t.report_key === reportKey) || [];
 
   const systemTemplate = reportTemplates.find((t) => t.system);
   const orgTemplates = reportTemplates
     .filter((t) => !t.system)
     .sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime());
 
-  const hasOrgDefault = orgTemplates.some((t) => t.is_default);
+  const orgDefault = orgTemplates.find((t) => t.is_default);
+  // Admin rights are the same for every template of the organization.
+  const canManage = reportTemplates.some((t) => t.copyable);
 
-  const getLocalizedName = (template: ReportTemplate): string => {
-    const name = template.name;
-    if (typeof name === 'string') return name;
-    if (name && typeof name === 'object') {
-      return name[i18n.language] || name || Object.values(name)[0] || 'Untitled';
-    }
-    return 'Untitled';
-  };
+  const templateName = (template: ReportTemplateSummary): string => template.name || tReports('untitled');
 
-  const isEffectivelyDefault = (template: ReportTemplate): boolean => {
-    if (template.system) {
-      return !hasOrgDefault;
-    }
-    return template.is_default;
-  };
+  // The system template is the default until the organization picks one of its own.
+  const isEffectivelyDefault = (template: ReportTemplateSummary): boolean =>
+    template.system ? !orgDefault : template.is_default;
 
   const formatUpdatedAt = (dateString: string): string => {
     try {
@@ -112,67 +88,55 @@ export const ReportSettingsPage = () => {
     }
   };
 
-  const handlePrint = (template: ReportTemplate) => {
-    openReport(reportKey, reportData, getLocalizedName(template), template.id);
+  const handlePrint = (template: ReportTemplateSummary) => {
+    if (!recordId) return;
+    openReport(reportKey, recordId, templateName(template), template.id);
   };
 
-  const handleDesign = (template: ReportTemplate) => {
-    const path = `/app/organizations/${orgId}/report-designer?template_id=${template.id}`;
-    openTab('report-designer', `Design: ${getLocalizedName(template)}`, path);
+  const handleDesign = (template: ReportTemplateSummary) => {
+    const params = new URLSearchParams({ template_id: String(template.id) });
+    if (recordId) params.set('record_id', String(recordId));
+    const path = `/app/organizations/${orgId}/report-designer?${params.toString()}`;
+    openTab('report-designer', `${tReports('design')}: ${templateName(template)}`, path);
     navigate(path);
   };
 
-  const handleDuplicate = async (template: ReportTemplate) => {
+  const handleDuplicate = async (template: ReportTemplateSummary) => {
     try {
-      await createTemplate({
-        organizationId: orgId,
-        data: {
-          report_key: reportKey,
-          template_file: template.template_file,
-          name: {
-            en: `${getLocalizedName(template)} (Copy)`,
-            fa: `${getLocalizedName(template)} (کپی)`,
-          },
-          parent_template_id: template.id,
-          is_default: false,
-        },
-      }).unwrap();
+      await copyTemplate({ organizationId: orgId, sourceTemplateId: template.id }).unwrap();
       showSuccess(tReports('duplicateSuccess'));
-      refetch();
-    } catch (err: any) {
-      showError(err?.data?.errors?.[0] || tReports('duplicateFailed'));
+    } catch (err) {
+      showError(apiErrorMessage(err) || tReports('duplicateFailed'));
     }
   };
 
-  const handleRename = async (template: ReportTemplate) => {
-    if (!renameName.trim()) return;
+  const cancelRename = () => {
+    setRenamingId(null);
+    setRenameName('');
+  };
+
+  const handleRename = async (template: ReportTemplateSummary) => {
+    const name = renameName.trim();
+    if (!name) return;
 
     try {
+      // Only the current language changes; other translations are kept.
       await updateTemplate({
         organizationId: orgId,
         id: template.id,
-        data: {
-          name: {
-            en: renameName,
-            fa: renameName,
-          },
-        },
+        data: { name: { [language]: name } },
       }).unwrap();
       showSuccess(tReports('renameSuccess'));
-      setRenamingId(null);
-      setRenameName('');
-      refetch();
-    } catch (err: any) {
-      showError(err?.data?.errors?.[0] || tReports('renameFailed'));
+      cancelRename();
+    } catch (err) {
+      showError(apiErrorMessage(err) || tReports('renameFailed'));
     }
   };
 
-  const handleDelete = async (template: ReportTemplate) => {
+  const handleDelete = async (template: ReportTemplateSummary) => {
     const confirmed = await confirm({
       title: tReports('deleteTemplateTitle'),
-      message: tReports('deleteTemplateMessage', {
-        name: getLocalizedName(template),
-      }),
+      message: tReports('deleteTemplateMessage', { name: templateName(template) }),
       confirmText: t('commonActions.delete'),
       confirmColor: 'error',
     });
@@ -180,41 +144,34 @@ export const ReportSettingsPage = () => {
     if (!confirmed) return;
 
     try {
-      await deleteTemplate({
-        organizationId: orgId,
-        id: template.id,
-      }).unwrap();
-      showSuccess(tReports('deleteSuccess'));
-      refetch();
-    } catch (err: any) {
-      showError(err?.data?.errors?.[0] || tReports('deleteFailed'));
+      await deleteTemplate({ organizationId: orgId, id: template.id }).unwrap();
+      showSuccess(tReports('deleteTemplateSuccess'));
+    } catch (err) {
+      showError(apiErrorMessage(err) || tReports('deleteTemplateFailed'));
     }
   };
 
-  const handleToggleDefault = async (template: ReportTemplate) => {
-    const newIsDefault = !template.is_default;
+  const handleToggleDefault = async (template: ReportTemplateSummary) => {
+    // System templates are read-only: making the system template the default
+    // means clearing the organization's own default.
+    const target = template.system ? orgDefault : template;
+    if (!target) return;
+    const newIsDefault = template.system ? false : !template.is_default;
 
     try {
       await updateTemplate({
         organizationId: orgId,
-        id: template.id,
+        id: target.id,
         data: { is_default: newIsDefault },
       }).unwrap();
-
-      showSuccess(
-        newIsDefault
-          ? tReports('setDefaultSuccess')
-          : tReports('unsetDefaultSuccess')
-      );
-
-      refetch();
-    } catch (err: any) {
-      showError(err?.data?.errors?.[0] || tReports('setDefaultFailed'));
+      showSuccess(newIsDefault ? tReports('setDefaultSuccess') : tReports('unsetDefaultSuccess'));
+    } catch (err) {
+      showError(apiErrorMessage(err) || tReports('setDefaultFailed'));
     }
   };
 
-  const getReportPageName = (reportKey: string): string => {
-    switch (reportKey) {
+  const getReportPageName = (key: string): string => {
+    switch (key) {
       case 'journal_entry':
         return tReports('journalEntryPage');
       case 'explorer':
@@ -222,22 +179,36 @@ export const ReportSettingsPage = () => {
       case 'journal_entry_items':
         return tReports('journalEntryItemsPage');
       default:
-        return reportKey;
+        return key;
     }
   };
 
-  const renderTemplateRow = (template: ReportTemplate) => (
+  const renderDefaultButton = (template: ReportTemplateSummary) => {
+    const isDefault = isEffectivelyDefault(template);
+    // The system template can only become the default again (by clearing the organization's default).
+    const canToggle = template.system ? canManage && !isDefault && !!orgDefault?.editable : template.editable;
+    if (!canToggle) {
+      return isDefault ? (
+        <Box sx={{ display: 'inline-flex', p: '5px' }}>
+          <StarIcon fontSize="small" color="primary" aria-label={tReports('default')} />
+        </Box>
+      ) : null;
+    }
+
+    return (
+      <Tooltip title={isDefault ? tReports('unsetDefault') : tReports('setAsDefault')}>
+        <IconButton size="small" onClick={() => handleToggleDefault(template)}>
+          {isDefault ? <StarIcon fontSize="small" color="primary" /> : <StarBorderIcon fontSize="small" />}
+        </IconButton>
+      </Tooltip>
+    );
+  };
+
+  const renderTemplateRow = (template: ReportTemplateSummary) => (
     <Paper
       key={template.id}
       variant="outlined"
-      sx={{
-        p: 2,
-        mb: 2,
-        display: 'flex',
-        alignItems: 'center',
-        gap: 2,
-        flexWrap: 'wrap',
-      }}
+      sx={{ p: 2, mb: 2, display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}
     >
       <Avatar variant="rounded">
         <DescriptionIcon fontSize="small" />
@@ -251,23 +222,17 @@ export const ReportSettingsPage = () => {
             size="small"
             autoFocus
             sx={{ flex: 1 }}
+            slotProps={{ htmlInput: { 'aria-label': t('commonActions.rename') } }}
             onKeyDown={(e) => {
               if (e.key === 'Enter') {
                 handleRename(template);
               } else if (e.key === 'Escape') {
-                setRenamingId(null);
-                setRenameName('');
+                cancelRename();
               }
             }}
           />
           <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1 }}>
-            <Button
-              size="small"
-              onClick={() => {
-                setRenamingId(null);
-                setRenameName('');
-              }}
-            >
+            <Button size="small" onClick={cancelRename}>
               {t('commonActions.cancel')}
             </Button>
             <Button size="small" variant="contained" onClick={() => handleRename(template)}>
@@ -279,14 +244,10 @@ export const ReportSettingsPage = () => {
         <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 0.5 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <Typography variant="body1" fontWeight={500}>
-              {getLocalizedName(template)}
+              {templateName(template)}
             </Typography>
-            {template.system && (
-              <Chip label={tReports('system')} size="small" variant="outlined" />
-            )}
-            {isEffectivelyDefault(template) && (
-              <Chip label={tReports('default')} size="small" color="primary" />
-            )}
+            {template.system && <Chip label={tReports('system')} size="small" variant="outlined" />}
+            {isEffectivelyDefault(template) && <Chip label={tReports('default')} size="small" color="primary" />}
           </Box>
           {!template.system && (
             <Typography variant="caption" color="text.secondary">
@@ -298,13 +259,15 @@ export const ReportSettingsPage = () => {
       )}
 
       <Box sx={{ display: 'flex', gap: 0.5 }}>
-        <Tooltip title={t('commonActions.print')}>
-          <IconButton size="small" onClick={() => handlePrint(template)}>
-            <PrintIcon fontSize="small" />
-          </IconButton>
-        </Tooltip>
+        {recordId && (
+          <Tooltip title={t('commonActions.print')}>
+            <IconButton size="small" onClick={() => handlePrint(template)}>
+              <PrintIcon fontSize="small" />
+            </IconButton>
+          </Tooltip>
+        )}
 
-        {!template.system && (
+        {template.editable && (
           <Tooltip title={tReports('design')}>
             <IconButton size="small" onClick={() => handleDesign(template)}>
               <DesignServicesIcon fontSize="small" />
@@ -312,20 +275,22 @@ export const ReportSettingsPage = () => {
           </Tooltip>
         )}
 
-        <Tooltip title={t('commonActions.duplicate')}>
-          <IconButton size="small" onClick={() => handleDuplicate(template)}>
-            <ContentCopyIcon fontSize="small" />
-          </IconButton>
-        </Tooltip>
+        {template.copyable && (
+          <Tooltip title={t('commonActions.duplicate')}>
+            <IconButton size="small" onClick={() => handleDuplicate(template)}>
+              <ContentCopyIcon fontSize="small" />
+            </IconButton>
+          </Tooltip>
+        )}
 
-        {!template.system && (
+        {template.editable && (
           <>
             <Tooltip title={t('commonActions.rename')}>
               <IconButton
                 size="small"
                 onClick={() => {
                   setRenamingId(template.id);
-                  setRenameName(getLocalizedName(template));
+                  setRenameName(templateName(template));
                 }}
               >
                 <EditIcon fontSize="small" />
@@ -340,21 +305,7 @@ export const ReportSettingsPage = () => {
           </>
         )}
 
-        <Tooltip
-          title={
-            isEffectivelyDefault(template)
-              ? tReports('unsetDefault')
-              : tReports('setAsDefault')
-          }
-        >
-          <IconButton size="small" onClick={() => handleToggleDefault(template)}>
-            {isEffectivelyDefault(template) ? (
-              <StarIcon fontSize="small" color="primary" />
-            ) : (
-              <StarBorderIcon fontSize="small" />
-            )}
-          </IconButton>
-        </Tooltip>
+        {renderDefaultButton(template)}
       </Box>
     </Paper>
   );
@@ -404,12 +355,7 @@ export const ReportSettingsPage = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
-              transition={{
-                duration: 0.3,
-                type: 'spring',
-                stiffness: 200,
-                damping: 20,
-              }}
+              transition={{ duration: 0.3, type: 'spring', stiffness: 200, damping: 20 }}
             >
               {renderTemplateRow(template)}
             </motion.div>

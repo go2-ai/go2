@@ -2,7 +2,9 @@
   "en": {
     "customTemplates": "Custom Templates",
     "default": "Default",
+    "deleteTemplateFailed": "Failed to delete report",
     "deleteTemplateMessage": "Are you sure you want to delete \"{{name}}\"? This action cannot be undone.",
+    "deleteTemplateSuccess": "Report deleted successfully",
     "deleteTemplateTitle": "Delete Report Template",
     "design": "Design",
     "duplicateFailed": "Failed to duplicate report",
@@ -15,17 +17,22 @@
     "noTemplateSelected": "No report template selected",
     "renameFailed": "Failed to rename report",
     "renameSuccess": "Report renamed successfully",
+    "reportDataNotFound": "The data for this report could not be loaded",
     "reportSettings": "Report Settings",
     "reportSettingsDescription": "Manage report templates for this page",
     "reportSettingsFor": "Report settings for {{page}}",
     "reports": "Reports",
+    "saveTemplateFailed": "Failed to save report",
+    "saveTemplateSuccess": "Report saved successfully",
     "setAsDefault": "Set as Default",
     "setDefaultFailed": "Failed to set default report",
     "setDefaultSuccess": "Default report updated",
     "system": "System",
     "systemTemplate": "System Template",
+    "systemTemplateReadOnly": "System templates cannot be changed. Duplicate it and design the copy.",
     "templateNotFound": "Report template not found",
     "unsetDefault": "Unset Default",
-    "unsetDefaultSuccess": "Default unset successfully"
+    "unsetDefaultSuccess": "Default unset successfully",
+    "untitled": "Untitled"
   }
 }

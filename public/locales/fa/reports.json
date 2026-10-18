@@ -2,7 +2,9 @@
   "fa": {
     "customTemplates": "قالب‌های سفارشی",
     "default": "پیش‌فرض",
+    "deleteTemplateFailed": "حذف گزارش ناموفق بود",
     "deleteTemplateMessage": "آیا از حذف \"{{name}}\" مطمئن هستید؟ این عملیات قابل بازگشت نیست.",
+    "deleteTemplateSuccess": "گزارش با موفقیت حذف شد",
     "deleteTemplateTitle": "حذف قالب گزارش",
     "design": "طراحی",
     "duplicateFailed": "تکثیر گزارش ناموفق بود",
@@ -15,17 +17,22 @@
     "noTemplateSelected": "قالب گزارشی انتخاب نشده است",
     "renameFailed": "تغییر نام گزارش ناموفق بود",
     "renameSuccess": "نام گزارش با موفقیت تغییر کرد",
+    "reportDataNotFound": "داده‌های این گزارش بارگذاری نشد",
     "reportSettings": "تنظیمات گزارش",
     "reportSettingsDescription": "مدیریت قالب‌های گزارش برای این صفحه",
     "reportSettingsFor": "تنظیمات گزارش برای {{page}}",
     "reports": "گزارش‌ها",
+    "saveTemplateFailed": "ذخیره گزارش ناموفق بود",
+    "saveTemplateSuccess": "گزارش با موفقیت ذخیره شد",
     "setAsDefault": "تنظیم به عنوان پیش‌فرض",
     "setDefaultFailed": "تنظیم گزارش پیش‌فرض ناموفق بود",
     "setDefaultSuccess": "گزارش پیش‌فرض به‌روزرسانی شد",
     "system": "سیستمی",
     "systemTemplate": "قالب سیستمی",
+    "systemTemplateReadOnly": "قالب‌های سیستمی قابل تغییر نیستند. از آن یک کپی بگیرید و کپی را طراحی کنید.",
     "templateNotFound": "قالب گزارش یافت نشد",
     "unsetDefault": "حذف پیش‌فرض",
-    "unsetDefaultSuccess": "پیش‌فرض با موفقیت حذف شد"
+    "unsetDefaultSuccess": "پیش‌فرض با موفقیت حذف شد",
+    "untitled": "بدون عنوان"
   }
 }
