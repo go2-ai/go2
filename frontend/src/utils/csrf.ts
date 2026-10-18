@@ -21,3 +21,13 @@ export const getCsrfParam = (): string => {
   }
   return metaTag.content;
 };
+/**
+ * Update the CSRF token stored in the Rails meta tag (e.g. after the session
+ * changed and the server issued a new token).
+ */
+export const setCsrfToken = (token: string): void => {
+  const metaTag = document.querySelector<HTMLMetaElement>('meta[name="csrf-token"]');
+  if (metaTag) {
+    metaTag.content = token;
+  }
+};

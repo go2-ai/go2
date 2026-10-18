@@ -4,6 +4,10 @@ class Users::SessionsController < Devise::SessionsController
   # before_action :configure_sign_in_params, only: [:create]
   skip_before_action :verify_authenticity_token
 
+  # Devise discards the session CSRF token on sign in / sign out, so the token
+  # in the SPA's <meta> tag becomes stale. Hand the SPA a fresh one.
+  after_action :expose_csrf_token, only: %i[create destroy]
+
   # POST /resource/sign_in
   def create
     self.resource = warden.authenticate(auth_options)
@@ -22,5 +26,11 @@ class Users::SessionsController < Devise::SessionsController
     else
       render json: { errors: [ "authentication_failed" ] }, status: :unauthorized
     end
+  end
+
+  private
+
+  def expose_csrf_token
+    response.set_header("X-CSRF-Token", form_authenticity_token)
   end
 end
