@@ -13,7 +13,6 @@ import {
 import { AppliedFilters } from './components/AppliedFilters';
 import { Box, Typography, alpha, IconButton, Tooltip } from '@mui/material';
 import CurrencyExchangeRoundedIcon from '@mui/icons-material/CurrencyExchangeRounded';
-import OpenInNewRoundedIcon from '@mui/icons-material/OpenInNewRounded';
 import { FooterStat } from './components/FooterStat';
 import { useTabManager } from '../../../components/tabs/useTabManager';
 import { useTabLoading } from '../../../components/tabs/TabLoadingContext';
@@ -108,27 +107,6 @@ export const JournalEntryItemsPage = () => {
         headerName: tAccounting('items.no', { defaultValue: 'No' }),
         width: 100,
         valueGetter: (_, row) => row.journal_entry?.no ?? '',
-        renderCell: (params) => (
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-            <span>{params.row.journal_entry?.no ?? ''}</span>
-            <Tooltip
-              title={tAccounting('items.openJournalEntry', {
-                defaultValue: 'Open Journal Entry',
-              })}
-            >
-              <IconButton
-                size="small"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleOpenJournalEntry(params.row);
-                }}
-                sx={{ p: 0.25 }}
-              >
-                <OpenInNewRoundedIcon sx={{ fontSize: 14 }} />
-              </IconButton>
-            </Tooltip>
-          </Box>
-        ),
       },
       {
         field: 'journal_entry.ref',
@@ -183,7 +161,7 @@ export const JournalEntryItemsPage = () => {
         renderCell: (params) => fmt(params.value),
       },
     ],
-    [tAccounting, t, orgId]
+    [tAccounting, t]
   );
 
   return (
@@ -202,15 +180,16 @@ export const JournalEntryItemsPage = () => {
           checkboxSelection
           rowSelectionModel={selectionModel}
           onRowSelectionModelChange={setSelectionModel}
+          onRowOpen={handleOpenJournalEntry}
+          rowOpenLabel={tAccounting('openJournalEntry')}
           showHeaderSearchRow
           hideFooterPagination
           hideFooter
           disableColumnMenu
+          showCellVerticalBorder
           sx={{
             flex: 1,
             '& .MuiDataGrid-cell:focus': { outline: 'none' },
-            '& .MuiDataGrid-cell': { borderRight: 1, borderColor: 'divider' },
-            '& .MuiDataGrid-columnHeaders': { borderBottom: 1, borderColor: 'divider' },
           }}
         />
 

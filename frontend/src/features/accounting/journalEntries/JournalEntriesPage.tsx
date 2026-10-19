@@ -10,7 +10,8 @@ import {
   Button,
   Chip,
 } from '@mui/material';
-import type { GridColDef, GridRowParams } from '@mui/x-data-grid';
+import type { GridColDef } from '@mui/x-data-grid';
+import AddRoundedIcon from '@mui/icons-material/AddRounded';
 import { useTranslation } from 'react-i18next';
 import {
   useGetJournalEntriesQuery,
@@ -34,10 +35,15 @@ export const JournalEntriesPage = () => {
   const navigate = useNavigate();
   const { openTab } = useTabManager();
 
-  const handleRowDoubleClick = (params: GridRowParams) => {
-    const journalEntry = params.row as JournalEntry;
+  const handleOpenJournalEntry = (journalEntry: JournalEntry) => {
     const path = `/app/organizations/${orgId}/accounting/journal-entries/${journalEntry.id}`;
     openTab('journal-entry-edit', tJE('journalEntryTabTitle', { ref: journalEntry.ref || journalEntry.id }), path);
+    navigate(path);
+  };
+
+  const handleNewJournalEntry = () => {
+    const path = `/app/organizations/${orgId}/accounting/journal-entry`;
+    openTab('journal-entry', t('menu.journalEntry'), path);
     navigate(path);
   };
 
@@ -184,13 +190,23 @@ export const JournalEntriesPage = () => {
 
   return (
     <Container maxWidth={false} sx={{ height: '100%', display: 'flex', flexDirection: 'column', py: 2 }}>
-      <Box sx={{ mb: 2, flexShrink: 0 }}>
-        <Typography variant="h4" gutterBottom>
-          {tJE('journalEntries')}
-        </Typography>
-        <Typography variant="body2" color="text.secondary">
-          {tJE('journalEntriesDescription')}
-        </Typography>
+      <Box sx={{ mb: 2, flexShrink: 0, display: 'flex', alignItems: 'flex-start', gap: 2 }}>
+        <Box sx={{ flex: 1, minWidth: 0 }}>
+          <Typography variant="h4" gutterBottom>
+            {tJE('journalEntries')}
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            {tJE('journalEntriesDescription')}
+          </Typography>
+        </Box>
+        <Button
+          variant="contained"
+          startIcon={<AddRoundedIcon />}
+          onClick={handleNewJournalEntry}
+          sx={{ flexShrink: 0, textTransform: 'none' }}
+        >
+          {tJE('newJournalEntry')}
+        </Button>
       </Box>
 
       {!journalEntries || journalEntries.length === 0 ? (
@@ -212,24 +228,17 @@ export const JournalEntriesPage = () => {
             disableRowSelectionOnClick
             rowHeight={40}
             loading={isFetching}
-            onRowDoubleClick={handleRowDoubleClick}
+            onRowOpen={handleOpenJournalEntry}
+            rowOpenLabel={tJE('openJournalEntry')}
             initialState={{
               sorting: {
                 sortModel: [{ field: 'created_at', sort: 'desc' }],
               },
             }}
+            showCellVerticalBorder
             sx={{
               flex: 1,
               '& .MuiDataGrid-cell:focus': { outline: 'none' },
-              '& .MuiDataGrid-row:hover': { cursor: 'pointer' },
-              '& .MuiDataGrid-cell': {
-                borderRight: 1,
-                borderColor: 'divider',
-              },
-              '& .MuiDataGrid-columnHeaders': {
-                borderBottom: 1,
-                borderColor: 'divider',
-              },
             }}
           />
         </Paper>

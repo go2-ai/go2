@@ -272,6 +272,7 @@
     "nodeDeleted": "Item deleted successfully",
     "none": "None",
     "normal": "Normal",
+    "openJournalEntry": "Open Journal Entry",
     "pasteUnmatched_one": "{{count}} value could not be matched (unknown code or number). Check the highlighted rows.",
     "pasteUnmatched_other": "{{count}} values could not be matched (unknown codes or numbers). Check the highlighted rows.",
     "rate": "Exchange Rate",

@@ -20,8 +20,6 @@ import { DIMENSION_META } from './dimensionConfig';
 import { DrillTrail, type TrailStep } from './components/DrillTrail';
 import { useToast } from '../../../contexts/ToastContext';
 import { useNavigate } from 'react-router-dom';
-import OpenInNewRoundedIcon from '@mui/icons-material/OpenInNewRounded';
-import { IconButton, Tooltip } from '@mui/material';
 import { useTabManager } from '../../../components/tabs/useTabManager';
 import { FooterStat } from './components/FooterStat';
 import { useTabLoading } from '../../../components/tabs/TabLoadingContext';
@@ -206,23 +204,8 @@ export const ExplorerPage = () => {
       numberColumn('sum_credit', tAccounting('explorer.sumCredit', { defaultValue: 'Sum Credit' })),
       numberColumn('debit_balance', tAccounting('explorer.debitBalance', { defaultValue: 'Debit Balance' })),
       numberColumn('credit_balance', tAccounting('explorer.creditBalance', { defaultValue: 'Credit Balance' })),
-      {
-        field: 'actions',
-        headerName: '',
-        width: 50,
-        sortable: false,
-        filterable: false,
-        disableColumnMenu: true,
-        renderCell: (params) => (
-          <Tooltip title={tAccounting('explorer.openItems', { defaultValue: 'Open Journal Entry Items' })}>
-            <IconButton size="small" onClick={() => handleOpenItems(params.row)}>
-              <OpenInNewRoundedIcon sx={{ fontSize: 16 }} />
-            </IconButton>
-          </Tooltip>
-        ),
-      },
     ];
-  }, [currentDimension, pathFilters, activeFiscalYearId, orgId, tAccounting]);
+  }, [currentDimension, tAccounting]);
 
   return (
     <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', p: 2 }}>
@@ -300,22 +283,16 @@ export const ExplorerPage = () => {
             checkboxSelection
             rowSelectionModel={selectionModel}
             onRowSelectionModelChange={setSelectionModel}
+            onRowOpen={handleOpenItems}
+            rowOpenLabel={tAccounting('explorer.openItems', { defaultValue: 'Open Journal Entry Items' })}
             showHeaderSearchRow
             hideFooterPagination
             hideFooter
             disableColumnMenu
+            showCellVerticalBorder
             sx={{
               flex: 1,
               '& .MuiDataGrid-cell:focus': { outline: 'none' },
-              '& .MuiDataGrid-row:hover': { cursor: 'pointer' },
-              '& .MuiDataGrid-cell': {
-                borderRight: 1,
-                borderColor: 'divider',
-              },
-              '& .MuiDataGrid-columnHeaders': {
-                borderBottom: 1,
-                borderColor: 'divider',
-              },
             }}
           />
 
