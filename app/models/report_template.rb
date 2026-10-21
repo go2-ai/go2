@@ -10,6 +10,13 @@ class ReportTemplate < ApplicationRecord
   # as data URIs, so allow a generous size but keep an upper bound.
   MAX_TEMPLATE_SIZE = 5.megabytes
 
+  # System templates whose layout depends on the organization (e.g. one
+  # column per center level). They are generated when served or copied;
+  # the stored file is the default (3 center levels).
+  GENERATED_SYSTEM_TEMPLATES = {
+    "currency_revaluation" => ->(organization) { Accounting::Reports::CurrencyRevaluationTemplate.for(organization).to_json }
+  }.freeze
+
   belongs_to :organization, optional: true
   belongs_to :created_by, class_name: "Member", optional: true
   belongs_to :parent_template, class_name: "ReportTemplate", optional: true
@@ -28,7 +35,7 @@ class ReportTemplate < ApplicationRecord
   def build_copy(organization:, created_by:, name: nil)
     copy = organization.report_templates.new(
       report_key: report_key,
-      template_file: template_file,
+      template_file: template_file_for(organization),
       parent_template: self,
       created_by: created_by,
       is_default: false
@@ -39,6 +46,13 @@ class ReportTemplate < ApplicationRecord
 
   def system?
     organization_id.nil?
+  end
+
+  # The template as used by an organization: generated system templates are
+  # built for it; everything else is the stored file.
+  def template_file_for(organization)
+    generator = system? && organization && GENERATED_SYSTEM_TEMPLATES[report_key]
+    generator ? generator.call(organization) : template_file
   end
 
   def org_specific?

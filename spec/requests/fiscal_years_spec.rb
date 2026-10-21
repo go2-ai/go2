@@ -6,6 +6,11 @@ RSpec.describe 'FiscalYears API', type: :request do
     name: { type: :string, example: 'Fiscal Year 2024' },
     start_date: { type: :string, example: '2024-01-01' },
     finish_date: { type: :string, example: '2024-12-31' },
+    status: { type: :string, enum: %w[open closing closed], example: 'open' },
+    closing_step: { type: %i[string null], enum: [ 'readiness', 'renumber', 'revaluation', 'temp_closing', 'ending', 'beginning', 'finalized', nil ],
+                    example: nil, description: 'Current step of the closing wizard; null while open' },
+    closing_started_at: { type: %i[string null], example: nil },
+    closed_at: { type: %i[string null], example: nil },
     t: {
       type: :object,
       example: { name: { en: 'Fiscal Year 2024', fa: 'سال مالی 2024' } }
@@ -168,6 +173,20 @@ RSpec.describe 'FiscalYears API', type: :request do
           data = JSON.parse(response.body)
           expect(data["id"]).to eq(fiscal_year_1.id)
           expect(data["name"]).to eq("Updated Fiscal Year")
+          expect(data["status"]).to eq("open")
+        end
+      end
+
+      response '422', 'Dates of a closing or closed fiscal year are fixed' do
+        let(:organization_id) { organization.id }
+        let(:id) { fiscal_year_1.id }
+        let(:params) { { finish_date: '2024-12-30' } }
+
+        before { fiscal_year_1.update_column(:status, FiscalYear.statuses[:closing]) }
+
+        run_test! do |response|
+          expect(JSON.parse(response.body)['errors']).to include(/can't be changed/)
+          expect(fiscal_year_1.reload.finish_date).to eq(Date.new(2024, 12, 31))
         end
       end
 
@@ -208,6 +227,18 @@ RSpec.describe 'FiscalYears API', type: :request do
 
         run_test! do |response|
           expect(FiscalYear.find_by(id: fiscal_year_1.id)).to be_nil
+        end
+      end
+
+      response '422', 'Only open fiscal years can be deleted' do
+        let(:organization_id) { organization.id }
+        let(:id) { fiscal_year_1.id }
+
+        before { fiscal_year_1.update_column(:status, FiscalYear.statuses[:closed]) }
+
+        run_test! do |response|
+          expect(JSON.parse(response.body)['errors']).to include(/Only open fiscal years/)
+          expect(FiscalYear.exists?(fiscal_year_1.id)).to be(true)
         end
       end
 

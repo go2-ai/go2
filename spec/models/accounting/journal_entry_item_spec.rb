@@ -103,6 +103,40 @@ RSpec.describe Accounting::JournalEntryItem, type: :model do
         expect(item.errors[:account]).to include(/must be selected/)
       end
     end
+
+    describe "currency amount consistency" do
+      let(:usd) { create(:accounting_currency, organization: organization, abr: "XTS") }
+      let(:fiscal_year) { create(:fiscal_year, organization: organization) }
+
+      def booked_entry(**attrs)
+        build(:accounting_journal_entry, organization: organization, fiscal_year: fiscal_year,
+              state: :booked, **attrs)
+      end
+
+      it "derives currency_amount from the rate for entries created by users" do
+        item = build(:accounting_journal_entry_item, journal_entry: booked_entry, account: account,
+                     currency: usd, rate: 50, debit: 1000, credit: 0, currency_amount: 7)
+        expect(item).to be_valid
+        expect(item.currency_amount).to eq(20)
+      end
+
+      it "rejects an inconsistent currency_amount for entries created by users" do
+        item = build(:accounting_journal_entry_item, journal_entry: booked_entry, account: account,
+                     currency: usd, rate: 50, debit: 1000, credit: 0)
+        item.valid?
+        item.currency_amount = 7
+        item.send(:amounts_consistent_for_non_draft)
+        expect(item.errors[:currency_amount]).to include(/must equal/)
+      end
+
+      it "keeps an explicit currency_amount for system-generated entries" do
+        je = booked_entry(entry_type: :revaluation, source: fiscal_year)
+        item = build(:accounting_journal_entry_item, journal_entry: je, account: account,
+                     currency: usd, rate: 50, debit: 1000, credit: 0, currency_amount: 0)
+        expect(item).to be_valid
+        expect(item.currency_amount).to eq(0)
+      end
+    end
   end
 
   describe "callbacks" do

@@ -61,7 +61,10 @@
       "centers": "Centers",
       "chartOfAccounts": "Chart of Accounts",
       "collapse": "Collapse",
+      "currencyRevaluation": "Monetary Items Revaluation",
+      "currencyRevaluations": "Monetary Items Revaluation",
       "departments": "Departments",
+      "exchangeRates": "Exchange Rates",
       "expand": "Expand",
       "explorer": "Explorer",
       "fiscalYears": "Fiscal Years",
@@ -72,7 +75,8 @@
       "permissions": "Permissions",
       "roles": "Roles",
       "selectModule": "Select a module",
-      "settings": "Settings"
+      "settings": "Settings",
+      "yearEndClosing": "Year-end Closing"
     },
     "name": "Name",
     "password": "Password",

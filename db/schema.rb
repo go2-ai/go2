@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_09_17_083424) do
+ActiveRecord::Schema[8.0].define(version: 2026_10_19_100800) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -42,8 +42,22 @@ ActiveRecord::Schema[8.0].define(version: 2026_09_17_083424) do
     t.integer "center_levels", default: 3
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "closing_method", default: 0, null: false
+    t.bigint "retained_earnings_account_id"
+    t.bigint "income_summary_account_id"
+    t.bigint "current_year_profit_account_id"
+    t.bigint "default_fx_gain_account_id"
+    t.bigint "default_fx_loss_account_id"
+    t.jsonb "revaluation_line_description_template", default: {}, null: false
+    t.jsonb "revaluation_counter_line_description_template", default: {}, null: false
+    t.jsonb "closing_line_description_templates", default: {}, null: false
+    t.index ["current_year_profit_account_id"], name: "index_accounting_settings_on_current_year_profit_account_id"
+    t.index ["default_fx_gain_account_id"], name: "index_accounting_settings_on_default_fx_gain_account_id"
+    t.index ["default_fx_loss_account_id"], name: "index_accounting_settings_on_default_fx_loss_account_id"
+    t.index ["income_summary_account_id"], name: "index_accounting_settings_on_income_summary_account_id"
     t.index ["main_currency_id"], name: "index_accounting_settings_on_main_currency_id"
     t.index ["organization_id"], name: "index_accounting_settings_on_organization_id", unique: true
+    t.index ["retained_earnings_account_id"], name: "index_accounting_settings_on_retained_earnings_account_id"
   end
 
   create_table "accounts", force: :cascade do |t|
@@ -60,7 +74,11 @@ ActiveRecord::Schema[8.0].define(version: 2026_09_17_083424) do
     t.integer "allowed_center_types_6", array: true
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "fx_gain_account_id"
+    t.bigint "fx_loss_account_id"
     t.index ["contra_for_id"], name: "index_accounts_on_contra_for_id"
+    t.index ["fx_gain_account_id"], name: "index_accounts_on_fx_gain_account_id"
+    t.index ["fx_loss_account_id"], name: "index_accounts_on_fx_loss_account_id"
     t.index ["ledger_id", "code"], name: "index_accounts_on_ledger_id_and_code", unique: true
     t.index ["ledger_id"], name: "index_accounts_on_ledger_id"
   end
@@ -186,6 +204,90 @@ ActiveRecord::Schema[8.0].define(version: 2026_09_17_083424) do
     t.index ["organization_id"], name: "index_currencies_on_organization_id"
   end
 
+  create_table "currency_revaluation_items", force: :cascade do |t|
+    t.bigint "currency_revaluation_id", null: false
+    t.bigint "account_id", null: false
+    t.bigint "center1_id"
+    t.bigint "center2_id"
+    t.bigint "center3_id"
+    t.bigint "center4_id"
+    t.bigint "center5_id"
+    t.bigint "center6_id"
+    t.bigint "currency_id", null: false
+    t.decimal "currency_balance", precision: 30, scale: 15, null: false
+    t.decimal "book_base_balance", precision: 30, scale: 15, null: false
+    t.decimal "rate", precision: 30, scale: 15
+    t.date "rate_date"
+    t.decimal "revalued_base_balance", precision: 30, scale: 15
+    t.decimal "difference", precision: 30, scale: 15, default: "0.0", null: false
+    t.bigint "gain_loss_account_id"
+    t.boolean "excluded", default: false, null: false
+    t.string "excluded_reason"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.boolean "removed", default: false, null: false
+    t.index ["account_id"], name: "index_currency_revaluation_items_on_account_id"
+    t.index ["center1_id"], name: "index_currency_revaluation_items_on_center1_id"
+    t.index ["center2_id"], name: "index_currency_revaluation_items_on_center2_id"
+    t.index ["center3_id"], name: "index_currency_revaluation_items_on_center3_id"
+    t.index ["center4_id"], name: "index_currency_revaluation_items_on_center4_id"
+    t.index ["center5_id"], name: "index_currency_revaluation_items_on_center5_id"
+    t.index ["center6_id"], name: "index_currency_revaluation_items_on_center6_id"
+    t.index ["currency_id"], name: "index_currency_revaluation_items_on_currency_id"
+    t.index ["currency_revaluation_id"], name: "index_currency_revaluation_items_on_currency_revaluation_id"
+    t.index ["gain_loss_account_id"], name: "index_currency_revaluation_items_on_gain_loss_account_id"
+  end
+
+  create_table "currency_revaluation_schedules", force: :cascade do |t|
+    t.bigint "organization_id", null: false
+    t.string "name", null: false
+    t.string "rrule", null: false
+    t.datetime "dtstart", null: false
+    t.jsonb "scope", default: {}, null: false
+    t.integer "default_kind", default: 0, null: false
+    t.integer "on_unapproved", default: 2, null: false
+    t.boolean "active", default: true, null: false
+    t.datetime "next_run_at"
+    t.datetime "last_run_at"
+    t.string "last_run_status"
+    t.jsonb "last_run_details", default: {}, null: false
+    t.bigint "last_revaluation_id"
+    t.bigint "created_by_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["active", "next_run_at"], name: "index_currency_revaluation_schedules_on_active_and_next_run_at"
+    t.index ["created_by_id"], name: "index_currency_revaluation_schedules_on_created_by_id"
+    t.index ["last_revaluation_id"], name: "index_currency_revaluation_schedules_on_last_revaluation_id"
+    t.index ["organization_id"], name: "index_currency_revaluation_schedules_on_organization_id"
+  end
+
+  create_table "currency_revaluations", force: :cascade do |t|
+    t.bigint "organization_id", null: false
+    t.bigint "fiscal_year_id", null: false
+    t.date "as_of_date", null: false
+    t.integer "kind", default: 0, null: false
+    t.integer "status", default: 0, null: false
+    t.jsonb "scope", default: {}, null: false
+    t.string "checksum"
+    t.jsonb "description", default: {}, null: false
+    t.bigint "created_by_id"
+    t.bigint "posted_by_id"
+    t.datetime "posted_at"
+    t.datetime "superseded_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "schedule_id"
+    t.jsonb "line_description_template", default: {}, null: false
+    t.jsonb "counter_line_description_template", default: {}, null: false
+    t.jsonb "removed_keys", default: [], null: false
+    t.index ["created_by_id"], name: "index_currency_revaluations_on_created_by_id"
+    t.index ["fiscal_year_id"], name: "index_currency_revaluations_on_fiscal_year_id"
+    t.index ["organization_id", "fiscal_year_id", "status", "kind"], name: "index_currency_revaluations_lookup"
+    t.index ["organization_id"], name: "index_currency_revaluations_on_organization_id"
+    t.index ["posted_by_id"], name: "index_currency_revaluations_on_posted_by_id"
+    t.index ["schedule_id"], name: "index_currency_revaluations_on_schedule_id"
+  end
+
   create_table "departments", force: :cascade do |t|
     t.jsonb "name", default: {}, null: false
     t.jsonb "description", default: {}
@@ -209,6 +311,39 @@ ActiveRecord::Schema[8.0].define(version: 2026_09_17_083424) do
     t.index ["organization_id"], name: "index_documents_on_organization_id"
   end
 
+  create_table "exchange_rate_sources", force: :cascade do |t|
+    t.bigint "organization_id", null: false
+    t.bigint "currency_id", null: false
+    t.string "provider", default: "manual", null: false
+    t.bigint "quote_currency_id"
+    t.boolean "active", default: true, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["currency_id"], name: "index_exchange_rate_sources_on_currency_id"
+    t.index ["organization_id", "currency_id"], name: "index_exchange_rate_sources_on_organization_id_and_currency_id", unique: true
+    t.index ["organization_id"], name: "index_exchange_rate_sources_on_organization_id"
+    t.index ["quote_currency_id"], name: "index_exchange_rate_sources_on_quote_currency_id"
+  end
+
+  create_table "exchange_rates", force: :cascade do |t|
+    t.bigint "organization_id", null: false
+    t.bigint "currency_id", null: false
+    t.bigint "quote_currency_id"
+    t.date "date", null: false
+    t.decimal "rate", precision: 30, scale: 15, null: false
+    t.string "source", default: "manual", null: false
+    t.jsonb "meta", default: {}, null: false
+    t.bigint "created_by_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["created_by_id"], name: "index_exchange_rates_on_created_by_id"
+    t.index ["currency_id", "date"], name: "index_exchange_rates_on_currency_id_and_date"
+    t.index ["currency_id"], name: "index_exchange_rates_on_currency_id"
+    t.index ["organization_id", "currency_id", "date", "source"], name: "index_exchange_rates_uniqueness", unique: true
+    t.index ["organization_id"], name: "index_exchange_rates_on_organization_id"
+    t.index ["quote_currency_id"], name: "index_exchange_rates_on_quote_currency_id"
+  end
+
   create_table "fiscal_years", force: :cascade do |t|
     t.jsonb "name", default: {}, null: false
     t.date "start_date"
@@ -216,10 +351,20 @@ ActiveRecord::Schema[8.0].define(version: 2026_09_17_083424) do
     t.bigint "organization_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "status", default: 0, null: false
+    t.integer "closing_step"
+    t.jsonb "closing_data", default: {}, null: false
+    t.datetime "closing_started_at"
+    t.bigint "closing_started_by_id"
+    t.datetime "closed_at"
+    t.bigint "closed_by_id"
+    t.index ["closed_by_id"], name: "index_fiscal_years_on_closed_by_id"
+    t.index ["closing_started_by_id"], name: "index_fiscal_years_on_closing_started_by_id"
     t.index ["finish_date"], name: "index_fiscal_years_on_finish_date"
     t.index ["name"], name: "index_fiscal_years_on_name", using: :gin
     t.index ["organization_id"], name: "index_fiscal_years_on_organization_id"
     t.index ["start_date"], name: "index_fiscal_years_on_start_date"
+    t.index ["status"], name: "index_fiscal_years_on_status"
   end
 
   create_table "groups", force: :cascade do |t|
@@ -254,6 +399,11 @@ ActiveRecord::Schema[8.0].define(version: 2026_09_17_083424) do
     t.bigint "creator_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "source_type"
+    t.bigint "source_id"
+    t.datetime "approved_at"
+    t.bigint "approved_by_id"
+    t.index ["approved_by_id"], name: "index_journal_entries_on_approved_by_id"
     t.index ["creator_id"], name: "index_journal_entries_on_creator_id"
     t.index ["credit"], name: "index_journal_entries_on_credit"
     t.index ["daily_no"], name: "index_journal_entries_on_daily_no"
@@ -266,6 +416,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_09_17_083424) do
     t.index ["organization_id", "date"], name: "index_journal_entries_on_organization_id_and_date"
     t.index ["organization_id", "fiscal_year_id", "no"], name: "idx_on_organization_id_fiscal_year_id_no_2a6ed0c132"
     t.index ["organization_id"], name: "index_journal_entries_on_organization_id"
+    t.index ["source_type", "source_id"], name: "index_journal_entries_on_source"
     t.index ["state"], name: "index_journal_entries_on_state"
   end
 
@@ -312,9 +463,13 @@ ActiveRecord::Schema[8.0].define(version: 2026_09_17_083424) do
     t.boolean "is_monetary", default: false, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "fx_gain_account_id"
+    t.bigint "fx_loss_account_id"
     t.index ["account_category_id", "code"], name: "index_ledgers_on_account_category_id_and_code", unique: true
     t.index ["account_category_id"], name: "index_ledgers_on_account_category_id"
     t.index ["contra_for_id"], name: "index_ledgers_on_contra_for_id"
+    t.index ["fx_gain_account_id"], name: "index_ledgers_on_fx_gain_account_id"
+    t.index ["fx_loss_account_id"], name: "index_ledgers_on_fx_loss_account_id"
   end
 
   create_table "members", force: :cascade do |t|
@@ -377,6 +532,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_09_17_083424) do
     t.integer "max_file_size", default: 50, null: false
     t.bigint "total_file_size", default: 0, null: false
     t.integer "max_total_file_size", default: 10, null: false
+    t.string "time_zone", default: "UTC", null: false
     t.index ["archived_at"], name: "index_organizations_on_archived_at"
     t.index ["name"], name: "index_organizations_on_name", using: :gin
     t.index ["parent_id"], name: "index_organizations_on_parent_id"
@@ -521,9 +677,16 @@ ActiveRecord::Schema[8.0].define(version: 2026_09_17_083424) do
   end
 
   add_foreign_key "account_categories", "organizations"
+  add_foreign_key "accounting_settings", "accounts", column: "current_year_profit_account_id", on_delete: :nullify
+  add_foreign_key "accounting_settings", "accounts", column: "default_fx_gain_account_id", on_delete: :nullify
+  add_foreign_key "accounting_settings", "accounts", column: "default_fx_loss_account_id", on_delete: :nullify
+  add_foreign_key "accounting_settings", "accounts", column: "income_summary_account_id", on_delete: :nullify
+  add_foreign_key "accounting_settings", "accounts", column: "retained_earnings_account_id", on_delete: :nullify
   add_foreign_key "accounting_settings", "currencies", column: "main_currency_id"
   add_foreign_key "accounting_settings", "organizations"
   add_foreign_key "accounts", "accounts", column: "contra_for_id"
+  add_foreign_key "accounts", "accounts", column: "fx_gain_account_id", on_delete: :nullify
+  add_foreign_key "accounts", "accounts", column: "fx_loss_account_id", on_delete: :nullify
   add_foreign_key "accounts", "ledgers"
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
@@ -536,12 +699,40 @@ ActiveRecord::Schema[8.0].define(version: 2026_09_17_083424) do
   add_foreign_key "conversation_participants", "conversations"
   add_foreign_key "conversation_participants", "users"
   add_foreign_key "currencies", "organizations"
+  add_foreign_key "currency_revaluation_items", "accounts"
+  add_foreign_key "currency_revaluation_items", "accounts", column: "gain_loss_account_id"
+  add_foreign_key "currency_revaluation_items", "centers", column: "center1_id"
+  add_foreign_key "currency_revaluation_items", "centers", column: "center2_id"
+  add_foreign_key "currency_revaluation_items", "centers", column: "center3_id"
+  add_foreign_key "currency_revaluation_items", "centers", column: "center4_id"
+  add_foreign_key "currency_revaluation_items", "centers", column: "center5_id"
+  add_foreign_key "currency_revaluation_items", "centers", column: "center6_id"
+  add_foreign_key "currency_revaluation_items", "currencies"
+  add_foreign_key "currency_revaluation_items", "currency_revaluations"
+  add_foreign_key "currency_revaluation_schedules", "currency_revaluations", column: "last_revaluation_id", on_delete: :nullify
+  add_foreign_key "currency_revaluation_schedules", "members", column: "created_by_id"
+  add_foreign_key "currency_revaluation_schedules", "organizations"
+  add_foreign_key "currency_revaluations", "currency_revaluation_schedules", column: "schedule_id", on_delete: :nullify
+  add_foreign_key "currency_revaluations", "fiscal_years"
+  add_foreign_key "currency_revaluations", "members", column: "created_by_id"
+  add_foreign_key "currency_revaluations", "members", column: "posted_by_id"
+  add_foreign_key "currency_revaluations", "organizations"
   add_foreign_key "departments", "organizations"
   add_foreign_key "documents", "members"
   add_foreign_key "documents", "organizations"
+  add_foreign_key "exchange_rate_sources", "currencies"
+  add_foreign_key "exchange_rate_sources", "currencies", column: "quote_currency_id"
+  add_foreign_key "exchange_rate_sources", "organizations"
+  add_foreign_key "exchange_rates", "currencies"
+  add_foreign_key "exchange_rates", "currencies", column: "quote_currency_id"
+  add_foreign_key "exchange_rates", "members", column: "created_by_id"
+  add_foreign_key "exchange_rates", "organizations"
+  add_foreign_key "fiscal_years", "members", column: "closed_by_id"
+  add_foreign_key "fiscal_years", "members", column: "closing_started_by_id"
   add_foreign_key "fiscal_years", "organizations"
   add_foreign_key "groups", "organizations"
   add_foreign_key "journal_entries", "fiscal_years"
+  add_foreign_key "journal_entries", "members", column: "approved_by_id"
   add_foreign_key "journal_entries", "members", column: "creator_id"
   add_foreign_key "journal_entries", "organizations"
   add_foreign_key "journal_entry_items", "accounts"
@@ -554,6 +745,8 @@ ActiveRecord::Schema[8.0].define(version: 2026_09_17_083424) do
   add_foreign_key "journal_entry_items", "currencies"
   add_foreign_key "journal_entry_items", "journal_entries"
   add_foreign_key "ledgers", "account_categories"
+  add_foreign_key "ledgers", "accounts", column: "fx_gain_account_id", on_delete: :nullify
+  add_foreign_key "ledgers", "accounts", column: "fx_loss_account_id", on_delete: :nullify
   add_foreign_key "ledgers", "ledgers", column: "contra_for_id"
   add_foreign_key "members", "organizations"
   add_foreign_key "members", "users"

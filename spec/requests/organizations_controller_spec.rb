@@ -39,4 +39,40 @@ RSpec.describe 'Organizations API', type: :request do
       end
     end
   end
+
+  describe 'PATCH /organizations/:id time_zone' do
+    let(:organization) { create(:organization) }
+    let(:member) { create(:member, organization: organization, user: user) }
+
+    context 'as an organization admin' do
+      before do
+        create(:permission, code: Permission::ORG_ADMIN, grantee: member, organization: organization)
+      end
+
+      it 'updates the time zone' do
+        patch "/organizations/#{organization.id}",
+              params: { organization_id: organization.id, time_zone: 'Asia/Tehran' }, as: :json
+
+        expect(response).to have_http_status(:ok)
+        expect(organization.reload.time_zone).to eq('Asia/Tehran')
+      end
+
+      it 'rejects an unknown time zone' do
+        patch "/organizations/#{organization.id}",
+              params: { organization_id: organization.id, time_zone: 'Mars/Olympus' }, as: :json
+
+        expect(response).to have_http_status(:unprocessable_content)
+        expect(organization.reload.time_zone).to eq('UTC')
+      end
+    end
+
+    it 'is forbidden for members without admin permission' do
+      member
+      patch "/organizations/#{organization.id}",
+            params: { organization_id: organization.id, time_zone: 'Asia/Tehran' }, as: :json
+
+      expect(response).to have_http_status(:forbidden)
+      expect(organization.reload.time_zone).to eq('UTC')
+    end
+  end
 end

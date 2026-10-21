@@ -18,6 +18,7 @@ module Accounting
     def create
       ledger = Accounting::Ledger.new(permitted_params)
       authorize ledger
+      return if render_foreign_references(ledger)
 
       if ledger.save
         render json: LedgerBlueprint.render(ledger, view: :show), status: :ok
@@ -29,8 +30,10 @@ module Accounting
     def update
       ledger = find_ledger
       authorize ledger
+      ledger.assign_attributes(permitted_params)
+      return if render_foreign_references(ledger)
 
-      if ledger.update(permitted_params)
+      if ledger.save
         render json: LedgerBlueprint.render(ledger, view: :show), status: :ok
       else
         render json: { errors: ledger.errors.full_messages }, status: :unprocessable_content
@@ -51,7 +54,24 @@ module Accounting
     private
 
     def find_ledger
-      Accounting::Ledger.find(params[:id])
+      current_organization.ledgers.find(params[:id])
+    end
+
+    # The category, contra ledger and FX accounts must be the organization's
+    # own (ids come from the request).
+    def render_foreign_references(ledger)
+      errors = []
+      errors << :account_category if ledger.account_category_id && !current_organization.account_categories.exists?(ledger.account_category_id)
+      errors << :contra_for if ledger.contra_for_id && !current_organization.ledgers.exists?(ledger.contra_for_id)
+      %i[fx_gain_account fx_loss_account].each do |name|
+        id = ledger.public_send("#{name}_id")
+        errors << name if id && !current_organization.accounts.exists?(id)
+      end
+      return false if errors.empty?
+
+      messages = errors.map { |name| ledger.errors.full_message(name, Accounting::Ledger.model_t("errors.not_in_organization")) }
+      render json: { errors: messages }, status: :unprocessable_content
+      true
     end
 
     def permitted_params
@@ -61,6 +81,8 @@ module Accounting
         :contra_for_id,
         :unexpected_balance,
         :is_monetary,
+        :fx_gain_account_id,
+        :fx_loss_account_id,
         *t_params(:name)
       )
     end

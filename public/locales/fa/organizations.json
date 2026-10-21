@@ -20,6 +20,8 @@
     "organizationSettings": "تنظیمات سازمان",
     "primaryLocale": "زبان اصلی",
     "storage": "فضای ذخیره‌سازی",
-    "storageUsage": "مصرف فضا"
+    "storageUsage": "مصرف فضا",
+    "timeZone": "منطقه زمانی",
+    "timeZoneHint": "برای کارهای زمان‌بندی‌شده مانند تسعیر خودکار ارز استفاده می‌شود"
   }
 }

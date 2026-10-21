@@ -175,6 +175,7 @@ RSpec.describe "Accounting::Accounts API", openapi_spec: "v1/accounting.yaml", t
           expect(data["id"]).to eq(account_1.id)
           expect(data["code"]).to eq(account_1.code)
           expect(data["name"]).to eq(account_1.name)
+          expect(data["has_foreign_currency_items"]).to be(false)
           expect(data).to include(
             "accepts_other_currencies",
             "allowed_center_types_1",
@@ -249,7 +250,10 @@ RSpec.describe "Accounting::Accounts API", openapi_spec: "v1/accounting.yaml", t
         properties: {
           code: { type: :string, example: "13" },
           name_en: { type: :string, example: "Updated Account" },
-          accepts_other_currencies: { type: :boolean, example: true }
+          accepts_other_currencies: { type: :boolean, example: true },
+          ledger_id: { type: :integer },
+          fx_gain_account_id: { type: %i[integer null], description: "Overrides the ledger's / default FX gain account" },
+          fx_loss_account_id: { type: %i[integer null], description: "Overrides the ledger's / default FX loss account" }
         }
       }
 
@@ -275,6 +279,23 @@ RSpec.describe "Accounting::Accounts API", openapi_spec: "v1/accounting.yaml", t
           expect(data["code"]).to eq("13")
           expect(data["name"]).to eq("Updated Account")
           expect(data["accepts_other_currencies"]).to be(true)
+        end
+      end
+
+      response "422", "Moved to another organization's ledger" do
+        let(:other_category) { create(:organization).account_categories.find_by!(identifier: "CA") }
+        let(:other_ledger) { create(:accounting_ledger, account_category: other_category, code: "12") }
+        let(:organization_id) { organization.id }
+        let(:id) { account_1.id }
+        let(:params) { { ledger_id: other_ledger.id } }
+
+        before do
+          create(:permission, code: Permission::ACCOUNTING_MANAGE_ACCOUNTS, grantee: member, organization: organization)
+        end
+
+        run_test! do |response|
+          expect(JSON.parse(response.body)["errors"].join).to include("must belong to this organization")
+          expect(account_1.reload.ledger_id).to eq(ledger.id)
         end
       end
 

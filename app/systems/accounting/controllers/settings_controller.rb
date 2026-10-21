@@ -10,7 +10,7 @@ module Accounting
       if @setting.update(setting_params)
         render json: SettingBlueprint.render(@setting)
       else
-        render json: { errors: @setting.errors }, status: :unprocessable_entity
+        render json: { errors: @setting.errors.full_messages }, status: :unprocessable_content
       end
     end
 
@@ -32,8 +32,32 @@ module Accounting
         :ledger_length,
         :account_length,
         :center_length,
-        :center_levels
-      )
+        :center_levels,
+        :closing_method,
+        :retained_earnings_account_id,
+        :income_summary_account_id,
+        :current_year_profit_account_id,
+        :default_fx_gain_account_id,
+        :default_fx_loss_account_id
+      ).to_h.merge(line_template_params)
+    end
+
+    # { locale => template } (closing: { kind => { locale => template } })
+    # limited to the organization's languages and the known kinds.
+    def line_template_params
+      raw = params.require(:accounting_setting)
+      templates = {}
+      %i[revaluation_line_description_template revaluation_counter_line_description_template].each do |attribute|
+        templates[attribute] = locale_texts_param(raw[attribute]) || {} if raw.key?(attribute)
+      end
+      if raw.key?(:closing_line_description_templates)
+        closing = raw[:closing_line_description_templates]
+        templates[:closing_line_description_templates] = Accounting::Closing::LineDescriptions::KINDS.each_with_object({}) do |kind, by_kind|
+          texts = closing.respond_to?(:permit) ? locale_texts_param(closing[kind]) : nil
+          by_kind[kind] = texts if texts
+        end
+      end
+      templates
     end
   end
 end

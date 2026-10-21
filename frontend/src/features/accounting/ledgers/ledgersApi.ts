@@ -9,6 +9,9 @@ export interface Ledger {
   contra_for_id: number | null;
   unexpected_balance: 'accept' | 'warn' | 'disallow';
   is_monetary: boolean;
+  /** FX revaluation gain/loss overrides for this ledger's accounts. */
+  fx_gain_account_id: number | null;
+  fx_loss_account_id: number | null;
   t?: {
     name?: Record<string, string>;
   };

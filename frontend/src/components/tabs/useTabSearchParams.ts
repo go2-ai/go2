@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
-import { useTabManager } from '../../components/tabs/useTabManager';
-import { useCurrentTabId } from '../../components/tabs/TabIdContext';
+import { useTabManager } from './useTabManager';
+import { useCurrentTabId } from './TabIdContext';
 
 /** Query parameters of the current tab's path (tabs keep their own URL). */
 export const useTabSearchParams = (): URLSearchParams => {

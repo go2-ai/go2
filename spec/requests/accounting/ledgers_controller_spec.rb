@@ -181,7 +181,9 @@ RSpec.describe 'Accounting::Ledgers API', openapi_spec: 'v1/accounting.yaml', ty
         properties: {
           code: { type: :string, example: '13' },
           name_en: { type: :string, example: 'Updated Ledger' },
-          is_monetary: { type: :boolean, example: true }
+          is_monetary: { type: :boolean, example: true },
+          fx_gain_account_id: { type: %i[integer null], description: 'Overrides the default FX gain account' },
+          fx_loss_account_id: { type: %i[integer null], description: 'Overrides the default FX loss account' }
         }
       }
 
@@ -200,6 +202,35 @@ RSpec.describe 'Accounting::Ledgers API', openapi_spec: 'v1/accounting.yaml', ty
           expect(data['id']).to eq(ledger_1.id)
           expect(data['code']).to eq('13')
         end
+      end
+
+      response '422', "Another organization's FX account" do
+        let(:organization_id) { organization.id }
+        let(:id) { ledger_1.id }
+        let(:other_account) { create_account_in(create(:organization), 'RE', ledger_code: '90') }
+        let(:params) { { is_monetary: true, fx_gain_account_id: other_account.id } }
+
+        before do
+          create(:permission, code: Permission::ACCOUNTING_MANAGE_ACCOUNTS, grantee: member, organization: organization)
+        end
+
+        run_test! do |response|
+          expect(JSON.parse(response.body)['errors'].join).to include('must belong to this organization')
+          expect(ledger_1.reload.fx_gain_account_id).to be_nil
+        end
+      end
+
+      response '404', "Another organization's ledger" do
+        let(:organization_id) { organization.id }
+        let(:other_category) { create(:organization).account_categories.find_by!(identifier: 'CA') }
+        let(:id) { create(:accounting_ledger, account_category: other_category, code: '10').id }
+        let(:params) { { code: '13' } }
+
+        before do
+          create(:permission, code: Permission::ACCOUNTING_MANAGE_ACCOUNTS, grantee: member, organization: organization)
+        end
+
+        run_test!
       end
 
       response '403', 'Not authorized' do

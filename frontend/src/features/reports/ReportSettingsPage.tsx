@@ -35,7 +35,7 @@ import {
 import { useOpenReport } from './useOpenReport';
 import { useToast } from '../../contexts/ToastContext';
 import { useConfirm } from '../../contexts/confirmContext';
-import { parseId, useTabSearchParams } from './useTabSearchParams';
+import { parseId, useTabSearchParams } from '../../components/tabs/useTabSearchParams';
 import { useTabLoading } from '../../components/tabs/TabLoadingContext';
 
 // Path: report-settings?report_key=journal_entry&record_id=42
@@ -180,6 +180,8 @@ export const ReportSettingsPage = () => {
         return tReports('explorerPage');
       case 'journal_entry_items':
         return tReports('journalEntryItemsPage');
+      case 'currency_revaluation':
+        return tReports('currencyRevaluationPage');
       default:
         return key;
     }

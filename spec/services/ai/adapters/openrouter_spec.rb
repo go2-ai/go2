@@ -223,9 +223,13 @@ RSpec.describe Ai::Adapters::Openrouter do
         headers: { "Content-Type" => "application/json" }
       )
 
+      # The provider's message isn't passed on (it can contain key details).
       expect {
         adapter.complete(messages: [])
-      }.to raise_error(Ai::AuthenticationError, /Invalid API key/)
+      }.to raise_error(Ai::AuthenticationError) { |error|
+        expect(error.message).to match(/authentication failed/)
+        expect(error.message).not_to include("Invalid API key")
+      }
     end
 
     it "raises AuthenticationError on 403" do

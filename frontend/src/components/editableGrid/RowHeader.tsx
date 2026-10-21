@@ -14,6 +14,8 @@ interface RowHeaderProps {
   onContextMenu: (e: React.MouseEvent) => void;
   onMouseDown?: (e: React.MouseEvent) => void;
   dragHandleProps?: Record<string, unknown>;
+  /** False in read-only grids (rows can't be moved). */
+  showDragHandle?: boolean;
 }
 
 export const RowHeader = ({
@@ -24,6 +26,7 @@ export const RowHeader = ({
   onContextMenu,
   onMouseDown,
   dragHandleProps,
+  showDragHandle = true,
 }: RowHeaderProps) => {
   return (
     <div
@@ -34,8 +37,8 @@ export const RowHeader = ({
     >
       {/* Left accent bar for active/selected row */}
       {isSelected && <span className="eg-row-header__accent" />}
-      <span className="eg-row-header__drag" {...dragHandleProps}>
-        <svg className="eg-icon" viewBox="0 0 24 24" aria-hidden="true"><path d={DRAG_PATH} /></svg>
+      <span className="eg-row-header__drag" {...dragHandleProps} style={showDragHandle ? undefined : { visibility: 'hidden' }}>
+        {showDragHandle && <svg className="eg-icon" viewBox="0 0 24 24" aria-hidden="true"><path d={DRAG_PATH} /></svg>}
       </span>
       {/* Read-only row number */}
       <span className="eg-row-header__number">{rowIndex + 1}</span>

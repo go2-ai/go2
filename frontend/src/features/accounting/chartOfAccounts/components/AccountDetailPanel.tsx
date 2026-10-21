@@ -10,6 +10,11 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import HistoryIcon from '@mui/icons-material/History';
 import { useTranslation } from 'react-i18next';
+import { useParams } from 'react-router-dom';
+import { useGetAccountsQuery, type Account } from '../../accounts/accountsApi';
+import { isRevaluable, resolveFxAccounts, type ResolvedFxAccount } from '../../accounts/fxAccounts';
+import type { Ledger } from '../../ledgers/ledgersApi';
+import { useGetAccountingSettingsQuery } from '../../settings/settingsApi';
 import type { ChartOfAccountsNode } from '../utils/buildChartOfAccountsTree';
 import type { CenterType } from '../../centerTypes/centerTypesApi';
 import type {
@@ -49,6 +54,10 @@ export const AccountDetailPanel = ({
 }: AccountDetailPanelProps) => {
   const { t } = useTranslation('shared');
   const { t: tAccounting } = useTranslation('accounting');
+  const { organizationId } = useParams<{ organizationId: string }>();
+  const orgId = parseInt(organizationId || '0', 10);
+  const { data: settings } = useGetAccountingSettingsQuery(orgId, { skip: !orgId });
+  const { data: accounts = [] } = useGetAccountsQuery(orgId, { skip: !orgId });
 
   if (!node) {
     return (
@@ -173,6 +182,28 @@ export const AccountDetailPanel = ({
     return ['CA', 'LA', 'CL', 'LL', 'OE'].includes(identifier ?? '');
   };
 
+  // Resolved FX gain/loss accounts with where they come from; the record's
+  // own override is shown as "override".
+  const renderFxAccounts = (resolved: { gain: ResolvedFxAccount; loss: ResolvedFxAccount }, own: 'account' | 'ledger') =>
+    (['gain', 'loss'] as const).map((kind) => {
+      const { accountId, source } = resolved[kind];
+      const account = accountId ? accounts.find((a) => a.id === accountId) : undefined;
+      return (
+        <Box key={kind}>
+          {renderField(tAccounting(`closingSettings.inherited.${kind}`), account ? (
+            <>
+              {`${account.full_code} - ${account.name}`}{' '}
+              <Typography component="span" variant="body2" color="text.secondary">
+                ({tAccounting(source === own ? 'closingSettings.inherited.from.override' : `closingSettings.inherited.from.${source}`)})
+              </Typography>
+            </>
+          ) : (
+            <Typography component="span" variant="body2" color="warning.main">{tAccounting('closingSettings.inherited.notSet')}</Typography>
+          ))}
+        </Box>
+      );
+    });
+
   const renderCenterTypes = (ids: number[] | null | undefined): React.ReactNode => {
     if (!ids || ids.length === 0) return '—';
     const resolved = ids
@@ -285,6 +316,7 @@ export const AccountDetailPanel = ({
                 {isBalanceSheet && renderField(tAccounting('isMonetary'),
                   ledger.is_monetary ? t('yes') : t('no')
                 )}
+                {isBalanceSheet && ledger.is_monetary && renderFxAccounts(resolveFxAccounts(null, ledger as Ledger, settings), 'ledger')}
                 {balanceType && renderField(tAccounting('balanceType'),
                   tAccounting(balanceType)
                 )}
@@ -315,6 +347,12 @@ export const AccountDetailPanel = ({
                 {renderField(tAccounting('acceptsOtherCurrencies'),
                   account.accepts_other_currencies ? t('yes') : t('no')
                 )}
+                {(() => {
+                  const ledger = findNodeById('ledger', account.ledger_id)?.raw as Ledger | undefined;
+                  return isRevaluable(account as Account, ledger)
+                    ? renderFxAccounts(resolveFxAccounts(account as Account, ledger, settings), 'account')
+                    : null;
+                })()}
                 {renderField(tAccounting('allowedCenterTypes'),
                   <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                     {allowedCenterTypesKeys.slice(0, centerLevels).map((key, index) => (

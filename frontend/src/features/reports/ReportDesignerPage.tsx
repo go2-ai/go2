@@ -12,7 +12,7 @@ import { useToast } from '../../contexts/ToastContext';
 import { REPORT_FONT_FAMILIES } from './reportEngine';
 import { useReportData } from './useReportData';
 import { useReportSetup } from './useReportSetup';
-import { parseId, useTabSearchParams } from './useTabSearchParams';
+import { parseId, useTabSearchParams } from '../../components/tabs/useTabSearchParams';
 import { useTabLoading } from '../../components/tabs/TabLoadingContext';
 
 // Path: report-designer?template_id=1&record_id=42 (record_id is optional and

@@ -86,11 +86,17 @@ RSpec.describe Accounting::ChartOfAccountsAi::Service do
       allow(Ai::Client).to receive(:available?).and_return(false)
     end
 
-    it "returns NOT_CONFIGURED without persisting anything" do
+    it "returns NOT_CONFIGURED without saving the user message, and explains it in the chat" do
+      result = nil
       expect {
         result = described_class.call(chat: chat, user_content: "hi")
-        expect(result.status).to eq(Accounting::ChartOfAccountsAi::Result::NOT_CONFIGURED)
-      }.not_to change { chat.messages.count }
+      }.to change { chat.messages.count }.by(1)
+
+      expect(result.status).to eq(Accounting::ChartOfAccountsAi::Result::NOT_CONFIGURED)
+      message = chat.messages.sole
+      expect(message.role).to eq("assistant")
+      expect(message.metadata).to include("error" => true, "error_kind" => "not_configured")
+      expect(result.messages_created).to eq([ message ])
     end
   end
 

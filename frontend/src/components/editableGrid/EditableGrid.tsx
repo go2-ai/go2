@@ -101,9 +101,12 @@ const GridCell = <T extends GridRow>({
     content = (
       <div
         {...{ [CELL_DISPLAY_ATTR]: '' }}
-        className={`eg-display${editable ? '' : ' eg-display--disabled'}`}
+        // Read-only grids look like editable ones (they just never enter
+        // edit mode); only cells that can't be edited in an editable grid
+        // are greyed out.
+        className={`eg-display${editable || readOnly ? '' : ' eg-display--disabled'}`}
         tabIndex={editable ? 0 : -1}
-        aria-disabled={editable ? undefined : true}
+        aria-disabled={editable || readOnly ? undefined : true}
       >
         {col.renderDisplay!(row)}
       </div>
@@ -169,7 +172,7 @@ const GridRowViewInner = <T extends GridRow>({
   onHeaderMouseDown,
   onRowContextMenu,
 }: GridRowViewProps<T>) => {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: row.id });
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: row.id, disabled: readOnly });
   const blinking = blinkingKeys ? blinkingKeys.split(',') : [];
 
   return (
@@ -200,7 +203,8 @@ const GridRowViewInner = <T extends GridRow>({
           isSelected={isSelected}
           onContextMenu={(e) => onRowContextMenu(row.id, e)}
           onMouseDown={(e) => onHeaderMouseDown(row.id, e)}
-          dragHandleProps={listeners}
+          dragHandleProps={readOnly ? undefined : listeners}
+          showDragHandle={!readOnly}
         />
         {columns.map((col) => (
           <GridCell
@@ -364,10 +368,12 @@ export const EditableGrid = <T extends GridRow = GridRow>(props: EditableGridPro
     latest.current.onCellClick?.(rowId, cellKey ?? cols[0]?.key ?? '', e);
   }, []);
 
+  // No row actions in read-only grids (the browser menu stays available).
   const handleRowContextMenu = useCallback((rowId: string, e: React.MouseEvent) => {
+    if (readOnly) return;
     e.preventDefault();
     setContextMenu({ x: e.clientX, y: e.clientY, rowId });
-  }, [setContextMenu]);
+  }, [setContextMenu, readOnly]);
 
   const isRowSelected = (rowId: string): boolean =>
     selectedRowIds ? selectedRowIds.has(rowId) : selectedRowId === rowId;

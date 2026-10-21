@@ -16,7 +16,7 @@ class ReportTemplatesController < ApplicationController
   def show
     authorize @template
 
-    render json: ReportTemplateBlueprint.render(@template, view: :show, can_manage: can_manage?), status: :ok
+    render json: ReportTemplateBlueprint.render(@template, view: :show, can_manage: can_manage?, organization: @organization), status: :ok
   end
 
   # New templates are always copies of an existing template (system or the
@@ -29,7 +29,7 @@ class ReportTemplatesController < ApplicationController
     authorize template
 
     if template.save
-      render json: ReportTemplateBlueprint.render(template, view: :show, can_manage: can_manage?), status: :ok
+      render json: ReportTemplateBlueprint.render(template, view: :show, can_manage: can_manage?, organization: @organization), status: :ok
     else
       render json: { errors: template.errors.full_messages }, status: :unprocessable_content
     end
@@ -42,7 +42,7 @@ class ReportTemplatesController < ApplicationController
     @template.write_attribute(:name, (@template.read_attribute(:name) || {}).merge(name_param)) if name_param.present?
 
     if @template.save
-      render json: ReportTemplateBlueprint.render(@template, view: :show, can_manage: can_manage?), status: :ok
+      render json: ReportTemplateBlueprint.render(@template, view: :show, can_manage: can_manage?, organization: @organization), status: :ok
     else
       render json: { errors: @template.errors.full_messages }, status: :unprocessable_content
     end

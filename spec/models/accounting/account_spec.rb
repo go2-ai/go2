@@ -175,4 +175,29 @@ RSpec.describe Accounting::Account, type: :model do
       Mobility.with_locale(:fa) { expect(account.name).to eq("Cash") }
     end
   end
+
+  describe "accepts other currencies" do
+    let(:organization) { create(:organization) }
+    let(:eur) { create(:accounting_currency, organization: organization, abr: "EUR") }
+    let(:fiscal_year) do
+      create(:fiscal_year, organization: organization, start_date: Date.new(2024, 1, 1), finish_date: Date.new(2024, 12, 31))
+    end
+    let(:bank) { create_account_in(organization, "CA", ledger_code: "10", monetary: true, name: "Bank") }
+    let(:revenue) { create_account_in(organization, "RE", ledger_code: "10", name: "Sales") }
+
+    it "can be turned off while only the main currency is used" do
+      post_entry(fiscal_year: fiscal_year, date: Date.new(2024, 3, 1), lines: [ je_line(bank, debit: 10), je_line(revenue, credit: 10) ])
+      expect(bank.foreign_currency_items?).to be(false)
+      expect(bank.update(accepts_other_currencies: false)).to be(true)
+    end
+
+    it "can't be turned off while entries use another currency" do
+      post_entry(fiscal_year: fiscal_year, date: Date.new(2024, 3, 1), state: :draft,
+                 lines: [ je_line(bank, debit: 11, currency: eur, rate: 1.1), je_line(revenue, credit: 11) ])
+      expect(bank.foreign_currency_items?).to be(true)
+      expect(bank.update(accepts_other_currencies: false)).to be(false)
+      expect(bank.errors[:accepts_other_currencies]).to be_present
+      expect(bank.reload.update(name: { en: "Bank 2" })).to be(true)
+    end
+  end
 end

@@ -5,6 +5,12 @@ report_templates = [
     name: { "en" => "Journal Entry", "fa" => "سند حسابداری" },
     report_key: "journal_entry",
     template_file: File.read(Rails.root.join("db/seeds/report_templates/journal_entry.json"))
+  },
+  {
+    name: { "en" => "Revaluation of Monetary Items", "fa" => "تسعیر اقلام پولی" },
+    report_key: "currency_revaluation",
+    # Generated per organization when served (center levels); stored with 3.
+    template_file: Accounting::Reports::CurrencyRevaluationTemplate.build(center_levels: 3).to_json
   }
 ]
 

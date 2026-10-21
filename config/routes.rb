@@ -149,6 +149,47 @@ Rails.application.routes.draw do
           get :group_by
         end
       end
+      resources :balances, only: [ :index ]
+      # :id is the fiscal year id.
+      resources :fiscal_year_closings, only: [ :show ] do
+        member do
+          post :approve_all
+          post :start
+          post :cancel
+          post :renumber
+          post :skip_renumber
+          patch :line_templates
+          post :acknowledge_revaluation
+          post :complete_revaluation
+          post :post_temp_closing
+          post :post_ending
+          post :post_beginning
+          post :rollback
+          post :reopen_fully
+        end
+      end
+      resources :exchange_rates, only: [ :index, :create, :update, :destroy ] do
+        collection do
+          get :resolve
+          post :fetch
+        end
+      end
+      resources :exchange_rate_sources, only: [ :index, :create, :update, :destroy ]
+      resources :currency_revaluation_schedules, only: [ :index, :show, :create, :update, :destroy ] do
+        collection do
+          post :preview
+        end
+        member do
+          post :run_now
+        end
+      end
+      resources :currency_revaluations, only: [ :index, :show, :create, :update, :destroy ] do
+        member do
+          post :rebuild
+          post :post, action: :post_entry
+          patch :kind, action: :change_kind
+        end
+      end
     end
   end
 

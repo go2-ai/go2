@@ -2,7 +2,8 @@
 module Accounting
   class LedgerBlueprint < Blueprinter::Base
     identifier :id
-    fields :code, :unexpected_balance, :is_monetary, :contra_for_id, :name, :account_category_id
+    fields :code, :unexpected_balance, :is_monetary, :contra_for_id, :name, :account_category_id,
+           :fx_gain_account_id, :fx_loss_account_id
     field :translations_hash, name: :t
 
     view :show do

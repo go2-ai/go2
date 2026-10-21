@@ -494,6 +494,39 @@ paths:
                     finish_date:
                       type: string
                       example: '2024-12-31'
+                    status:
+                      type: string
+                      enum:
+                      - open
+                      - closing
+                      - closed
+                      example: open
+                    closing_step:
+                      type:
+                      - string
+                      - 'null'
+                      enum:
+                      - readiness
+                      - renumber
+                      - revaluation
+                      - temp_closing
+                      - ending
+                      - beginning
+                      - finalized
+                      -
+                      example:
+                      description: Current step of the closing wizard; null while
+                        open
+                    closing_started_at:
+                      type:
+                      - string
+                      - 'null'
+                      example:
+                    closed_at:
+                      type:
+                      - string
+                      - 'null'
+                      example:
                     t:
                       type: object
                       example:
@@ -527,6 +560,38 @@ paths:
                   finish_date:
                     type: string
                     example: '2024-12-31'
+                  status:
+                    type: string
+                    enum:
+                    - open
+                    - closing
+                    - closed
+                    example: open
+                  closing_step:
+                    type:
+                    - string
+                    - 'null'
+                    enum:
+                    - readiness
+                    - renumber
+                    - revaluation
+                    - temp_closing
+                    - ending
+                    - beginning
+                    - finalized
+                    -
+                    example:
+                    description: Current step of the closing wizard; null while open
+                  closing_started_at:
+                    type:
+                    - string
+                    - 'null'
+                    example:
+                  closed_at:
+                    type:
+                    - string
+                    - 'null'
+                    example:
                   t:
                     type: object
                     example:
@@ -597,12 +662,46 @@ paths:
                   finish_date:
                     type: string
                     example: '2024-12-31'
+                  status:
+                    type: string
+                    enum:
+                    - open
+                    - closing
+                    - closed
+                    example: open
+                  closing_step:
+                    type:
+                    - string
+                    - 'null'
+                    enum:
+                    - readiness
+                    - renumber
+                    - revaluation
+                    - temp_closing
+                    - ending
+                    - beginning
+                    - finalized
+                    -
+                    example:
+                    description: Current step of the closing wizard; null while open
+                  closing_started_at:
+                    type:
+                    - string
+                    - 'null'
+                    example:
+                  closed_at:
+                    type:
+                    - string
+                    - 'null'
+                    example:
                   t:
                     type: object
                     example:
                       name:
                         en: Fiscal Year 2024
                         fa: سال مالی 2024
+        '422':
+          description: Dates of a closing or closed fiscal year are fixed
         '404':
           description: Fiscal year not found
         '403':
@@ -632,6 +731,8 @@ paths:
       responses:
         '200':
           description: Deletes the fiscal year successfully
+        '422':
+          description: Only open fiscal years can be deleted
         '404':
           description: Fiscal year not found
         '403':
@@ -1867,6 +1968,48 @@ paths:
               - code
               - grantee_type
               - grantee_id
+  "/organizations/{organization_id}/permissions/bulk":
+    parameters:
+    - name: organization_id
+      in: path
+      description: Organization ID
+      required: true
+      schema:
+        type: integer
+    post:
+      summary: Grant multiple permissions in one request
+      tags:
+      - Permissions
+      parameters: []
+      responses:
+        '200':
+          description: Permissions granted, including auto-resolved prerequisites
+        '403':
+          description: Not authorized
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                grantee_type:
+                  type: string
+                  enum:
+                  - Member
+                  - Role
+                  - Department
+                  - Group
+                grantee_id:
+                  type: integer
+                  example: 1
+                codes:
+                  type: array
+                  items:
+                    type: string
+              required:
+              - grantee_type
+              - grantee_id
+              - codes
   "/organizations/{organization_id}/permissions/{id}":
     parameters:
     - name: organization_id
@@ -1912,7 +2055,8 @@ paths:
         '404':
           description: Permission not found
         '403':
-          description: Not authorized
+          description: Cannot revoke a prerequisite while a dependent permission is
+            still granted
   "/organizations/{organization_id}/roles":
     parameters:
     - name: organization_id
@@ -2374,7 +2518,7 @@ paths:
           type: integer
       responses:
         '200':
-          description: Returns deleted records filtered by model type
+          description: Returns a journal entry change log including its items
           content:
             application/json:
               schema:

@@ -40,6 +40,7 @@ import { useConfirm } from '../../../contexts/confirmContext';
 import { CurrencyModal } from '../currencies/components/CurrencyModal';
 import { CURRENCY_PRESETS } from '../currencies/currencyPresets';
 import { useTabLoading } from '../../../components/tabs/TabLoadingContext';
+import { ClosingSettingsPanel } from './components/ClosingSettingsPanel';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -239,6 +240,7 @@ export const AccountingSettingsPage = () => {
           >
             <Tab label={tAccounting('generalSettings')} />
             <Tab label={tAccounting('currencies')} />
+            <Tab label={tAccounting('closingSettings.tab')} />
           </Tabs>
 
           <Box sx={{ flex: 1, px: 4, py: 3 }}>
@@ -435,6 +437,11 @@ export const AccountingSettingsPage = () => {
                   </Button>
                 </Box>
               </Box>
+            </TabPanel>
+
+            {/* ── Tab 3: Closing & FX ── */}
+            <TabPanel value={tabValue} index={2}>
+              {settings && <ClosingSettingsPanel organizationId={orgId} settings={settings} />}
             </TabPanel>
           </Box>
         </Box>

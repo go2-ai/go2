@@ -61,7 +61,10 @@
       "centers": "مراکز",
       "chartOfAccounts": "نمودار حساب‌ها",
       "collapse": "بستن",
+      "currencyRevaluation": "تسعیر اقلام پولی",
+      "currencyRevaluations": "تسعیر اقلام پولی",
       "departments": "دپارتمان‌ها",
+      "exchangeRates": "نرخ‌های ارز",
       "expand": "باز کردن",
       "explorer": "کاوشگر",
       "fiscalYears": "سال‌های مالی",
@@ -72,7 +75,8 @@
       "permissions": "دسترسی‌ها",
       "roles": "نقش‌ها",
       "selectModule": "یک ماژول انتخاب کنید",
-      "settings": "تنظیمات"
+      "settings": "تنظیمات",
+      "yearEndClosing": "بستن سال مالی"
     },
     "name": "نام",
     "password": "رمز عبور",

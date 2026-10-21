@@ -16,7 +16,7 @@ FactoryBot.define do
       end
     end
 
-    email { "email#{ rand(1..1000) }@test.com" }
+    email { "email_#{SecureRandom.alphanumeric(8)}@test.com" }
 
     trait :invited do
       invited_at { DateTime.now }

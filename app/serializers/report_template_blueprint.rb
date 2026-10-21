@@ -34,6 +34,9 @@ class ReportTemplateBlueprint < Blueprinter::Base
 
   view :show do
     include_view :index
-    field :template_file
+    # Pass organization: so generated system templates fit it.
+    field :template_file do |template, options|
+      template.template_file_for(options[:organization])
+    end
   end
 end

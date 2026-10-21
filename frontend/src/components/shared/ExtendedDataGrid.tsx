@@ -12,6 +12,7 @@ import {
   useGridSelector,
   gridSortModelSelector,
 } from '@mui/x-data-grid';
+import { normalizeNumberText, numericComparator } from './numericColumn';
 import type {
   GridColDef,
   DataGridProps,
@@ -130,14 +131,31 @@ export function ExtendedDataGrid({
     return rows.filter((row) =>
       activeFilters.every(([field, filterValue]) => {
         const rawValue = getFilterableValue(row, field);
+        const col = columnsByField[field];
+        if (col?.type === 'number') {
+          // Numbers match whether or not the search uses thousands
+          // separators, against the value and its formatted text.
+          const wanted = normalizeNumberText(filterValue);
+          // The grid passes (value, row, column, apiRef); the api isn't needed here.
+          const format = col.valueFormatter as ((value: unknown, row: unknown, column: GridColDef, api: undefined) => unknown) | undefined;
+          const formatted = format ? format(rawValue, row, col, undefined) : rawValue;
+          return [rawValue, formatted].some((value) => value != null && normalizeNumberText(value).includes(wanted));
+        }
         const strValue = rawValue != null ? String(rawValue).toLowerCase() : '';
         return strValue.includes(filterValue.toLowerCase());
       }),
     );
-  }, [rows, filters, showHeaderSearchRow, getFilterableValue]);
+  }, [rows, filters, showHeaderSearchRow, getFilterableValue, columnsByField]);
+
+  // Numeric columns (type: 'number') sort numerically, also when their
+  // values are numeric strings, unless they bring their own comparator.
+  const numericColumns = useMemo<GridColDef[]>(
+    () => columns.map((col) => (col.type === 'number' && !col.sortComparator ? { ...col, sortComparator: numericComparator } : col)),
+    [columns],
+  );
 
   const columnsWithOpen = useMemo<GridColDef[]>(() => {
-    if (!hasRowOpen) return columns;
+    if (!hasRowOpen) return numericColumns;
     const openColumn: GridColDef = {
       field: OPEN_FIELD,
       headerName: '',
@@ -175,8 +193,8 @@ export function ExtendedDataGrid({
         </Tooltip>
       ),
     };
-    return [openColumn, ...columns];
-  }, [columns, hasRowOpen, rowOpenLabel]);
+    return [openColumn, ...numericColumns];
+  }, [numericColumns, hasRowOpen, rowOpenLabel]);
 
   // The checkbox cell keeps its own click/keyboard semantics (selection)
   const isOpenTriggerField = (field: string) => field !== CHECKBOX_FIELD;

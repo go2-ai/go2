@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { useGetReportTemplateQuery } from '../reportTemplates/reportTemplatesApi';
 import { ReportViewer } from './components/ReportViewer';
 import { useReportData } from './useReportData';
-import { parseId, useTabSearchParams } from './useTabSearchParams';
+import { parseId, useTabSearchParams } from '../../components/tabs/useTabSearchParams';
 import { useTabLoading } from '../../components/tabs/TabLoadingContext';
 
 // Path: reports?template_id=1&report_key=journal_entry&record_id=42

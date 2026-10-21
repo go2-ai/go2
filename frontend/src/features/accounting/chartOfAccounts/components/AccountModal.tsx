@@ -26,7 +26,12 @@ import { useGetLedgersQuery } from '../../ledgers/ledgersApi';
 import { useGetAccountCategoriesQuery } from '../../accountCategories/accountCategoriesApi';
 import { useGetAccountingSettingsQuery } from '../../settings/settingsApi';
 import { useGetCenterTypesQuery } from '../../centerTypes/centerTypesApi';
-import { useGetAccountsQuery } from '../../accounts/accountsApi';
+import { useGetAccountQuery, useGetAccountsQuery } from '../../accounts/accountsApi';
+import { AccountPicker } from '../../accounts/components/AccountPicker';
+import { InheritedFxAccounts } from '../../accounts/components/InheritedFxAccounts';
+import { resolveFxAccounts } from '../../accounts/fxAccounts';
+
+const FX_ACCOUNT_FILTER = { types: ['income_statement'] };
 import { useTranslatableLocales } from '../../../../hooks/useTranslatableLocales';
 import { useToast } from '../../../../contexts/ToastContext';
 import MultiLocaleInput from '../../../../components/shared/MultiLocaleInput';
@@ -89,6 +94,12 @@ export const AccountModal = ({
   const { data: accounts } = useGetAccountsQuery(organizationId, {
     skip: !organizationId,
   });
+  // The single-account endpoint tells whether items in other currencies exist.
+  const { data: accountDetail } = useGetAccountQuery(
+    { organizationId, id: account?.id ?? 0 },
+    { skip: !open || !account?.id, refetchOnMountOrArgChange: true }
+  );
+  const currencyLocked = !!accountDetail?.has_foreign_currency_items && !!account?.accepts_other_currencies;
 
   const accountCategoryLength = settings?.account_category_length ?? 1;
   const ledgerLength = settings?.ledger_length ?? 2;
@@ -110,6 +121,8 @@ export const AccountModal = ({
     contra_for_id: null as number | null,
     accepts_other_currencies: false,
     allowed_center_types: [] as number[][],
+    fx_gain_account_id: null as number | null,
+    fx_loss_account_id: null as number | null,
   });
 
   const [showContraField, setShowContraField] = useState(false);
@@ -147,6 +160,8 @@ export const AccountModal = ({
         contra_for_id: account.contra_for_id,
         accepts_other_currencies: account.accepts_other_currencies,
         allowed_center_types: allowed,
+        fx_gain_account_id: account.fx_gain_account_id ?? null,
+        fx_loss_account_id: account.fx_loss_account_id ?? null,
       });
       setShowContraField(account.contra_for_id !== null);
     } else {
@@ -179,6 +194,8 @@ export const AccountModal = ({
         contra_for_id: null,
         accepts_other_currencies: false,
         allowed_center_types: emptyLevels,
+        fx_gain_account_id: null,
+        fx_loss_account_id: null,
       });
       setShowContraField(false);
     }
@@ -190,6 +207,9 @@ export const AccountModal = ({
     () => ledgers?.find((l) => l.id === formData.ledger_id) ?? null,
     [ledgers, formData.ledger_id]
   );
+
+  // Revaluations reach accounts of monetary ledgers in other currencies.
+  const revaluable = !!selectedLedger?.is_monetary && formData.accepts_other_currencies;
 
   const selectedLedgerFullCode = useMemo(() => {
     if (!selectedLedger) return '';
@@ -271,6 +291,9 @@ export const AccountModal = ({
       code: formData.codeSuffix,
       contra_for_id: formData.contra_for_id,
       accepts_other_currencies: formData.accepts_other_currencies,
+      // FX overrides only apply to accounts that can be revalued.
+      fx_gain_account_id: revaluable ? formData.fx_gain_account_id : null,
+      fx_loss_account_id: revaluable ? formData.fx_loss_account_id : null,
     };
 
     for (let i = 0; i < centerLevels; i++) {
@@ -366,20 +389,53 @@ export const AccountModal = ({
             helperText={errors.name}
           />
 
-          <FormControlLabel
-            control={
-              <Switch
-                checked={formData.accepts_other_currencies}
-                onChange={(e) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    accepts_other_currencies: e.target.checked,
-                  }))
-                }
+          <Box>
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={formData.accepts_other_currencies}
+                  disabled={currencyLocked}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      accepts_other_currencies: e.target.checked,
+                    }))
+                  }
+                />
+              }
+              label={tAccounting('acceptsOtherCurrencies')}
+            />
+            {currencyLocked && (
+              <Typography variant="caption" color="text.secondary" component="div" sx={{ ml: 6, mt: -0.5 }}>
+                {tAccounting('acceptsOtherCurrenciesLocked')}
+              </Typography>
+            )}
+          </Box>
+
+          {/* Only accounts in other currencies are revalued. */}
+          {selectedLedger?.is_monetary && formData.accepts_other_currencies && (
+            <>
+              <InheritedFxAccounts
+                organizationId={organizationId}
+                level="account"
+                {...resolveFxAccounts(null, selectedLedger, settings)}
               />
-            }
-            label={tAccounting('acceptsOtherCurrencies')}
-          />
+              <AccountPicker
+                organizationId={organizationId}
+                label={tAccounting('closingSettings.fxGainOverride')}
+                value={formData.fx_gain_account_id}
+                onChange={(id) => setFormData((prev) => ({ ...prev, fx_gain_account_id: id }))}
+                filter={FX_ACCOUNT_FILTER}
+              />
+              <AccountPicker
+                organizationId={organizationId}
+                label={tAccounting('closingSettings.fxLossOverride')}
+                value={formData.fx_loss_account_id}
+                onChange={(id) => setFormData((prev) => ({ ...prev, fx_loss_account_id: id }))}
+                filter={FX_ACCOUNT_FILTER}
+              />
+            </>
+          )}
 
           <Box>
             <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 1 }}>

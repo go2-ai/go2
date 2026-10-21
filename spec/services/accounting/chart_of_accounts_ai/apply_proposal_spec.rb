@@ -47,7 +47,8 @@ RSpec.describe Accounting::ChartOfAccountsAi::ApplyProposal do
       expect(ledger).to be_present
       expect(ledger.is_monetary).to be true
       expect(ledger.accounts.count).to eq(1)
-      expect(ledger.accounts.first.name).to eq({ "en" => "Petty Cash", "fa" => "تنخواه" })
+      # `name` reads the current language; the stored value has all of them.
+      expect(ledger.accounts.first.read_attribute(:name)).to eq({ "en" => "Petty Cash", "fa" => "تنخواه" })
     end
 
     it "returns a successful result with the chat and chart" do

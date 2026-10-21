@@ -8,6 +8,12 @@
     "fiscalYears": "سال‌های مالی",
     "fiscalYearsDescription": "مدیریت سال‌های مالی سازمان",
     "noFiscalYears": "سال مالی یافت نشد",
-    "startDate": "تاریخ شروع"
+    "startDate": "تاریخ شروع",
+    "yearStatus": "وضعیت",
+    "yearStatuses": {
+      "closed": "بسته",
+      "closing": "در حال بستن",
+      "open": "باز"
+    }
   }
 }

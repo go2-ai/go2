@@ -2,6 +2,7 @@
 module Accounting
   class Ledger < ApplicationRecord
     include TranslationHelper
+    include Accounting::FxAccountOverrides
     has_paper_trail
 
     extend Mobility

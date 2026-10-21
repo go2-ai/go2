@@ -15,6 +15,12 @@ export interface Account {
   allowed_center_types_4: number[] | null;
   allowed_center_types_5: number[] | null;
   allowed_center_types_6: number[] | null;
+  /** FX revaluation gain/loss overrides (take priority over the ledger's). */
+  fx_gain_account_id: number | null;
+  fx_loss_account_id: number | null;
+  /** Only from the single-account endpoint: items in other currencies exist,
+   * so accepts_other_currencies can't be turned off. */
+  has_foreign_currency_items?: boolean;
   t?: {
     name?: Record<string, string>;
   };

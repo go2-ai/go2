@@ -81,12 +81,22 @@ module Accounting
     # ── Callbacks ─────────────────────────────────────────────────────────
     before_validation :set_default_currency_and_rate
     before_validation :calculate_currency_amount,
-                      if: -> { (debit_changed? || credit_changed? || rate_changed?) && !main_currency? }
+                      if: -> { (debit_changed? || credit_changed? || rate_changed?) && !main_currency? && !system_generated? }
     private
 
+    # Revaluation and closing entries set currency_amount explicitly: a
+    # revaluation line changes only the main-currency amount (currency_amount
+    # 0), and carried-forward balances must keep the exact foreign balance
+    # instead of one derived from a rounded rate.
+    def system_generated?
+      journal_entry&.system_generated? || false
+    end
+
+    # System-generated lines set their rate explicitly; lines that change
+    # only the main-currency amount (revaluation, closing remainders) have none.
     def set_default_currency_and_rate
       self.currency ||= organization&.accounting_setting&.main_currency
-      self.rate ||= 1.0 unless main_currency?
+      self.rate ||= 1.0 unless main_currency? || system_generated?
     end
 
     def main_currency?
@@ -121,6 +131,7 @@ module Accounting
 
     def amounts_consistent_for_non_draft
       return if journal_entry.nil? || journal_entry.draft?
+      return if system_generated?
       return if debit.zero? && credit.zero?
       return if rate.nil? || rate.zero?
 

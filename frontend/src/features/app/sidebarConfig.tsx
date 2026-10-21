@@ -11,6 +11,9 @@ import {
   AccountTree,
   ReceiptLong,
   AdminPanelSettings,
+  CurrencyExchange,
+  PriceChange,
+  EventAvailable,
 } from '@mui/icons-material';
 import type { SvgIconComponent } from '@mui/icons-material';
 
@@ -40,6 +43,10 @@ export const PERMISSION_CODES = {
   ACCOUNTING_MANAGE_JOURNAL_ENTRIES: 'Accounting.manage_journal_entries',
   ACCOUNTING_VIEW_JOURNAL_ENTRIES: 'Accounting.view_journal_entries',
   ACCOUNTING_APPROVE_JOURNAL_ENTRIES: 'Accounting.approve_journal_entries',
+  ACCOUNTING_VIEW_EXCHANGE_RATES: 'Accounting.view_exchange_rates',
+  ACCOUNTING_MANAGE_EXCHANGE_RATES: 'Accounting.manage_exchange_rates',
+  ACCOUNTING_REVALUE_CURRENCIES: 'Accounting.revalue_currencies',
+  ACCOUNTING_CLOSE_FISCAL_YEARS: 'Accounting.close_fiscal_years',
 } as const;
 
 export const SIDEBAR_MODULES: SidebarModule[] = [
@@ -138,6 +145,27 @@ export const SIDEBAR_MODULES: SidebarModule[] = [
         path: '/accounting/center-types',
         icon: AccountTree,
         requiredPermission: PERMISSION_CODES.ACCOUNTING_VIEW_CENTERS,
+      },
+      {
+        pageId: 'currency-revaluations',
+        titleKey: 'currencyRevaluations',
+        path: '/accounting/currency-revaluations',
+        icon: PriceChange,
+        requiredPermission: PERMISSION_CODES.ACCOUNTING_VIEW_JOURNAL_ENTRIES,
+      },
+      {
+        pageId: 'exchange-rates',
+        titleKey: 'exchangeRates',
+        path: '/accounting/exchange-rates',
+        icon: CurrencyExchange,
+        requiredPermission: PERMISSION_CODES.ACCOUNTING_VIEW_EXCHANGE_RATES,
+      },
+      {
+        pageId: 'year-end-closing',
+        titleKey: 'yearEndClosing',
+        path: '/accounting/year-end-closing',
+        icon: EventAvailable,
+        requiredPermission: PERMISSION_CODES.ACCOUNTING_CLOSE_FISCAL_YEARS,
       },
       {
         pageId: 'accounting-settings',

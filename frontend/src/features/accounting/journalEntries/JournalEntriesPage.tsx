@@ -1,5 +1,5 @@
 // frontend/src/features/accounting/journalEntries/JournalEntriesPage.tsx
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   Container,
   Paper,
@@ -22,6 +22,9 @@ import { ExtendedDataGrid } from '../../../components/shared/ExtendedDataGrid';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useTabManager } from '../../../components/tabs/useTabManager';
 import { useTabLoading } from '../../../components/tabs/TabLoadingContext';
+import { useTabSearchParams } from '../../../components/tabs/useTabSearchParams';
+
+const STATES: ReadonlyArray<JournalEntry['state']> = ['draft', 'booked', 'approved'];
 
 
 export const JournalEntriesPage = () => {
@@ -34,6 +37,14 @@ export const JournalEntriesPage = () => {
   const { activeFiscalYearId } = useActiveFiscalYear(orgId);
   const navigate = useNavigate();
   const { openTab } = useTabManager();
+  // ?state=draft|booked|approved (e.g. from the year-end closing checks)
+  // shows only entries in that state until the filter is removed.
+  const searchParams = useTabSearchParams();
+  const requestedState = searchParams.get('state');
+  const [stateFilter, setStateFilter] = useState<JournalEntry['state'] | null>(null);
+  useEffect(() => {
+    setStateFilter(STATES.includes(requestedState as JournalEntry['state']) ? (requestedState as JournalEntry['state']) : null);
+  }, [requestedState]);
 
   const handleOpenJournalEntry = (journalEntry: JournalEntry) => {
     const path = `/app/organizations/${orgId}/accounting/journal-entries/${journalEntry.id}`;
@@ -58,6 +69,10 @@ export const JournalEntriesPage = () => {
     { skip: !orgId || !activeFiscalYearId }
   );
   useTabLoading(isLoading || isFetching);
+  const shownEntries = useMemo(
+    () => (stateFilter ? (journalEntries ?? []).filter((entry) => entry.state === stateFilter) : journalEntries),
+    [journalEntries, stateFilter]
+  );
 
   const columns = useMemo<GridColDef<JournalEntry>[]>(() => {
     const currentLocale = i18n.language;
@@ -86,8 +101,8 @@ export const JournalEntriesPage = () => {
       tJE(entryType) === entryType ? entryType : tJE(entryType);
 
     return [
-      { field: 'no', headerName: tJE('no'), width: 100 },
-      { field: 'ref', headerName: tJE('ref'), width: 100 },
+      { field: 'no', headerName: tJE('no'), width: 100, type: 'number' },
+      { field: 'ref', headerName: tJE('ref'), width: 100, type: 'number' },
       { field: 'date', headerName: tJE('date'), width: 140 },
       {
         field: 'description',
@@ -99,22 +114,23 @@ export const JournalEntriesPage = () => {
         field: 'debit',
         headerName: tJE('debit'),
         width: 140,
-        align: 'right',
-        headerAlign: 'right',
-        valueGetter: (_value, row) => formatNumber(row.debit),
+        type: 'number',
+        valueGetter: (_value, row) => Number(row.debit),
+        valueFormatter: (value: number) => formatNumber(value),
       },
       {
         field: 'credit',
         headerName: tJE('credit'),
         width: 140,
-        align: 'right',
-        headerAlign: 'right',
-        valueGetter: (_value, row) => formatNumber(row.credit),
+        type: 'number',
+        valueGetter: (_value, row) => Number(row.credit),
+        valueFormatter: (value: number) => formatNumber(value),
       },
       {
         field: 'state',
         headerName: tJE('state'),
         width: 130,
+        valueGetter: (_value, row) => stateLabel(row.state),
         renderCell: (params) => {
           const state = params.row.state;
           const color =
@@ -150,8 +166,7 @@ export const JournalEntriesPage = () => {
         field: 'daily_no',
         headerName: tJE('dailyNo'),
         width: 100,
-        align: 'right',
-        headerAlign: 'right',
+        type: 'number',
       },
       {
         field: 'creator_name',
@@ -209,16 +224,26 @@ export const JournalEntriesPage = () => {
         </Button>
       </Box>
 
-      {!journalEntries || journalEntries.length === 0 ? (
+      {stateFilter && (
+        <Box sx={{ mb: 1.5, flexShrink: 0 }}>
+          <Chip
+            color="primary"
+            variant="outlined"
+            label={tJE('journalEntriesStateFilter', { state: tJE(stateFilter) })}
+            onDelete={() => setStateFilter(null)}
+          />
+        </Box>
+      )}
+      {!shownEntries || shownEntries.length === 0 ? (
         <Paper sx={{ p: 4, textAlign: 'center' }}>
           <Typography color="text.secondary">
-            {tJE('noJournalEntries')}
+            {tJE(stateFilter ? 'noJournalEntriesInState' : 'noJournalEntries', { state: stateFilter ? tJE(stateFilter) : '' })}
           </Typography>
         </Paper>
       ) : (
         <Paper sx={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
           <ExtendedDataGrid
-            rows={journalEntries}
+            rows={shownEntries}
             columns={columns}
             showHeaderSearchRow
             excludeSearchFields={[]}

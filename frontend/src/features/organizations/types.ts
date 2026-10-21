@@ -9,6 +9,8 @@ export interface Organization {
   active_locales: string[];
   parent_id: number | null;
   calendar_types: string[];
+  /** IANA time zone identifier, e.g. "Asia/Tehran". */
+  time_zone: string;
   max_file_size: number;
   total_file_size: number;
   max_total_file_size: number;

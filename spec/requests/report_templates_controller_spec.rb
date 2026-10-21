@@ -59,6 +59,18 @@ RSpec.describe "ReportTemplates API", type: :request do
       expect(response.parsed_body["template_file"]).to eq(system_template.template_file)
     end
 
+    it "generates the currency revaluation template for the organization's center levels" do
+      organization.accounting_setting.update!(center_levels: 2)
+      template = create(:report_template, report_key: "currency_revaluation", is_default: true,
+                                          template_file: Accounting::Reports::CurrencyRevaluationTemplate.build(center_levels: 3).to_json)
+
+      get "#{base_path}/#{template.id}", as: :json
+
+      titles = JSON.parse(response.parsed_body["template_file"])["body"][0]["header"]["components"].map { |c| c["text"] }
+      expect(titles).to include("Center 2")
+      expect(titles).not_to include("Center 3")
+    end
+
     it "does not expose other organizations' templates" do
       foreign = create(:report_template, organization: other_organization)
 

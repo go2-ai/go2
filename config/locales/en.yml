@@ -6,6 +6,10 @@ en:
     company_name: GO3
     company_team: GO3 Team
     logo_alt: GO3 Logo
+  controllers:
+    balances:
+      fiscal_year_required: Select a valid fiscal year
+      invalid_date: Dates must be in YYYY-MM-DD format
   devise:
     confirmations:
       confirmed: Your email address has been successfully confirmed.
@@ -130,6 +134,8 @@ en:
         code_length_mismatch: "must be exactly %{length} characters"
     accounting/account:
       errors:
+        not_in_organization: "must belong to this organization"
+        foreign_currency_items_exist: "can't be turned off: journal entries of this account use other currencies"
         code_length_mismatch: "must be exactly %{length} characters"
     accounting/center_type:
       errors:
@@ -144,8 +150,100 @@ en:
         code_length_mismatch: "must be exactly %{length} characters"
         code_already_taken: "has already been taken for this center type"
         centers_out_of_range: "امکان تغییر بازه کد وجود ندارد: کدهای مراکز زیر خارج از بازه خواهند بود: %{codes}"
+    accounting/currency_revaluation:
+      entry_description: "Revaluation of foreign currency monetary items as of %{date}"
+      errors:
+        entry_invalid: "The revaluation entry could not be saved"
+        entry_not_removable: "The revaluation entry could not be deleted"
+        fiscal_year_closed: "Fiscal year %{fiscal_year} is closed"
+        fiscal_year_closing: "Fiscal year %{fiscal_year} is being closed and is past the revaluation step. Roll the closing back to change revaluations."
+        invalid_date: "Dates must be in YYYY-MM-DD format"
+        invalid_gain_loss_account: "The gain/loss account must be a revenue or expense account of this organization"
+        invalid_kind: "The kind must be temporary or permanent"
+        invalid_view: "Unknown view"
+        items_not_postable: "Some items have no usable FX gain/loss account. Set one for each highlighted item, or configure defaults in the accounting settings."
+        later_permanent_exists: "A later permanent revaluation (as of %{date}) covers the same balances. Delete it or make it temporary first."
+        locked_by_permanent: "Some of these balances are locked by another permanent revaluation"
+        no_fiscal_year: "There is no fiscal year containing %{date}"
+        not_draft: "Only draft revaluations can be changed"
+        not_posted: "Only posted revaluations can change kind"
+        nothing_to_post: "There are no differences to post"
+        outside_fiscal_year: "must be within the fiscal year"
+        stale: "Balances or exchange rates changed since this preview. Refresh the preview and review it before posting."
+        template_invalid: "must be a text per language"
+        template_too_long: "(%{language}) must be at most %{count} characters"
+        template_unbalanced_braces: "(%{language}) has an unmatched { or }. Variables are written like {account_name}."
+        template_unknown_variables: "(%{language}) uses unknown variables: %{variables}"
+        unapproved_entries: "Some of these balances have draft or booked entries dated on or before the revaluation date. Approve or delete them first."
+      excluded_reasons:
+        blocked_by_unapproved: "Unapproved entries"
+        center_mismatch: "Center required by gain/loss account"
+        locked_by_permanent: "Locked by a permanent revaluation"
+        missing_fx_account: "No gain/loss account"
+        missing_rate: "No exchange rate"
+        no_change: "No change"
+      kinds:
+        permanent: "Permanent"
+        temporary: "Temporary"
+      line_templates:
+        counter: "Revaluation gain/loss of foreign currency monetary items as of {as_of_date}"
+        item: "Revaluation of {account_code} {account_name}: {currency_balance} {currency} at {rate} as of {as_of_date}"
+      statuses:
+        draft: "Draft"
+        posted: "Posted"
+        superseded: "Superseded"
+    accounting/currency_revaluation_schedule:
+      errors:
+        frequency_not_allowed: "must repeat daily, weekly, monthly or yearly"
+        invalid_rrule: "is not a valid recurrence rule"
+    accounting/exchange_rate:
+      errors:
+        currency_not_in_organization: "must be a currency of this organization"
+        duplicate: "already has a rate from this source on this date"
+        invalid_date: "Dates must be in YYYY-MM-DD format"
+        invalid_range: "Choose a start date on or before the end date, at most %{days} days apart"
+        main_currency: "can't be the main currency; its rate is always 1"
+        provider_rate_read_only: "Rates fetched from a provider can't be edited. Add a manual rate for the same date instead."
+        provider_unavailable: "The rate provider could not be reached. Please try again later."
+        same_currency: "must be different from the currency"
+    accounting/exchange_rate_source:
+      errors:
+        currency_not_in_organization: "must be a currency of this organization"
+        duplicate: "already has a rate source"
+        main_currency: "can't be the main currency; its rate is always 1"
+        same_currency: "must be different from the currency"
+    accounting/fiscal_year_closing:
+      entry_descriptions:
+        beginning: "Beginning entry carried from fiscal year %{fiscal_year}"
+        close_accounts: "Closing temporary accounts of fiscal year %{fiscal_year}"
+        close_income_summary: "Closing the income summary of fiscal year %{fiscal_year}"
+        ending: "Ending entry of fiscal year %{fiscal_year}"
+      errors:
+        beginning_blocked: "The beginning entry can't be posted yet. Resolve the items shown in the closing wizard."
+        center_mismatch: "Some balances lack a center the closing account requires. Allow those centers on the closing account or fix the balances."
+        entry_invalid: "The closing entry could not be saved"
+        entry_not_removable: "The closing entry could not be deleted"
+        invalid_line_template_kind: "The kind of line is not valid"
+        not_closing: "This fiscal year is not being closed"
+        not_open: "This fiscal year is not open"
+        not_ready: "The fiscal year isn't ready to be closed yet. Resolve the open items first."
+        reopen_blocked: "The year can't be reopened: the next fiscal year must be open and have no permanent revaluations."
+        revaluation_incomplete: "Foreign currency balances aren't fully revalued as of the year end. Revalue them or acknowledge what remains."
+        roll_back_first: "Closing entries were already posted. Roll back the closing steps first."
+        settings_incomplete: "The closing accounts are incomplete. Cancel the closing and complete the closing settings."
+        stale: "Balances changed since the preview. Review the refreshed preview and try again."
+        temporary_accounts_open: "Income statement accounts or the income summary still have balances. Go back and close the temporary accounts first."
+        temporary_revaluations_remain: "Temporary revaluations remain in this fiscal year. Make the latest permanent or remove them."
+        unbalanced: "The permanent balances of the year don't net to zero, so the ending entry would be unbalanced. Check the year's entries."
+        wrong_step: "This action isn't available at the current closing step"
+      line_templates:
+        beginning: "Opening balance of {account_code} {account_name} carried from fiscal year {fiscal_year}"
+        closing: "Closing {account_code} {account_name} at the end of fiscal year {fiscal_year}"
+        closing_offset: "Result of fiscal year {fiscal_year} closed into {account_name}"
+        ending: "Ending balance of {account_code} {account_name}, fiscal year {fiscal_year}"
     accounting/journal_entry:
       errors:
+        approve_separately: "Entries are saved as draft or booked. Use Approve to approve them."
         active_fiscal_year_required: "Please select an active fiscal year first"
         date_outside_fiscal_year: "must be within the fiscal year (%{start_date} to %{finish_date})"
         fiscal_year_must_be_active: "Journal entries can only be added to the active fiscal year (%{fiscal_year})"
@@ -156,6 +254,11 @@ en:
         ref_taken: "Reference %{ref} is already used by another journal entry in this fiscal year"
         unapprove_before_delete: "Approved journal entries must be unapproved before they can be deleted"
         unbalanced: "debit and credit totals must be equal"
+        entry_type_requires_source: "can only be created by the system"
+        system_generated_locked: "This journal entry was generated by the system and can't be changed or deleted manually"
+        fiscal_year_closing: "Fiscal year %{fiscal_year} is being closed; its journal entries can't be changed"
+        fiscal_year_closed: "Fiscal year %{fiscal_year} is closed; its journal entries can't be changed"
+        locked_by_revaluation: "Foreign currency balances in this entry are locked by the permanent revaluation as of %{date}. Delete or make that revaluation temporary to change them."
     accounting/journal_entry_item:
       errors:
         account_required: "account must be selected"
@@ -165,7 +268,25 @@ en:
         currency_amount_mismatch: "must equal (debit - credit) / rate"
     accounting/ledger:
       errors:
+        not_in_organization: "must belong to this organization"
         code_length_mismatch: "must be exactly %{length} characters"
+    accounting/setting:
+      closing_accounts:
+        current_year_profit_account: "Current year profit account"
+        income_summary_account: "Income summary account"
+        retained_earnings_account: "Retained earnings account"
+      closing_methods:
+        current_year_profit: "close to current year profit"
+        direct: "close directly to retained earnings"
+        income_summary: "close through income summary"
+      errors:
+        account_not_in_organization: "must be an account of this organization"
+        closing_account_required: "%{account} is required to %{method}"
+        closing_accounts_distinct: "must be different from the other closing accounts"
+        income_summary_not_income_statement: "can't be a revenue or expense account, otherwise it would be closed with them"
+        income_summary_not_monetary: "can't be a monetary account"
+        must_be_income_statement: "must be a revenue or expense account"
+        must_be_owners_equity: "must be an owners' equity account"
     fiscal_year:
       default_name: "Fiscal Year %{year}"
       errors:
@@ -173,6 +294,8 @@ en:
         gap_or_overlap: "must be exactly one day after the previous fiscal year's finish date (%{previous_finish_date})"
         gap_or_overlap_with_next: "must be exactly one day before the next fiscal year's start date (%{next_start_date})"
         overlap_with_existing: "overlaps with an existing fiscal year"
+        dates_fixed_unless_open: "The dates of a fiscal year that is being closed or is closed can't be changed"
+        destroy_only_open: "Only open fiscal years can be deleted"
     member:
       status:
         archived: archived
@@ -182,6 +305,7 @@ en:
     organization:
       errors:
         at_least_one_calendar_type: "at least one calendar type must be selected"
+        unknown_time_zone: "is not a known time zone"
     permission:
       organization_admin: Administrate Organization
       manage_members: Add, remove, or update organization members
@@ -207,6 +331,14 @@ en:
       manage_journal_entries: Add, update, or delete journal entries
       view_journal_entries: View journal entries
       approve_journal_entries: Approve or unapprove journal entries
+      accounting_view_exchange_rates: View exchange rates
+      view_exchange_rates: View exchange rates and their sources
+      accounting_manage_exchange_rates: Manage exchange rates
+      manage_exchange_rates: Add, update, delete, or fetch exchange rates and configure their sources
+      accounting_revalue_currencies: Revalue currencies
+      revalue_currencies: Create, post, and delete foreign currency revaluations and their schedules
+      accounting_close_fiscal_years: Close fiscal years
+      close_fiscal_years: Close and reopen fiscal years, including posting closing, ending, and beginning entries
     report_template:
       copy_name: "%{name} (Copy)"
       errors:

@@ -187,8 +187,7 @@ export const ExplorerPage = () => {
       field,
       headerName,
       width: 150,
-      align: 'right',
-      headerAlign: 'right',
+      type: 'number',
       renderCell: (params) => fmt(params.value),
     });
 

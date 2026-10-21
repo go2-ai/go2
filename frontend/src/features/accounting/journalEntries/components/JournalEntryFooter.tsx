@@ -1,6 +1,6 @@
 import { Box, Chip, Divider, Stack, Typography } from '@mui/material';
 import { alpha, useTheme } from '@mui/material/styles';
-import { creditColor } from '../../../../theme/amountColors';
+import { creditColor, debitColor } from '../../../../theme/amountColors';
 import { useTranslation } from 'react-i18next';
 import type { JournalEntryRow } from './types';
 import type { Account } from '../../accounts/accountsApi';
@@ -132,7 +132,7 @@ export const JournalEntryFooter = ({
             <Typography
               variant="body2"
               fontWeight={700}
-              color="error.main"
+              color={debitColor(theme)}
               fontFamily="monospace"
               sx={{ fontSize: '0.875rem' }}
             >

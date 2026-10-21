@@ -13,7 +13,24 @@ export interface AccountingSetting {
   account_length: number;
   center_length: number;
   center_levels: number;
+  /** { locale => template }; blank locales use built_in_revaluation_line_templates. */
+  revaluation_line_description_template: Record<string, string>;
+  revaluation_counter_line_description_template: Record<string, string>;
+  built_in_revaluation_line_templates: Record<'item' | 'counter', Record<string, string>>;
+  /** { kind => { locale => template } } for closing entry lines; blank uses built_in_closing_line_templates. */
+  closing_line_description_templates: Partial<Record<'closing' | 'closing_offset' | 'ending' | 'beginning', Record<string, string>>>;
+  built_in_closing_line_templates: Record<'closing' | 'closing_offset' | 'ending' | 'beginning', Record<string, string>>;
+  closing_method: ClosingMethod;
+  retained_earnings_account_id: number | null;
+  income_summary_account_id: number | null;
+  current_year_profit_account_id: number | null;
+  default_fx_gain_account_id: number | null;
+  default_fx_loss_account_id: number | null;
+  /** What is missing to close a fiscal year with these settings (read-only). */
+  closing_configuration_errors: string[];
 }
+
+export type ClosingMethod = 'direct' | 'income_summary' | 'current_year_profit';
 
 export const accountingSettingsApi = createApi({
   reducerPath: 'accountingSettingsApi',

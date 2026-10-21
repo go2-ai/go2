@@ -49,4 +49,31 @@ RSpec.describe Permission, type: :model do
       expect(Permission.dependents_for(Permission::ORG_ADMIN)).to eq([])
     end
   end
+
+  describe "fiscal year closing and revaluation permissions" do
+    it "are grantable" do
+      codes = Permission.grantable_permissions.map { |p| p[:code] }
+      expect(codes).to include(
+        Permission::ACCOUNTING_VIEW_EXCHANGE_RATES,
+        Permission::ACCOUNTING_MANAGE_EXCHANGE_RATES,
+        Permission::ACCOUNTING_REVALUE_CURRENCIES,
+        Permission::ACCOUNTING_CLOSE_FISCAL_YEARS
+      )
+    end
+
+    it "require viewing exchange rates to manage them" do
+      expect(Permission.prerequisites_for(Permission::ACCOUNTING_MANAGE_EXCHANGE_RATES))
+        .to eq([ Permission::ACCOUNTING_VIEW_EXCHANGE_RATES ])
+    end
+
+    it "require viewing journal entries and exchange rates to revalue currencies" do
+      expect(Permission.prerequisites_for(Permission::ACCOUNTING_REVALUE_CURRENCIES))
+        .to contain_exactly(Permission::ACCOUNTING_VIEW_JOURNAL_ENTRIES, Permission::ACCOUNTING_VIEW_EXCHANGE_RATES)
+    end
+
+    it "require approving (and so viewing) journal entries to close fiscal years" do
+      expect(Permission.prerequisites_for(Permission::ACCOUNTING_CLOSE_FISCAL_YEARS))
+        .to contain_exactly(Permission::ACCOUNTING_APPROVE_JOURNAL_ENTRIES, Permission::ACCOUNTING_VIEW_JOURNAL_ENTRIES)
+    end
+  end
 end

@@ -33,6 +33,10 @@ import { JournalEntriesPage } from '../../features/accounting/journalEntries/Jou
 import { JournalEntryEditPage } from '../../features/accounting/journalEntries/JournalEntryEditPage';
 import { ExplorerPage } from '../../features/accounting/journalEntryItems/ExplorerPage';
 import { JournalEntryItemsPage } from '../../features/accounting/journalEntryItems/JournalEntryItemsPage';
+import { ExchangeRatesPage } from '../../features/accounting/exchangeRates/ExchangeRatesPage';
+import { CurrencyRevaluationsPage } from '../../features/accounting/currencyRevaluations/CurrencyRevaluationsPage';
+import { CurrencyRevaluationPage } from '../../features/accounting/currencyRevaluations/CurrencyRevaluationPage';
+import { FiscalYearClosingPage } from '../../features/accounting/fiscalYearClosing/FiscalYearClosingPage';
 import { matchPath } from 'react-router-dom';
 
 export interface PageDefinition {
@@ -69,6 +73,12 @@ export const PAGE_DEFINITIONS: PageDefinition[] = [
   { pageId: 'journal-entry-edit', path: 'accounting/journal-entries/:journalEntryId', titleKey: 'journalEntryEdit', fallbackTitle: 'Edit Journal Entry', component: JournalEntryEditPage },
   { pageId: 'explorer', path: 'accounting/explorer', titleKey: 'explorer', fallbackTitle: 'Explorer', component: ExplorerPage },
   { pageId: 'journal-entry-items', path: 'accounting/journal-entry-items', titleKey: 'journalEntryItems', fallbackTitle: 'Journal Entry Items', component: JournalEntryItemsPage },
+  { pageId: 'exchange-rates', path: 'accounting/exchange-rates', titleKey: 'exchangeRates', fallbackTitle: 'Exchange Rates', component: ExchangeRatesPage },
+  { pageId: 'currency-revaluations', path: 'accounting/currency-revaluations', titleKey: 'currencyRevaluations', fallbackTitle: 'Monetary Items Revaluation', component: CurrencyRevaluationsPage },
+  { pageId: 'currency-revaluation', path: 'accounting/currency-revaluations/:revaluationId', titleKey: 'currencyRevaluation', fallbackTitle: 'Monetary Items Revaluation', component: CurrencyRevaluationPage },
+  // Closing wizard for the active fiscal year (sidebar) or a given one.
+  { pageId: 'year-end-closing', path: 'accounting/year-end-closing', titleKey: 'yearEndClosing', fallbackTitle: 'Year-end Closing', component: FiscalYearClosingPage },
+  { pageId: 'fiscal-year-closing', path: 'accounting/year-end-closing/:fiscalYearId', titleKey: 'yearEndClosing', fallbackTitle: 'Year-end Closing', component: FiscalYearClosingPage },
 ];
 
 export const DEFAULT_PAGE = PAGE_DEFINITIONS[0]; // landing page when hitting the org root

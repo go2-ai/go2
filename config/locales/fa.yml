@@ -6,6 +6,10 @@ fa:
     company_name: GO3
     company_team: تیم GO3
     logo_alt: لوگوی GO3
+  controllers:
+    balances:
+      fiscal_year_required: سال مالی معتبر انتخاب کنید
+      invalid_date: تاریخ باید به شکل YYYY-MM-DD باشد
   devise:
     confirmations:
       confirmed: آدرس ایمیل شما با موفقیت تایید شد.
@@ -130,6 +134,8 @@ fa:
         code_length_mismatch: "باید دقیقاً %{length} کاراکتر باشد"
     accounting/account:
       errors:
+        not_in_organization: "باید متعلق به همین سازمان باشد"
+        foreign_currency_items_exist: "قابل خاموش کردن نیست: اسناد این حساب از ارزهای دیگر استفاده می‌کنند"
         code_length_mismatch: "باید دقیقاً %{length} کاراکتر باشد"
     accounting/center_type:
       errors:
@@ -142,8 +148,100 @@ fa:
         code_out_of_range: "باید بین %{first} و %{last} باشد"
         code_length_mismatch: "باید دقیقاً %{length} کاراکتر باشد"
         code_already_taken: "قبلاً برای این نوع مرکز ثبت شده است"
+    accounting/currency_revaluation:
+      entry_description: "تسعیر اقلام پولی ارزی در تاریخ %{date}"
+      errors:
+        entry_invalid: "سند تسعیر ذخیره نشد"
+        entry_not_removable: "سند تسعیر حذف نشد"
+        fiscal_year_closed: "سال مالی %{fiscal_year} بسته شده است"
+        fiscal_year_closing: "سال مالی %{fiscal_year} در حال بستن است و از مرحله تسعیر گذشته است. برای تغییر تسعیرها، بستن را برگردانید."
+        invalid_date: "تاریخ باید به شکل YYYY-MM-DD باشد"
+        invalid_gain_loss_account: "حساب سود/زیان باید از حساب‌های درآمد یا هزینه این سازمان باشد"
+        invalid_kind: "نوع باید موقت یا دائمی باشد"
+        invalid_view: "نمای ناشناخته"
+        items_not_postable: "برخی اقلام حساب سود/زیان تسعیر قابل استفاده ندارند. برای هر قلم مشخص‌شده حساب تعیین کنید یا حساب‌های پیش‌فرض را در تنظیمات حسابداری تنظیم کنید."
+        later_permanent_exists: "یک تسعیر دائمی بعدی (تاریخ %{date}) همین مانده‌ها را پوشش می‌دهد. ابتدا آن را حذف یا موقت کنید."
+        locked_by_permanent: "برخی از این مانده‌ها توسط تسعیر دائمی دیگری قفل شده‌اند"
+        no_fiscal_year: "سال مالی شامل تاریخ %{date} وجود ندارد"
+        not_draft: "فقط تسعیرهای پیش‌نویس قابل تغییر هستند"
+        not_posted: "فقط نوع تسعیرهای ثبت‌شده قابل تغییر است"
+        nothing_to_post: "تفاوتی برای ثبت وجود ندارد"
+        outside_fiscal_year: "باید در محدوده سال مالی باشد"
+        stale: "مانده‌ها یا نرخ‌های ارز پس از این پیش‌نمایش تغییر کرده‌اند. پیش‌نمایش را به‌روز کنید و پیش از ثبت بررسی کنید."
+        template_invalid: "باید برای هر زبان یک متن باشد"
+        template_too_long: "(%{language}) حداکثر %{count} نویسه می‌تواند باشد"
+        template_unbalanced_braces: "(%{language}) یک { یا } بدون جفت دارد. متغیرها به شکل {account_name} نوشته می‌شوند."
+        template_unknown_variables: "(%{language}) از متغیرهای ناشناخته استفاده می‌کند: %{variables}"
+        unapproved_entries: "برخی از این مانده‌ها اسناد پیش‌نویس یا ثبت‌شده با تاریخ قبل یا برابر تاریخ تسعیر دارند. ابتدا آن‌ها را تأیید یا حذف کنید."
+      excluded_reasons:
+        blocked_by_unapproved: "اسناد تأییدنشده"
+        center_mismatch: "مرکز مورد نیاز حساب سود/زیان"
+        locked_by_permanent: "قفل‌شده توسط تسعیر دائمی"
+        missing_fx_account: "بدون حساب سود/زیان"
+        missing_rate: "بدون نرخ ارز"
+        no_change: "بدون تغییر"
+      kinds:
+        permanent: "دائمی"
+        temporary: "موقت"
+      line_templates:
+        counter: "سود/زیان تسعیر اقلام پولی ارزی در تاریخ {as_of_date}"
+        item: "تسعیر {account_code} {account_name}: {currency_balance} {currency} به نرخ {rate} در تاریخ {as_of_date}"
+      statuses:
+        draft: "پیش‌نویس"
+        posted: "ثبت‌شده"
+        superseded: "جایگزین‌شده"
+    accounting/currency_revaluation_schedule:
+      errors:
+        frequency_not_allowed: "باید روزانه، هفتگی، ماهانه یا سالانه تکرار شود"
+        invalid_rrule: "قاعده تکرار معتبر نیست"
+    accounting/exchange_rate:
+      errors:
+        currency_not_in_organization: "باید یکی از ارزهای این سازمان باشد"
+        duplicate: "برای این تاریخ از این منبع نرخ ثبت شده است"
+        invalid_date: "تاریخ باید به شکل YYYY-MM-DD باشد"
+        invalid_range: "تاریخ شروع باید قبل یا برابر تاریخ پایان و حداکثر %{days} روز با آن فاصله داشته باشد"
+        main_currency: "نمی‌تواند ارز اصلی باشد؛ نرخ ارز اصلی همیشه ۱ است"
+        provider_rate_read_only: "نرخ‌های دریافت‌شده از منابع خارجی قابل ویرایش نیستند. به جای آن برای همان تاریخ نرخ دستی ثبت کنید."
+        provider_unavailable: "دسترسی به منبع نرخ ممکن نشد. لطفاً بعداً دوباره تلاش کنید."
+        same_currency: "باید با ارز متفاوت باشد"
+    accounting/exchange_rate_source:
+      errors:
+        currency_not_in_organization: "باید یکی از ارزهای این سازمان باشد"
+        duplicate: "قبلاً منبع نرخ برای آن تعیین شده است"
+        main_currency: "نمی‌تواند ارز اصلی باشد؛ نرخ ارز اصلی همیشه ۱ است"
+        same_currency: "باید با ارز متفاوت باشد"
+    accounting/fiscal_year_closing:
+      entry_descriptions:
+        beginning: "سند افتتاحیه منتقل‌شده از سال مالی %{fiscal_year}"
+        close_accounts: "بستن حساب‌های موقت سال مالی %{fiscal_year}"
+        close_income_summary: "بستن حساب خلاصه سود و زیان سال مالی %{fiscal_year}"
+        ending: "سند اختتامیه سال مالی %{fiscal_year}"
+      errors:
+        beginning_blocked: "سند افتتاحیه هنوز قابل ثبت نیست. موارد نمایش‌داده‌شده در مراحل بستن را رفع کنید."
+        center_mismatch: "برخی مانده‌ها مرکزی را که حساب بستن الزامی کرده ندارند. آن مراکز را برای حساب بستن مجاز کنید یا مانده‌ها را اصلاح کنید."
+        entry_invalid: "سند بستن ذخیره نشد"
+        entry_not_removable: "سند بستن حذف نشد"
+        invalid_line_template_kind: "نوع سطر معتبر نیست"
+        not_closing: "این سال مالی در حال بستن نیست"
+        not_open: "این سال مالی باز نیست"
+        not_ready: "سال مالی هنوز آماده بستن نیست. ابتدا موارد باز را رفع کنید."
+        reopen_blocked: "سال قابل بازگشایی نیست: سال مالی بعد باید باز باشد و تسعیر دائمی نداشته باشد."
+        revaluation_incomplete: "مانده‌های ارزی تا پایان سال کاملاً تسعیر نشده‌اند. آن‌ها را تسعیر کنید یا موارد باقی‌مانده را تأیید کنید."
+        roll_back_first: "اسناد بستن قبلاً ثبت شده‌اند. ابتدا مراحل بستن را برگردانید."
+        settings_incomplete: "حساب‌های بستن کامل نیستند. بستن را لغو کنید و تنظیمات بستن را کامل کنید."
+        stale: "مانده‌ها از زمان پیش‌نمایش تغییر کرده‌اند. پیش‌نمایش به‌روزشده را بررسی و دوباره تلاش کنید."
+        temporary_accounts_open: "حساب‌های سود و زیان یا خلاصه سود و زیان هنوز مانده دارند. برگردید و ابتدا حساب‌های موقت را ببندید."
+        temporary_revaluations_remain: "تسعیرهای موقت در این سال مالی باقی مانده‌اند. آخرین را دائمی کنید یا آن‌ها را حذف کنید."
+        unbalanced: "جمع مانده‌های دائمی سال صفر نیست، بنابراین سند اختتامیه تراز نمی‌شود. اسناد سال را بررسی کنید."
+        wrong_step: "این عملیات در مرحله فعلی بستن در دسترس نیست"
+      line_templates:
+        beginning: "مانده افتتاحیه {account_code} {account_name} منتقل‌شده از سال مالی {fiscal_year}"
+        closing: "بستن {account_code} {account_name} در پایان سال مالی {fiscal_year}"
+        closing_offset: "انتقال نتیجه سال مالی {fiscal_year} به {account_name}"
+        ending: "مانده اختتامیه {account_code} {account_name}، سال مالی {fiscal_year}"
     accounting/journal_entry:
       errors:
+        approve_separately: "اسناد به صورت پیش‌نویس یا ثبت‌شده ذخیره می‌شوند. برای تأیید از گزینه تأیید استفاده کنید."
         active_fiscal_year_required: "ابتدا یک سال مالی فعال انتخاب کنید"
         date_outside_fiscal_year: "باید در بازه سال مالی باشد (%{start_date} تا %{finish_date})"
         fiscal_year_must_be_active: "اسناد حسابداری فقط در سال مالی فعال (%{fiscal_year}) قابل ثبت هستند"
@@ -154,6 +252,11 @@ fa:
         ref_taken: "مرجع %{ref} قبلاً برای سند دیگری در این سال مالی استفاده شده است"
         unapprove_before_delete: "سند تأیید شده را باید ابتدا از حالت تأیید خارج کنید، سپس حذف کنید"
         unbalanced: "جمع بدهکار و بستانکار باید برابر باشد"
+        entry_type_requires_source: "فقط توسط سیستم قابل ایجاد است"
+        system_generated_locked: "این سند توسط سیستم ایجاد شده و به صورت دستی قابل تغییر یا حذف نیست"
+        fiscal_year_closing: "سال مالی %{fiscal_year} در حال بستن است و اسناد آن قابل تغییر نیست"
+        fiscal_year_closed: "سال مالی %{fiscal_year} بسته شده است و اسناد آن قابل تغییر نیست"
+        locked_by_revaluation: "مانده‌های ارزی این سند توسط تسعیر دائمی تاریخ %{date} قفل شده‌اند. برای تغییر، آن تسعیر را حذف یا موقت کنید."
     accounting/journal_entry_item:
       errors:
         account_required: "انتخاب حساب الزامی است"
@@ -163,7 +266,25 @@ fa:
         currency_amount_mismatch: "باید برابر با (بدهکار - بستانکار) تقسیم بر نرخ باشد"
     accounting/ledger:
       errors:
+        not_in_organization: "باید متعلق به همین سازمان باشد"
         code_length_mismatch: "باید دقیقاً %{length} کاراکتر باشد"
+    accounting/setting:
+      closing_accounts:
+        current_year_profit_account: "حساب سود و زیان سال جاری"
+        income_summary_account: "حساب خلاصه سود و زیان"
+        retained_earnings_account: "حساب سود (زیان) انباشته"
+      closing_methods:
+        current_year_profit: "بستن به سود و زیان سال جاری"
+        direct: "بستن مستقیم به سود (زیان) انباشته"
+        income_summary: "بستن از طریق خلاصه سود و زیان"
+      errors:
+        account_not_in_organization: "باید یکی از حساب‌های این سازمان باشد"
+        closing_account_required: "برای %{method}، تعیین %{account} الزامی است"
+        closing_accounts_distinct: "باید با سایر حساب‌های بستن متفاوت باشد"
+        income_summary_not_income_statement: "نمی‌تواند حساب درآمد یا هزینه باشد، وگرنه همراه آن‌ها بسته می‌شود"
+        income_summary_not_monetary: "نمی‌تواند حساب پولی باشد"
+        must_be_income_statement: "باید حساب درآمد یا هزینه باشد"
+        must_be_owners_equity: "باید از حساب‌های حقوق صاحبان سهام باشد"
     fiscal_year:
       default_name: "سال مالی %{year}"
       errors:
@@ -171,6 +292,8 @@ fa:
         gap_or_overlap: "باید دقیقاً یک روز بعد از تاریخ پایان سال مالی قبلی باشد (%{previous_finish_date})"
         gap_or_overlap_with_next: "باید دقیقاً یک روز قبل از تاریخ شروع سال مالی بعدی باشد (%{next_start_date})"
         overlap_with_existing: "با سال مالی موجود تداخل دارد"
+        dates_fixed_unless_open: "تاریخ‌های سال مالی در حال بستن یا بسته‌شده قابل تغییر نیست"
+        destroy_only_open: "فقط سال‌های مالی باز قابل حذف هستند"
     member:
       status:
         archived: بایگانی شده
@@ -180,6 +303,7 @@ fa:
     organization:
       errors:
         at_least_one_calendar_type: "حداقل یک نوع تقویم باید انتخاب شود"
+        unknown_time_zone: "منطقه زمانی معتبر نیست"
     permission:
       organization_admin: مدیریت سازمان
       manage_members: ایجاد، حذف و ویرایش اعضا
@@ -203,6 +327,14 @@ fa:
       manage_journal_entries: ایجاد، ویرایش یا حذف اسناد حسابداری
       view_journal_entries: مشاهده اسناد حسابداری
       approve_journal_entries: تایید یا لغو تایید اسناد حسابداری
+      accounting_view_exchange_rates: مشاهده نرخ‌های ارز
+      view_exchange_rates: مشاهده نرخ‌های ارز و منابع آن‌ها
+      accounting_manage_exchange_rates: مدیریت نرخ‌های ارز
+      manage_exchange_rates: ایجاد، ویرایش، حذف یا دریافت نرخ‌های ارز و تنظیم منابع آن‌ها
+      accounting_revalue_currencies: تسعیر ارز
+      revalue_currencies: ایجاد، ثبت و حذف تسعیرهای ارزی و زمان‌بندی‌های آن‌ها
+      accounting_close_fiscal_years: بستن سال مالی
+      close_fiscal_years: بستن و بازگشایی سال مالی، شامل ثبت اسناد بستن حساب‌های موقت، اختتامیه و افتتاحیه
     report_template:
       copy_name: "%{name} (کپی)"
       errors:

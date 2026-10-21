@@ -35,6 +35,11 @@ import {
   flattenTranslations,
   type LocaleMap,
 } from '../../../../utils/translationHelper';
+import { AccountPicker } from '../../accounts/components/AccountPicker';
+import { InheritedFxAccounts } from '../../accounts/components/InheritedFxAccounts';
+import { resolveFxAccounts } from '../../accounts/fxAccounts';
+
+const FX_ACCOUNT_FILTER = { types: ['income_statement'] };
 
 interface LedgerModalProps {
   open: boolean;
@@ -86,6 +91,8 @@ export const LedgerModal = ({
     contra_for_id: null as number | null,
     unexpected_balance: 'accept' as 'accept' | 'warn' | 'disallow',
     is_monetary: false,
+    fx_gain_account_id: null as number | null,
+    fx_loss_account_id: null as number | null,
   });
 
   const [showContraField, setShowContraField] = useState(false);
@@ -107,6 +114,8 @@ export const LedgerModal = ({
         contra_for_id: ledger.contra_for_id,
         unexpected_balance: ledger.unexpected_balance,
         is_monetary: ledger.is_monetary,
+        fx_gain_account_id: ledger.fx_gain_account_id ?? null,
+        fx_loss_account_id: ledger.fx_loss_account_id ?? null,
       });
       setShowContraField(ledger.contra_for_id !== null);
     } else {
@@ -117,6 +126,8 @@ export const LedgerModal = ({
         contra_for_id: null,
         unexpected_balance: 'accept',
         is_monetary: false,
+        fx_gain_account_id: null,
+        fx_loss_account_id: null,
       });
       setShowContraField(false);
     }
@@ -201,6 +212,10 @@ export const LedgerModal = ({
     if (isBalanceSheetCategory) {
       payload.is_monetary = formData.is_monetary;
     }
+    // FX overrides only apply to monetary ledgers.
+    const monetary = isBalanceSheetCategory && formData.is_monetary;
+    payload.fx_gain_account_id = monetary ? formData.fx_gain_account_id : null;
+    payload.fx_loss_account_id = monetary ? formData.fx_loss_account_id : null;
 
     try {
       if (isEditMode) {
@@ -320,6 +335,30 @@ export const LedgerModal = ({
               }
               label={tAccounting('isMonetary')}
             />
+          )}
+
+          {isBalanceSheetCategory && formData.is_monetary && (
+            <>
+              <InheritedFxAccounts
+                organizationId={organizationId}
+                level="ledger"
+                {...resolveFxAccounts(null, null, settings)}
+              />
+              <AccountPicker
+                organizationId={organizationId}
+                label={tAccounting('closingSettings.fxGainOverride')}
+                value={formData.fx_gain_account_id}
+                onChange={(id) => setFormData((prev) => ({ ...prev, fx_gain_account_id: id }))}
+                filter={FX_ACCOUNT_FILTER}
+              />
+              <AccountPicker
+                organizationId={organizationId}
+                label={tAccounting('closingSettings.fxLossOverride')}
+                value={formData.fx_loss_account_id}
+                onChange={(id) => setFormData((prev) => ({ ...prev, fx_loss_account_id: id }))}
+                filter={FX_ACCOUNT_FILTER}
+              />
+            </>
           )}
 
           <FormControlLabel

@@ -11,6 +11,7 @@ import {
   Alert,
   Menu,
   MenuItem,
+  Chip,
 } from '@mui/material';
 import { DataGrid } from '@mui/x-data-grid';
 import type { GridColDef, GridRenderCellParams } from '@mui/x-data-grid';
@@ -27,6 +28,15 @@ import { useToast } from '../../contexts/ToastContext';
 import { useConfirm } from '../../contexts/confirmContext';
 import { useTabManager } from '../../components/tabs/useTabManager';
 import { useTabLoading } from '../../components/tabs/TabLoadingContext';
+import type { FiscalYearStatus } from './fiscalYearsApi';
+import { usePermissionCodes } from '../../hooks/usePermissionCodes';
+import { PERMISSION_CODES } from '../app/sidebarConfig';
+
+const STATUS_COLORS: Record<FiscalYearStatus, 'default' | 'warning' | 'success'> = {
+  open: 'default',
+  closing: 'warning',
+  closed: 'success',
+};
 
 export const FiscalYearsPage = () => {
   const { t } = useTranslation('shared');
@@ -37,6 +47,8 @@ export const FiscalYearsPage = () => {
   const { showSuccess, showError } = useToast();
   const confirm = useConfirm();
   const { openTab } = useTabManager();
+  const { has } = usePermissionCodes(orgId);
+  const canClose = has(PERMISSION_CODES.ACCOUNTING_CLOSE_FISCAL_YEARS);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingFiscalYear, setEditingFiscalYear] = useState<FiscalYear | null>(null);
@@ -119,6 +131,17 @@ export const FiscalYearsPage = () => {
     }
   };
 
+  const handleClosing = () => {
+    if (!selectedForMenu) return;
+    const path = `/app/organizations/${orgId}/accounting/year-end-closing/${selectedForMenu.id}`;
+    const name = selectedForMenu.name;
+    handleMenuClose();
+    setTimeout(() => {
+      openTab('fiscal-year-closing', `${t('menu.yearEndClosing')}: ${name}`, path);
+      navigate(path);
+    }, 0);
+  };
+
   const handleHistory = () => {
     if (!selectedForMenu) return;
 
@@ -159,6 +182,21 @@ export const FiscalYearsPage = () => {
       width: 160,
       sortable: false,
       disableColumnMenu: true,
+    },
+    {
+      field: 'status',
+      headerName: tFiscalYears('yearStatus'),
+      width: 140,
+      sortable: false,
+      disableColumnMenu: true,
+      renderCell: (params: GridRenderCellParams<FiscalYear>) => (
+        <Chip
+          size="small"
+          label={tFiscalYears(`yearStatuses.${params.row.status}`)}
+          color={STATUS_COLORS[params.row.status]}
+          variant={params.row.status === 'open' ? 'outlined' : 'filled'}
+        />
+      ),
     },
     {
       field: 'actions',
@@ -259,10 +297,19 @@ export const FiscalYearsPage = () => {
         anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
         transformOrigin={{ vertical: 'top', horizontal: 'right' }}
       >
+        {canClose && (
+          <MenuItem onClick={handleClosing}>
+            {t('menu.yearEndClosing')}
+          </MenuItem>
+        )}
         <MenuItem onClick={handleHistory}>
           {t('changeLog')}
         </MenuItem>
-        <MenuItem onClick={handleDelete} sx={{ color: 'error.main' }}>
+        <MenuItem
+          onClick={handleDelete}
+          disabled={!!selectedForMenu && selectedForMenu.status !== 'open'}
+          sx={{ color: 'error.main' }}
+        >
           {t('commonActions.delete')}
         </MenuItem>
       </Menu>

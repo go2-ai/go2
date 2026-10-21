@@ -200,6 +200,15 @@ class ApplicationController < ActionController::Base
     current_organization.available_locales.map { |locale| "#{attribute}_#{locale}".to_sym }
   end
 
+  # { locale => text } from a request param such as a line description
+  # template, limited to the organization's languages; nil unless a hash.
+  def locale_texts_param(raw)
+    return nil unless raw.respond_to?(:permit)
+
+    locales = current_organization.entry_locales
+    raw.permit(*locales).to_h.slice(*locales).transform_values(&:to_s)
+  end
+
   def switch_locale(&action)
     locale = current_user&.locale || I18n.default_locale
     I18n.with_locale(locale, &action)

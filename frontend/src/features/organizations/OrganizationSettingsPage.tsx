@@ -34,6 +34,13 @@ import type { CalendarType } from '../../components/shared/BaseDatePicker';
 import { formatFileSize } from '../documents/formatFileSize';
 import { useTabLoading } from '../../components/tabs/TabLoadingContext';
 
+// IANA time zones supported by the browser. The server validates against
+// the same IANA database.
+const TIME_ZONE_OPTIONS: string[] = (() => {
+  const zones = Intl.supportedValuesOf('timeZone');
+  return zones.includes('UTC') ? zones : ['UTC', ...zones];
+})();
+
 const CALENDAR_TYPE_OPTIONS = [
   { code: 'gregorian', label: 'Gregorian' },
   { code: 'shamsi', label: 'Shamsi' },
@@ -76,12 +83,14 @@ export const OrganizationSettingsPage = () => {
     locale: LocaleCode;
     active_locales: LocaleCode[];
     calendar_types: CalendarType[];
+    time_zone: string;
     max_file_size: number;
   }>({
     name: {},
     locale: 'en',
     active_locales: [],
     calendar_types: ['gregorian'],
+    time_zone: 'UTC',
     max_file_size: 50,
   });
 
@@ -95,6 +104,7 @@ export const OrganizationSettingsPage = () => {
         calendar_types: (organization.calendar_types?.length
           ? organization.calendar_types
           : ['gregorian']) as CalendarType[],
+        time_zone: organization.time_zone || 'UTC',
         max_file_size: organization.max_file_size ?? 50,
       });
     }
@@ -113,6 +123,7 @@ export const OrganizationSettingsPage = () => {
         locale: formData.locale,
         active_locales: formData.active_locales,
         calendar_types: formData.calendar_types,
+        time_zone: formData.time_zone,
         max_file_size: formData.max_file_size,
       };
 
@@ -133,6 +144,7 @@ export const OrganizationSettingsPage = () => {
         JSON.stringify((organization.active_locales || []).slice().sort()) ||
       JSON.stringify(formData.calendar_types.slice()) !==
         JSON.stringify((organization.calendar_types || ['gregorian']).slice()) ||
+      formData.time_zone !== (organization.time_zone || 'UTC') ||
       formData.max_file_size !== (organization.max_file_size ?? 50)
     );
   }, [formData, organization, isReady, allLocales]);
@@ -360,6 +372,25 @@ export const OrganizationSettingsPage = () => {
                     </MenuItem>
                   ))}
                 </TextField>
+
+                {/* Time zone (used by scheduled jobs such as automatic revaluation) */}
+                <Autocomplete
+                  options={TIME_ZONE_OPTIONS}
+                  value={formData.time_zone}
+                  disableClearable
+                  onChange={(_, newValue) => {
+                    setFormData((prev) => ({ ...prev, time_zone: newValue }));
+                  }}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label={tOrgs('timeZone')}
+                      size="small"
+                      helperText={tOrgs('timeZoneHint')}
+                    />
+                  )}
+                  fullWidth
+                />
               </Box>
             </TabPanel>
 

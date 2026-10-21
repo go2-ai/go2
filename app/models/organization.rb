@@ -35,6 +35,8 @@ class Organization < ApplicationRecord
   has_many :report_templates, dependent: :destroy
 
   has_many :currencies, class_name: "Accounting::Currency", dependent: :destroy
+  has_many :exchange_rates, class_name: "Accounting::ExchangeRate", dependent: :delete_all
+  has_many :exchange_rate_sources, class_name: "Accounting::ExchangeRateSource", dependent: :delete_all
   has_many :center_types, class_name: "Accounting::CenterType", dependent: :destroy
   has_many :centers, through: :center_types, class_name: "Accounting::Center"
   has_one :accounting_setting, class_name: "Accounting::Setting", dependent: :destroy
@@ -42,13 +44,15 @@ class Organization < ApplicationRecord
   has_many :ledgers, through: :account_categories, class_name: "Accounting::Ledger"
   has_many :accounts, through: :ledgers, class_name: "Accounting::Account"
   has_many :journal_entries, class_name: "Accounting::JournalEntry", dependent: :destroy
+  has_many :currency_revaluations, class_name: "Accounting::CurrencyRevaluation", dependent: :destroy
+  has_many :currency_revaluation_schedules, class_name: "Accounting::CurrencyRevaluationSchedule", dependent: :destroy
 
   # Validations
   validate :no_circular_references
   validates_non_empty_translation :name, locales: ->(org) { [ org.locale ] }
   validates_uniqueness_of_translated :name, scope: :parent, if: -> { parent_id.present? }
   validate :at_least_one_calendar_type
-
+  validate :time_zone_is_known
 
 
   after_create :create_default_accounting_setting!
@@ -113,6 +117,11 @@ class Organization < ApplicationRecord
     active_locales | [ locale ]
   end
 
+  # Locales journal entry texts (descriptions, line templates) are kept in.
+  def entry_locales
+    available_locales.compact.map(&:to_s).presence || [ I18n.default_locale.to_s ]
+  end
+
   def create_system_account_categories!
     Accounting::AccountCategory.system_categories.each do |cat|
       category = Accounting::AccountCategory.create(
@@ -127,6 +136,16 @@ class Organization < ApplicationRecord
 
   def default_calendar_type
     calendar_types.first
+  end
+
+  # The organization's time zone as an ActiveSupport::TimeZone.
+  def tz
+    ActiveSupport::TimeZone[time_zone] || ActiveSupport::TimeZone["UTC"]
+  end
+
+  # Today's date in the organization's time zone.
+  def today
+    tz.today
   end
 
   def total_file_size_mb
@@ -171,5 +190,11 @@ class Organization < ApplicationRecord
     if calendar_types.blank?
       errors.add(:calendar_types, model_t("errors.at_least_one_calendar_type"))
     end
+  end
+
+  def time_zone_is_known
+    return if time_zone.present? && TZInfo::Timezone.all_identifiers.include?(time_zone)
+
+    errors.add(:time_zone, model_t("errors.unknown_time_zone"))
   end
 end

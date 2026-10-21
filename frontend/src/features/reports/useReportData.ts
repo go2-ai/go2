@@ -1,4 +1,5 @@
 import { useGetJournalEntryForPrintQuery } from '../accounting/journalEntries/journalEntriesApi';
+import { useGetCurrencyRevaluationForPrintQuery } from '../accounting/currencyRevaluations/currencyRevaluationsApi';
 
 /**
  * Loads the data a report prints, by report key and record id. Reports fetch
@@ -15,6 +16,10 @@ export const useReportData = (reportKey: string, organizationId: number, recordI
     { organizationId, id: recordId ?? 0 },
     { skip: reportKey !== 'journal_entry' || !organizationId || !recordId }
   );
+  const revaluation = useGetCurrencyRevaluationForPrintQuery(
+    { organizationId, id: recordId ?? 0 },
+    { skip: reportKey !== 'currency_revaluation' || !organizationId || !recordId }
+  );
 
   switch (reportKey) {
     case 'journal_entry':
@@ -22,6 +27,13 @@ export const useReportData = (reportKey: string, organizationId: number, recordI
         data: journalEntry.data ? { root: journalEntry.data } : undefined,
         isLoading: journalEntry.isLoading,
         isError: journalEntry.isError,
+        supported: true,
+      };
+    case 'currency_revaluation':
+      return {
+        data: revaluation.data ? { root: revaluation.data } : undefined,
+        isLoading: revaluation.isLoading,
+        isError: revaluation.isError,
         supported: true,
       };
     default:

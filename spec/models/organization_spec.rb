@@ -26,6 +26,31 @@ RSpec.describe Organization, type: :model do
       expect(organization).to be_valid
     end
 
+    describe "time_zone" do
+      it "defaults to UTC" do
+        expect(build(:organization).time_zone).to eq("UTC")
+      end
+
+      it "accepts IANA time zone identifiers" do
+        organization = build(:organization, time_zone: "Asia/Tehran")
+        expect(organization).to be_valid
+        expect(organization.tz.name).to eq("Asia/Tehran")
+      end
+
+      it "rejects unknown time zones" do
+        organization = build(:organization, time_zone: "Mars/Olympus")
+        expect(organization).not_to be_valid
+        expect(organization.errors[:time_zone]).to include("is not a known time zone")
+      end
+
+      it "computes today in the organization's time zone" do
+        organization = build(:organization, time_zone: "Asia/Tehran")
+        travel_to Time.utc(2026, 3, 20, 22, 0, 0) do
+          expect(organization.today).to eq(Date.new(2026, 3, 21))
+        end
+      end
+    end
+
     it "validates uniqueness of name within organization" do
       test_org_name = "Test Organization Name #{SecureRandom.uuid}"
       parent_org = create(:organization)

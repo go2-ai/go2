@@ -20,6 +20,8 @@
     "organizationSettings": "Organization Settings",
     "primaryLocale": "Primary Locale",
     "storage": "Storage",
-    "storageUsage": "Storage Usage"
+    "storageUsage": "Storage Usage",
+    "timeZone": "Time Zone",
+    "timeZoneHint": "Used for scheduled tasks such as automatic currency revaluation"
   }
 }

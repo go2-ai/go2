@@ -1,5 +1,6 @@
 {
   "en": {
+    "currencyRevaluationPage": "Revaluation of monetary items",
     "customTemplates": "Custom Templates",
     "default": "Default",
     "deleteTemplateFailed": "Failed to delete report",
