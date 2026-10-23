@@ -45,7 +45,14 @@ const numberText = (value: number | null | undefined) =>
 
 // ── Copy ──────────────────────────────────────────────────────────────
 
-export const rowsToTsv = (rows: JournalEntryRow[], ctx: ClipboardContext): string =>
+const sheetNumber = (value: number | null | undefined) =>
+  value === null || value === undefined || value === 0 ? null : value;
+
+/**
+ * Rows as spreadsheet cells in the clipboard's column order: text, and
+ * numbers (null when empty or zero). Used for copying.
+ */
+export const rowsToSheetCells = (rows: JournalEntryRow[], ctx: ClipboardContext): (string | number | null)[][] =>
   rows.map((row) => {
     const account = ctx.accounts.find(a => a.id === row.accountId);
     const centerCodes = Array.from({ length: ctx.centerLevels }, (_, i) => {
@@ -63,13 +70,18 @@ export const rowsToTsv = (rows: JournalEntryRow[], ctx: ClipboardContext): strin
       account ? cleanText(account.name ?? '') : '',
       ...centerCodes,
       cleanText(description),
-      numberText(row.debit),
-      numberText(row.credit),
+      sheetNumber(row.debit),
+      sheetNumber(row.credit),
       currency?.abr ?? '',
-      isMain ? '' : numberText(row.currencyAmount),
-      isMain ? '' : numberText(row.rate),
-    ].join('\t');
-  }).join('\n');
+      isMain ? null : sheetNumber(row.currencyAmount),
+      isMain ? null : sheetNumber(row.rate),
+    ];
+  });
+
+export const rowsToTsv = (rows: JournalEntryRow[], ctx: ClipboardContext): string =>
+  rowsToSheetCells(rows, ctx)
+    .map(cells => cells.map(cell => (typeof cell === 'number' ? numberText(cell) : cell ?? '')).join('\t'))
+    .join('\n');
 
 let richClipboard: { text: string; organizationId: number; rows: RowData[] } | null = null;
 
@@ -104,7 +116,10 @@ export const copyRows = (rows: JournalEntryRow[], ctx: ClipboardContext): string
 export const looksLikeRows = (text: string): boolean => /[\t\n]/.test(text.replace(/\r?\n$/, ''));
 
 /** Splits spreadsheet text into cells, honouring Excel's "quoted" cells. */
-export const parseTsvCells = (text: string): string[][] => {
+export const parseTsvCells = (text: string): string[][] => parseDelimitedCells(text, '\t');
+
+/** Same as parseTsvCells with another separator (e.g. ',' or ';' for CSV files). */
+export const parseDelimitedCells = (text: string, delimiter: string): string[][] => {
   const rows: string[][] = [];
   let row: string[] = [];
   let cell = '';
@@ -122,7 +137,7 @@ export const parseTsvCells = (text: string): string[][] => {
       continue;
     }
     if (ch === '"' && atCellStart) { inQuotes = true; atCellStart = false; continue; }
-    if (ch === '\t') { row.push(cell); cell = ''; atCellStart = true; continue; }
+    if (ch === delimiter) { row.push(cell); cell = ''; atCellStart = true; continue; }
     if (ch === '\r') continue;
     if (ch === '\n') { row.push(cell); rows.push(row); row = []; cell = ''; atCellStart = true; continue; }
     cell += ch;
@@ -178,8 +193,67 @@ const emptyRowData = (mainCurrencyId: number | null): RowData => ({
   financialEditOrder: [],
 });
 
-export const parseRowsText = (text: string, ctx: ClipboardContext): PasteResult => {
-  const cells = parseTsvCells(text);
+export const parseRowsText = (text: string, ctx: ClipboardContext): PasteResult =>
+  parseRowCells(parseTsvCells(text), ctx);
+
+const roundTo = (value: number, digits: number) => {
+  const factor = 10 ** digits;
+  return Math.round(value * factor) / factor;
+};
+
+/**
+ * Fills the missing one of a foreign-currency row's amount (debit or
+ * credit), currency amount and rate when the other two are given:
+ * amount = currency amount × rate. Amounts are rounded to their currency's
+ * decimals; rates keep 12 significant digits. A calculated amount is a
+ * credit when the currency amount was negative, else a debit. The
+ * calculated value is marked as the oldest edit, so it's the one the grid
+ * recalculates when one of the given values is changed.
+ */
+export const completeRowAmounts = (data: RowData, negativeCurrencyAmount: boolean, ctx: ClipboardContext) => {
+  const digitsOf = (id: number | null) => ctx.currencies.find(c => c.id === id)?.decimal_digits ?? 2;
+  const amount = (data.debit ?? 0) - (data.credit ?? 0);
+  const hasAmount = amount !== 0;
+  const hasCurrencyAmount = !!data.currencyAmount;
+  const hasRate = !!data.rate;
+
+  let calculated: 'amount' | 'currencyAmount' | 'rate' | null = null;
+  if (hasAmount && hasCurrencyAmount && !hasRate) {
+    data.rate = Number((Math.abs(amount) / (data.currencyAmount as number)).toPrecision(12));
+    calculated = 'rate';
+  } else if (hasAmount && hasRate && !hasCurrencyAmount) {
+    data.currencyAmount = roundTo(Math.abs(amount) / (data.rate as number), digitsOf(data.currencyId)) || null;
+    calculated = 'currencyAmount';
+  } else if (!hasAmount && hasCurrencyAmount && hasRate) {
+    const value = roundTo((data.currencyAmount as number) * (data.rate as number), digitsOf(ctx.mainCurrencyId)) || null;
+    data.debit = negativeCurrencyAmount ? null : value;
+    data.credit = negativeCurrencyAmount ? value : null;
+    calculated = 'amount';
+  }
+
+  if (calculated) {
+    const given = (['amount', 'currencyAmount', 'rate'] as const).filter(group => group !== calculated);
+    data.financialEditOrder = [calculated, ...given];
+  }
+};
+
+/**
+ * Rows from spreadsheet cells in the clipboard's column order (pasted text,
+ * or an imported Excel or CSV file). A first line with titles is skipped.
+ */
+export const parseRowCells = (
+  cells: string[][],
+  ctx: ClipboardContext,
+  {
+    skipTitleLine = true,
+    completeAmounts = false,
+  }: {
+    /** False when the caller already removed the title line. */
+    skipTitleLine?: boolean;
+    /** Calculate the missing one of amount, currency amount and rate (see completeRowAmounts). */
+    completeAmounts?: boolean;
+  } = {},
+): PasteResult => {
   const result: RowData[] = [];
   let unmatched = 0;
 
@@ -193,7 +267,7 @@ export const parseRowsText = (text: string, ctx: ClipboardContext): PasteResult 
     // Skip a header line (e.g. "Debit" / "Credit" titles from a sheet).
     const debitNum = parseSheetNumber(cell(debitIndex));
     const creditNum = parseSheetNumber(cell(debitIndex + 1));
-    if (lineIndex === 0 && (Number.isNaN(debitNum) || Number.isNaN(creditNum))) return;
+    if (skipTitleLine && lineIndex === 0 && (Number.isNaN(debitNum) || Number.isNaN(creditNum))) return;
 
     const data = emptyRowData(ctx.mainCurrencyId);
 
@@ -245,6 +319,7 @@ export const parseRowsText = (text: string, ctx: ClipboardContext): PasteResult 
       data.currencyAmount = amount === null || Number.isNaN(amount) ? null : Math.abs(amount);
       data.rate = rate === null || Number.isNaN(rate) ? null : rate;
       if (Number.isNaN(amount) || Number.isNaN(rate)) unmatched++;
+      if (completeAmounts) completeRowAmounts(data, (amount ?? 0) < 0, ctx);
     }
 
     result.push(data);

@@ -7,9 +7,10 @@ module Accounting
     class ItemsQuery
       include Filtering
 
-      def initialize(organization:, fiscal_year_id:, filters: [])
+      # scope  an EntryScope
+      def initialize(organization:, scope:, filters: [])
         @organization = organization
-        @fiscal_year_id = fiscal_year_id
+        @scope = scope
         @filters = filters || []
 
         @filters.each { |f| validate_dimension!(f[:dimension].to_s) }
@@ -31,7 +32,7 @@ module Accounting
 
       private
 
-      attr_reader :organization, :fiscal_year_id, :filters
+      attr_reader :organization, :scope, :filters
     end
   end
 end

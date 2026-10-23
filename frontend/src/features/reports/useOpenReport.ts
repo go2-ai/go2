@@ -1,7 +1,31 @@
 import { useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useTabManager } from '../../components/tabs/useTabManager';
-import { findDefaultTemplate, useGetReportTemplatesQuery } from '../reportTemplates/reportTemplatesApi';
+import { parseId } from '../../components/tabs/useTabSearchParams';
+
+/**
+ * What a report prints: a record (e.g. a journal entry) or, for list pages,
+ * a source query string describing the page's data (e.g. the explorer's
+ * period and filters, see explorerPrintSource).
+ */
+export interface ReportTarget {
+  recordId?: number | null;
+  source?: string | null;
+}
+
+/** The target as tab URL params: record_id or source. */
+export const reportTargetParams = (target: ReportTarget, params = new URLSearchParams()): URLSearchParams => {
+  if (target.recordId) params.set('record_id', String(target.recordId));
+  if (target.source) params.set('source', target.source);
+  return params;
+};
+
+export const reportTargetFromParams = (params: URLSearchParams): ReportTarget => ({
+  recordId: parseId(params.get('record_id')),
+  source: params.get('source'),
+});
+
+export const hasReportTarget = (target: ReportTarget): boolean => !!(target.recordId || target.source);
 
 export const useOpenReport = () => {
   const navigate = useNavigate();
@@ -9,34 +33,24 @@ export const useOpenReport = () => {
   const { openTab } = useTabManager();
   const orgId = parseInt(organizationId || '0', 10);
 
-  const { data: templates } = useGetReportTemplatesQuery(orgId, { skip: !orgId });
-
   /**
-   * Opens a report tab for a record. The report page loads the record's data
-   * itself (see useReportData), so the tab survives page refreshes.
+   * Opens a report tab that prints a target with a template. Which template
+   * is the default comes from the server (useGetReportResolutionQuery). The
+   * report page loads the data itself (see useReportData), so the tab
+   * survives page refreshes.
    */
   const openReport = useCallback(
-    (reportKey: string, recordId: number, title?: string, templateId?: number) => {
-      const template = templateId
-        ? templates?.find((t) => t.id === templateId)
-        : findDefaultTemplate(templates, reportKey);
-
-      if (!template) {
-        console.error(`No template found for report key: ${reportKey} (templateId: ${templateId || 'default'})`);
-        return;
-      }
-
-      const params = new URLSearchParams({
-        template_id: String(template.id),
-        report_key: reportKey,
-        record_id: String(recordId),
-      });
+    (reportKey: string, target: ReportTarget, templateId: number, title?: string) => {
+      const params = reportTargetParams(
+        target,
+        new URLSearchParams({ template_id: String(templateId), report_key: reportKey })
+      );
       const path = `/app/organizations/${orgId}/reports?${params.toString()}`;
 
       openTab('reports', title || `Report: ${reportKey}`, path);
       navigate(path);
     },
-    [orgId, templates, openTab, navigate]
+    [orgId, openTab, navigate]
   );
 
   return { openReport };

@@ -28,6 +28,7 @@ import type { LocaleCode } from '../../shared/constants/locales';
 import {
   buildLocaleMap,
   flattenTranslations,
+  getOrganizationLocales,
   type LocaleMap,
 } from '../../utils/translationHelper';
 import type { CalendarType } from '../../components/shared/BaseDatePicker';
@@ -74,7 +75,12 @@ export const OrganizationSettingsPage = () => {
   useTabLoading(isOrgLoading);
   const [updateOrganization, { isLoading: isSaving }] = useUpdateOrganizationMutation();
 
-  const { allLocales, isReady } = useTranslatableLocales({ organizationId: orgId });
+  const { primaryLocale: userLocale, isReady } = useTranslatableLocales({ organizationId: orgId });
+  // Languages of the fetched organization (the store's copy can be outdated after a save).
+  const allLocales = useMemo(
+    () => (organization ? getOrganizationLocales(organization) : []),
+    [organization]
+  );
 
   const [tabValue, setTabValue] = useState(0);
 
@@ -109,6 +115,15 @@ export const OrganizationSettingsPage = () => {
       });
     }
   }, [organization, isReady, allLocales.join(',')]);
+
+  // The name is entered in the languages chosen in the form, so a language
+  // added here can get its name in the same save.
+  const formLocales = useMemo(
+    () => [...new Set<string>([formData.locale, ...formData.active_locales])],
+    [formData.locale, formData.active_locales]
+  );
+  const nameLocale = formLocales.includes(userLocale) ? userLocale : formData.locale;
+  const nameOtherLocales = formLocales.filter((code) => code !== nameLocale);
 
   const handleNameChange = (val: LocaleMap) => {
     setFormData((prev) => ({ ...prev, name: val }));
@@ -227,6 +242,8 @@ export const OrganizationSettingsPage = () => {
                 {/* Organization Name */}
                 <MultiLocaleInput
                   field={t('name')}
+                  locale={nameLocale}
+                  otherLocales={nameOtherLocales}
                   value={formData.name}
                   onChange={handleNameChange}
                   required

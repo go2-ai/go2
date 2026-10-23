@@ -65,6 +65,7 @@ const GROUPS: Array<{ titleKey: string; items: Hotkey[] }> = [
       [['Ctrl+Y', 'Ctrl+Shift+Z'], 'hotkeys.redo'],
       [['Ctrl+S'], 'hotkeys.save'],
       [['Ctrl+Alt+S'], 'hotkeys.saveDraft'],
+      [['F7'], 'hotkeys.openItems'],
       [['Ctrl+/'], 'hotkeys.help'],
     ],
   },

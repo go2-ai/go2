@@ -47,6 +47,8 @@ export const PERMISSION_CODES = {
   ACCOUNTING_MANAGE_EXCHANGE_RATES: 'Accounting.manage_exchange_rates',
   ACCOUNTING_REVALUE_CURRENCIES: 'Accounting.revalue_currencies',
   ACCOUNTING_CLOSE_FISCAL_YEARS: 'Accounting.close_fiscal_years',
+  REPORTS_MANAGE_JOURNAL_ENTRY: 'Reports.manage_journal_entry',
+  REPORTS_MANAGE_CURRENCY_REVALUATION: 'Reports.manage_currency_revaluation',
 } as const;
 
 export const SIDEBAR_MODULES: SidebarModule[] = [

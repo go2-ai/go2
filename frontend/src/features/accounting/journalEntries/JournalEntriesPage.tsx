@@ -10,7 +10,7 @@ import {
   Button,
   Chip,
 } from '@mui/material';
-import type { GridColDef } from '@mui/x-data-grid';
+import { useGridApiRef, type GridColDef } from '@mui/x-data-grid';
 import AddRoundedIcon from '@mui/icons-material/AddRounded';
 import { useTranslation } from 'react-i18next';
 import {
@@ -23,6 +23,10 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useTabManager } from '../../../components/tabs/useTabManager';
 import { useTabLoading } from '../../../components/tabs/TabLoadingContext';
 import { useTabSearchParams } from '../../../components/tabs/useTabSearchParams';
+import { TableActionsMenu } from '../journalEntryItems/components/TableActionsMenu';
+import { useExcelExport } from '../journalEntryItems/useExcelExport';
+
+const AMOUNT_FORMAT = '#,##0.00';
 
 const STATES: ReadonlyArray<JournalEntry['state']> = ['draft', 'booked', 'approved'];
 
@@ -69,6 +73,17 @@ export const JournalEntriesPage = () => {
     { skip: !orgId || !activeFiscalYearId }
   );
   useTabLoading(isLoading || isFetching);
+  const gridApiRef = useGridApiRef();
+  const exportExcel = useExcelExport();
+
+  // The grid as shown: its columns, the header search and the sort order.
+  const handleExportExcel = () =>
+    exportExcel({
+      apiRef: gridApiRef,
+      title: tJE('journalEntries'),
+      numberFormats: { debit: AMOUNT_FORMAT, credit: AMOUNT_FORMAT },
+    });
+
   const shownEntries = useMemo(
     () => (stateFilter ? (journalEntries ?? []).filter((entry) => entry.state === stateFilter) : journalEntries),
     [journalEntries, stateFilter]
@@ -222,6 +237,12 @@ export const JournalEntriesPage = () => {
         >
           {tJE('newJournalEntry')}
         </Button>
+        <Box sx={{ flexShrink: 0, alignSelf: 'center' }}>
+          <TableActionsMenu
+            onExportExcel={handleExportExcel}
+            disabled={isFetching || !shownEntries || shownEntries.length === 0}
+          />
+        </Box>
       </Box>
 
       {stateFilter && (
@@ -252,6 +273,7 @@ export const JournalEntriesPage = () => {
             disableColumnMenu
             disableRowSelectionOnClick
             rowHeight={40}
+            apiRef={gridApiRef}
             loading={isFetching}
             onRowOpen={handleOpenJournalEntry}
             rowOpenLabel={tJE('openJournalEntry')}

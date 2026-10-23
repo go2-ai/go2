@@ -6,48 +6,52 @@ module Accounting
     # one name column per center level of the accounting settings. Column
     # titles are the ones of the revaluation page grid.
     #
-    # Titles are English: the bundled PDF font (Roboto) has no Persian
-    # glyphs. Organizations can copy the template and change it in the
-    # designer.
+    # It is built in one locale: titles come from reports.currency_revaluation
+    # in config/locales. Right-to-left locales (e.g. fa) get a mirrored layout
+    # (first column on the right) and a font with Arabic-script glyphs (see
+    # TemplateSupport). Organizations can copy the template and change it in
+    # the designer.
     class CurrencyRevaluationTemplate
+      include TemplateSupport
+
       REPORT_KEY = "currency_revaluation".freeze
       WIDTH = 277.0 # A4 landscape (297 mm) minus 10 mm margins
-      FONT = "Roboto".freeze
-      BORDER = { "width" => 0.5, "color" => "#000000", "style" => "solid" }.freeze
       GROUP_HEIGHT = 5
       SUB_HEIGHT = 5
       ROW_HEIGHT = 6
 
       # main_digits: decimals of the main currency (base amounts and totals).
-      def self.build(center_levels: 3, main_digits: 2)
-        new(center_levels, main_digits).build
+      def self.build(center_levels: 3, main_digits: 2, locale: "en")
+        new(center_levels, main_digits, locale).build
       end
 
-      def self.for(organization)
+      def self.for(organization, locale: "en")
         setting = organization&.accounting_setting
-        build(center_levels: setting&.center_levels || 3, main_digits: setting&.main_currency&.decimal_digits || 2)
+        build(center_levels: setting&.center_levels || 3, main_digits: setting&.main_currency&.decimal_digits || 2,
+              locale: locale)
       end
 
-      def initialize(center_levels, main_digits)
+      def initialize(center_levels, main_digits, locale = "en")
         @center_levels = center_levels.to_i.clamp(0, 6)
         @amount = { "type" => "number", "decimals" => main_digits.to_i.clamp(0, 8) }.freeze
+        @locale = locale.to_s.presence || "en"
       end
 
       def build
-        {
+        template = {
           "schemaVersion" => 1,
-          "name" => "Revaluation of Monetary Items",
-          "description" => "Balances revalued to the exchange rates of the revaluation date, per account, " \
-                           "centers and currency, with differences and gain/loss accounts.",
+          "name" => label("title"),
+          "description" => label("description"),
           "unit" => "mm",
-          "locale" => "en-US",
+          "locale" => format_locale,
           "page" => { "size" => "A4", "orientation" => "landscape",
                       "margins" => { "top" => 10, "right" => 10, "bottom" => 10, "left" => 10 } },
           "dataSources" => data_sources,
           "styles" => styles,
           "pageHeader" => { "id" => "revaluation_header", "height" => 36, "components" => page_header },
           "pageFooter" => { "id" => "revaluation_footer", "height" => 6, "components" => [
-            text("page_of", 157, 0, 120, 5, "Page {{ page.number }} of {{ page.count }}", "muted", style: { "textAlign" => "right" })
+            text("page_of", 157, 0, 120, 5, label("page_of", number: "{{ page.number }}", count: "{{ page.count }}"), "muted",
+                 style: { "textAlign" => "right" })
           ] },
           "body" => [ {
             "kind" => "dataRegion",
@@ -61,35 +65,41 @@ module Accounting
             "footer" => { "id" => "totals", "height" => 18, "components" => totals }
           } ]
         }
+        rtl? ? mirror(template, WIDTH) : template
       end
 
       private
 
       attr_reader :center_levels, :amount
 
+      def label_scope
+        "currency_revaluation"
+      end
+
       # Groups of columns: a title over one column, or over Code / Name.
       # Widths are relative and scaled to the page width.
       def groups
         @groups ||= begin
-          list = [ { id: "account", title: "Account", parts: [
-            { id: "account_code", title: "Code", width: 14, text: "{{ row.account_code }}" },
-            { id: "account_name", title: "Name", width: 32, text: "{{ row.account_name }}" }
+          list = [ { id: "account", title: label("account"), parts: [
+            { id: "account_code", title: label("code"), width: 14, text: "{{ row.account_code }}" },
+            { id: "account_name", title: label("name"), width: 32, text: "{{ row.account_name }}" }
           ] } ]
           (1..center_levels).each do |level|
-            list << { id: "center_#{level}", title: "Center #{level}", parts: [
-              { id: "center_#{level}_code", title: "Code", width: 11, text: "{{ row.center_#{level}_code }}" },
-              { id: "center_#{level}_name", title: "Name", width: 19, text: "{{ row.center_#{level}_name }}" }
+            list << { id: "center_#{level}", title: label("center", level: level), parts: [
+              { id: "center_#{level}_code", title: label("code"), width: 11, text: "{{ row.center_#{level}_code }}" },
+              { id: "center_#{level}_name", title: label("name"), width: 19, text: "{{ row.center_#{level}_name }}" }
             ] }
           end
           list + [
-            single("currency", "Currency", 11, "{{ row.currency }}", "center"),
-            single("currency_balance", "Balance in foreign currency", 21, "{{ row.currency_balance_text }}", "right"),
-            single("book_balance", "Balance in {{ revaluation[0].currency.abr }}", 21, "{{ row.book_base_balance }}", "right", amount),
-            single("rate", "Rate", 17, "{{ row.rate }}", "right"),
-            single("revalued", "Revalued balance", 21, "{{ row.revalued_base_balance }}", "right", amount),
-            single("difference", "Difference", 20, "{{ row.difference }}", "right", amount),
-            single("gain_loss", "Gain/loss account", 30, "{{ row.gain_loss_account_code }} {{ row.gain_loss_account_name }}"),
-            single("note", "Note", 18, "{{ row.note }}")
+            single("currency", label("currency"), 11, "{{ row.currency }}", "center"),
+            single("currency_balance", label("currency_balance"), 21, "{{ row.currency_balance_text }}", "right"),
+            single("book_balance", label("book_balance", currency: "{{ revaluation[0].currency.abr }}"), 21,
+                   "{{ row.book_base_balance }}", "right", amount),
+            single("rate", label("rate"), 17, "{{ row.rate }}", "right"),
+            single("revalued", label("revalued"), 21, "{{ row.revalued_base_balance }}", "right", amount),
+            single("difference", label("difference"), 20, "{{ row.difference }}", "right", amount),
+            single("gain_loss", label("gain_loss"), 30, "{{ row.gain_loss_account_code }} {{ row.gain_loss_account_name }}"),
+            single("note", label("note"), 18, "{{ row.note }}")
           ]
         end
       end
@@ -157,11 +167,11 @@ module Accounting
       def totals
         x, width = layout.fetch("difference")
         rest = (WIDTH - x - width).round(2)
-        [ [ "gain", "Total gain", "{{ revaluation[0].total_gain }}" ],
-          [ "loss", "Total loss", "{{ revaluation[0].total_loss }}" ],
-          [ "net", "Total difference (posted)", "{{ sum(rows, 'posted_difference') }}" ] ].each_with_index.flat_map do |(id, label, value), index|
+        [ [ "gain", label("total_gain"), "{{ revaluation[0].total_gain }}" ],
+          [ "loss", label("total_loss"), "{{ revaluation[0].total_loss }}" ],
+          [ "net", label("total_net"), "{{ sum(rows, 'posted_difference') }}" ] ].each_with_index.flat_map do |(id, title, value), index|
           y = index * ROW_HEIGHT
-          [ text("total_#{id}_label", 0, y, x, ROW_HEIGHT, label, "sum"),
+          [ text("total_#{id}_label", 0, y, x, ROW_HEIGHT, title, "sum"),
             text("total_#{id}", x, y, width, ROW_HEIGHT, value, "sum", format: amount),
             text("total_#{id}_rest", x + width, y, rest, ROW_HEIGHT, "", "sum") ]
         end
@@ -170,41 +180,32 @@ module Accounting
       def page_header
         components = [
           text("org_name", 0, 0, WIDTH, 9, "{{ revaluation[0].organization_name }}", nil,
-               style: { "fontFamily" => FONT, "fontSize" => 16, "fontWeight" => "bold", "textAlign" => "center", "verticalAlign" => "middle" }),
-          text("title", 0, 9, WIDTH, 7, "Revaluation of Monetary Items", nil,
-               style: { "fontFamily" => FONT, "fontSize" => 13, "fontWeight" => "bold", "color" => "#666666",
+               style: { "fontFamily" => font, "fontSize" => 16, "fontWeight" => "bold", "textAlign" => "center", "verticalAlign" => "middle" }),
+          text("title", 0, 9, WIDTH, 7, label("title"), nil,
+               style: { "fontFamily" => font, "fontSize" => 13, "fontWeight" => "bold", "color" => "#666666",
                         "textAlign" => "center", "verticalAlign" => "middle" })
         ]
-        left = [ [ "date", "Revaluation date:", "{{ revaluation[0].as_of_date }}" ],
-                 [ "kind", "Kind:", "{{ revaluation[0].kind_name }}" ],
-                 [ "status", "Status:", "{{ revaluation[0].status_name }}" ] ]
-        right = [ [ "entry", "Journal entry:", "{{ revaluation[0].journal_entry_no }}" ],
-                  [ "posted", "Posted:", "{{ revaluation[0].posted_at }} {{ revaluation[0].posted_by }}" ],
-                  [ "currency", "Main currency:", "{{ revaluation[0].currency.abr }}" ] ]
-        left.each_with_index do |(id, label, value), index|
+        left = [ [ "date", label("date"), "{{ revaluation[0].as_of_date }}" ],
+                 [ "kind", label("kind"), "{{ revaluation[0].kind_name }}" ],
+                 [ "status", label("status"), "{{ revaluation[0].status_name }}" ] ]
+        right = [ [ "entry", label("entry"), "{{ revaluation[0].journal_entry_no }}" ],
+                  [ "posted", label("posted"), "{{ revaluation[0].posted_at }} {{ revaluation[0].posted_by }}" ],
+                  [ "currency", label("main_currency"), "{{ revaluation[0].currency.abr }}" ] ]
+        left.each_with_index do |(id, title, value), index|
           y = 19 + index * 5
-          components << text("#{id}_label", 0, y, 32, 5, label, "label")
+          components << text("#{id}_label", 0, y, 32, 5, title, "label")
           components << text("#{id}_value", 32, y, 80, 5, value, "value")
         end
-        right.each_with_index do |(id, label, value), index|
+        right.each_with_index do |(id, title, value), index|
           y = 19 + index * 5
-          components << text("#{id}_label", 170, y, 30, 5, label, "label")
+          components << text("#{id}_label", 170, y, 30, 5, title, "label")
           components << text("#{id}_value", 200, y, 77, 5, value, "value")
         end
         components
       end
 
-      def text(id, x, y, width, height, value, style_name, style: nil, **extra)
-        component = { "id" => id, "type" => "text", "x" => x, "y" => y, "width" => width, "height" => height }
-        component["styleName"] = style_name if style_name
-        component["style"] = style if style
-        extra.each { |key, val| component[key.to_s] = val }
-        component["text"] = value
-        component
-      end
-
       def cell_style(**extra)
-        { "fontSize" => font_size, "verticalAlign" => "middle", "padding" => 1, "border" => BORDER, "fontFamily" => FONT,
+        { "fontSize" => font_size, "verticalAlign" => "middle", "padding" => 1, "border" => BORDER, "fontFamily" => font,
           **extra.transform_keys(&:to_s) }
       end
 
@@ -213,9 +214,9 @@ module Accounting
           "th" => cell_style(fontWeight: "bold", backgroundColor: "#d9d9d9", textAlign: "center"),
           "cell" => cell_style,
           "sum" => cell_style(fontWeight: "bold", backgroundColor: "#f2f2f2", textAlign: "right"),
-          "label" => { "fontSize" => 9, "fontWeight" => "bold", "verticalAlign" => "middle", "fontFamily" => FONT },
-          "value" => { "fontSize" => 9, "verticalAlign" => "middle", "fontFamily" => FONT },
-          "muted" => { "fontSize" => 8, "color" => "#555555", "verticalAlign" => "middle", "fontFamily" => FONT }
+          "label" => { "fontSize" => 9, "fontWeight" => "bold", "verticalAlign" => "middle", "fontFamily" => font },
+          "value" => { "fontSize" => 9, "verticalAlign" => "middle", "fontFamily" => font },
+          "muted" => { "fontSize" => 8, "color" => "#555555", "verticalAlign" => "middle", "fontFamily" => font }
         }
       end
 

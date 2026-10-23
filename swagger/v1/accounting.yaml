@@ -9775,15 +9775,52 @@ paths:
       required: false
       schema:
         type: array
+    - name: from
+      in: query
+      schema:
+        type: string
+        format: date
+      required: false
+      description: Start of the period (YYYY-MM-DD). With `to`, replaces the fiscal
+        year range.
+    - name: to
+      in: query
+      schema:
+        type: string
+        format: date
+      required: false
+      description: End of the period (YYYY-MM-DD).
+    - name: entry_types
+      in: query
+      required: false
+      description: 'Comma separated entry types (normal, beginning, revaluation, closing_temp_accounts,
+        ending). Default: normal,beginning,revaluation. When the period spans several
+        fiscal years, closing_temp_accounts and ending are ignored and beginning only
+        selects the first year''s beginning entry.'
+      schema:
+        type: string
+    - name: include_year_end
+      in: query
+      required: false
+      description: 'Periods spanning several fiscal years: also include the temporary
+        closing, ending and later beginning entries.'
+      schema:
+        type: boolean
+    - name: approved_only
+      in: query
+      required: false
+      description: 'Only approved entries (default: booked and approved).'
+      schema:
+        type: boolean
     get:
       summary: Get all journal entry items (explorer)
       tags:
       - Journal Entry Items
       description: Returns the flat, ungrouped journal_entry_items matching the explorer
-        filters. Only booked and approved entries are included.
+        filters, period, entry types and states. Drafts are never included.
       responses:
         '200':
-          description: Excludes draft entries from results
+          description: Limits items to approved entries
           content:
             application/json:
               schema:
@@ -9846,7 +9883,9 @@ paths:
                       - nil
                       example: 1
                     rate:
-                      type: number
+                      type:
+                      - number
+                      - nil
                       format: float
                       example: 1.0
                     currency_amount:
@@ -9937,15 +9976,59 @@ paths:
       required: false
       schema:
         type: array
+    - name: from
+      in: query
+      schema:
+        type: string
+        format: date
+      required: false
+      description: Start of the period (YYYY-MM-DD). With `to`, replaces the fiscal
+        year range.
+    - name: to
+      in: query
+      schema:
+        type: string
+        format: date
+      required: false
+      description: End of the period (YYYY-MM-DD).
+    - name: entry_types
+      in: query
+      required: false
+      description: 'Comma separated entry types (normal, beginning, revaluation, closing_temp_accounts,
+        ending). Default: normal,beginning,revaluation. When the period spans several
+        fiscal years, closing_temp_accounts and ending are ignored and beginning only
+        selects the first year''s beginning entry.'
+      schema:
+        type: string
+    - name: include_year_end
+      in: query
+      required: false
+      description: 'Periods spanning several fiscal years: also include the temporary
+        closing, ending and later beginning entries.'
+      schema:
+        type: boolean
+    - name: approved_only
+      in: query
+      required: false
+      description: 'Only approved entries (default: booked and approved).'
+      schema:
+        type: boolean
+    - name: hide_zero_balance
+      in: query
+      required: false
+      description: Leave out rows whose debit and credit net to zero.
+      schema:
+        type: boolean
     get:
       summary: Get grouped summary of journal entry items
       tags:
       - Journal Entry Items
-      description: Returns grouped summaries (debit/credit/net) for the explorer.
-        Only booked and approved entries are included.
+      description: Returns grouped summaries (debit/credit/net) for the explorer,
+        for the period, entry types and states, and the resolved period in `meta`.
+        Drafts are never included.
       responses:
         '200':
-          description: Drills into currency filtered by a selected account
+          description: Hides zero-balance rows
           content:
             application/json:
               schema:
@@ -9986,9 +10069,39 @@ paths:
                           - number
                           - nil
                           example:
+                  meta:
+                    type: object
+                    properties:
+                      from:
+                        type: string
+                        format: date
+                        example: '2024-01-01'
+                      to:
+                        type: string
+                        format: date
+                        example: '2024-12-31'
+                      fiscal_year_ids:
+                        type: array
+                        items:
+                          type: integer
+                        example:
+                        - 1
+                      multi_year:
+                        type: boolean
+                        example: false
+                      prior_entries_excluded:
+                        type: boolean
+                        example: false
+                    required:
+                    - from
+                    - to
+                    - fiscal_year_ids
+                    - multi_year
+                    - prior_entries_excluded
                 required:
                 - group_by
                 - rows
+                - meta
         '422':
           description: Invalid filter dimension
   "/organizations/{organization_id}/accounting/ledgers":

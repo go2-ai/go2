@@ -38,6 +38,7 @@ interface TabContextType {
   setActiveTab: (panelId: string, tabId: string) => void;
   setActiveTabByPageId: (tabId: string, panelId: string) => void;
   updateTabTitle: (pageId: string, title: string) => void;
+  updateTabPath: (tabId: string, path: string) => void;
 }
 
 const TabContext = createContext<TabContextType | null>(null);
@@ -50,7 +51,7 @@ interface TabProviderProps {
 export function TabProvider({ children }: TabProviderProps) {
   const { layout, setLayout } = useWorkspaceState();
 
-  const { openTab, closeTab, splitTab, duplicateTab, resetLayout, updateTabTitle } =
+  const { openTab, closeTab, splitTab, duplicateTab, resetLayout, updateTabTitle, updateTabPath } =
     useTabOperations(setLayout);
 
   const {
@@ -99,6 +100,7 @@ export function TabProvider({ children }: TabProviderProps) {
     setActiveTab,
     setActiveTabByPageId,
     updateTabTitle,
+    updateTabPath,
   };
 
   return (

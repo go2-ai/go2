@@ -10,6 +10,23 @@ fa:
     balances:
       fiscal_year_required: سال مالی معتبر انتخاب کنید
       invalid_date: تاریخ باید به شکل YYYY-MM-DD باشد
+    journal_entry_items:
+      fiscal_year_required: یک سال مالی معتبر یا بازه تاریخ انتخاب کنید
+      invalid_date: تاریخ باید به شکل YYYY-MM-DD باشد
+      invalid_entry_types: "نوع سند نامعتبر: %{types}"
+      invalid_range: تاریخ شروع باید قبل یا برابر تاریخ پایان باشد
+      invalid_view: نمای ناشناخته
+      out_of_range: "بازه باید در محدوده سال‌های مالی شما باشد (%{start_date} تا %{finish_date})"
+    report_defaults:
+      invalid_scope: محدوده باید سازمان یا شخصی باشد
+      organization_not_found: سازمان پیدا نشد
+      template_not_found: قالب گزارش پیدا نشد
+      unknown_report: گزارش ناشناخته
+    report_templates:
+      locale_not_available: این زبان جزو زبان‌های سازمان نیست
+      not_found: قالب گزارش پیدا نشد
+      organization_not_found: سازمان پیدا نشد
+      source_not_found: قالب گزارش مبدأ پیدا نشد
   devise:
     confirmations:
       confirmed: آدرس ایمیل شما با موفقیت تایید شد.
@@ -335,6 +352,19 @@ fa:
       revalue_currencies: ایجاد، ثبت و حذف تسعیرهای ارزی و زمان‌بندی‌های آن‌ها
       accounting_close_fiscal_years: بستن سال مالی
       close_fiscal_years: بستن و بازگشایی سال مالی، شامل ثبت اسناد بستن حساب‌های موقت، اختتامیه و افتتاحیه
+      reports_manage_journal_entry: مدیریت قالب‌های چاپ سند حسابداری
+      manage_journal_entry_reports: کپی، طراحی، تغییر نام و حذف قالب‌های چاپ سند حسابداری و تعیین قالب پیش‌فرض برای همه
+      reports_manage_currency_revaluation: مدیریت قالب‌های چاپ تسعیر
+      manage_currency_revaluation_reports: کپی، طراحی، تغییر نام و حذف قالب‌های چاپ تسعیر و تعیین قالب پیش‌فرض برای همه
+      reports_manage_explorer: مدیریت قالب‌های چاپ کاوشگر
+      manage_explorer_reports: کپی، طراحی، تغییر نام و حذف قالب‌های چاپ کاوشگر و تعیین قالب پیش‌فرض برای همه
+      reports_manage_journal_entry_items: مدیریت قالب‌های چاپ آرتیکل‌های سند
+      manage_journal_entry_items_reports: کپی، طراحی، تغییر نام و حذف قالب‌های چاپ آرتیکل‌های سند و تعیین قالب پیش‌فرض برای همه
+    report_default:
+      errors:
+        not_available: برای این سازمان در دسترس نیست
+        other_organization: عضو این سازمان نیست
+        other_report: متعلق به گزارش دیگری است
     report_template:
       copy_name: "%{name} (کپی)"
       errors:
@@ -350,6 +380,85 @@ fa:
     subtitle: سازمان اول خود را ایجاد کنید تا سفر خود را با ما آغاز کنید
     success_message: سازمان با موفقیت ایجاد شد! به ما خوش آمدید!
     title: به GO3 خوش آمدید! بیایید شروع کنیم
+  reports:
+    currency_revaluation:
+      account: حساب
+      book_balance: مانده به %{currency}
+      center: مرکز %{level}
+      code: کد
+      currency: ارز
+      currency_balance: مانده ارزی
+      date: 'تاریخ تسعیر:'
+      description: مانده‌ها به نرخ ارز تاریخ تسعیر، به تفکیک حساب، مراکز و ارز، همراه با تفاوت‌ها و حساب‌های سود و زیان.
+      difference: تفاوت
+      entry: 'سند حسابداری:'
+      gain_loss: حساب سود/زیان
+      kind: 'نوع:'
+      main_currency: 'ارز اصلی:'
+      name: نام
+      note: توضیح
+      page_of: صفحه %{number} از %{count}
+      posted: 'ثبت:'
+      rate: نرخ
+      revalued: مانده تسعیرشده
+      status: 'وضعیت:'
+      title: تسعیر اقلام پولی
+      total_gain: جمع سود
+      total_loss: جمع زیان
+      total_net: جمع تفاوت (ثبت‌شده)
+    explorer:
+      code: کد
+      credit_balance: مانده بستانکار
+      debit_balance: مانده بدهکار
+      description: مانده‌ها به تفکیک یک بُعد برای دوره، انواع سند و فیلترهای کاوشگر.
+      grouped_by: 'گروه‌بندی بر اساس:'
+      name: نام
+      sum_credit: جمع بستانکار
+      sum_debit: جمع بدهکار
+      title: کاوشگر
+    journal_entry_items:
+      account: حساب
+      credit: بستانکار
+      currency: ارز
+      currency_amount: مبلغ ارزی
+      date: تاریخ
+      debit: بدهکار
+      description: شرح
+      "no": شماره
+      rate: نرخ
+      ref: مرجع
+      row: ردیف
+      title: آرتیکل‌های سند حسابداری
+    shared:
+      currency: 'ارز:'
+      dimensions:
+        account: حساب
+        account_category: گروه حساب
+        center1: مرکز ۱
+        center2: مرکز ۲
+        center3: مرکز ۳
+        center4: مرکز ۴
+        center5: مرکز ۵
+        center6: مرکز ۶
+        currency: ارز
+        ledger: دفتر
+      entry_types: 'انواع سند:'
+      entry_types_names:
+        beginning: افتتاحیه
+        closing_temp_accounts: بستن حساب‌های موقت
+        ending: اختتامیه
+        normal: عادی
+        revaluation: تسعیر
+      page_of: صفحه %{number} از %{count}
+      period: 'دوره:'
+      period_to: تا
+      printed_at: 'تاریخ چاپ: %{date}'
+      separator: '، '
+      states: 'اسناد:'
+      states_names:
+        approved: تأییدشده
+        booked_and_approved: ثبت‌شده و تأییدشده
+      total: جمع
   sign_up:
     already_have_account: قبلاً حساب کاربری دارید؟
     email: ایمیل

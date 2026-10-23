@@ -26,6 +26,9 @@ import KeyboardIcon from '@mui/icons-material/Keyboard';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import HistoryIcon from '@mui/icons-material/History';
 import AttachFileIcon from '@mui/icons-material/AttachFile';
+import ManageSearchRoundedIcon from '@mui/icons-material/ManageSearchRounded';
+import FileDownloadOutlinedIcon from '@mui/icons-material/FileDownloadOutlined';
+import UploadFileRoundedIcon from '@mui/icons-material/UploadFileRounded';
 import { useTranslation } from 'react-i18next';
 import { JournalEntryGrid } from './components/JournalEntryGrid';
 import { HotkeysDialog } from './components/HotkeysDialog';
@@ -58,7 +61,16 @@ import {
   swapRate,
   type FinancialKey,
 } from './utils/journalEntryCalculations';
-import { copyRows, looksLikeRows, rowsFromClipboardText, type ClipboardContext } from './utils/clipboard';
+import {
+  copyRows,
+  looksLikeRows,
+  rowsFromClipboardText,
+  type ClipboardContext,
+  type PasteResult,
+} from './utils/clipboard';
+import { exportSheetColumns, rowsToExportCells } from './utils/rowsSheet';
+import { ImportRowsDialog, type ImportMode } from './components/ImportRowsDialog';
+import { downloadExcel } from '../../../utils/spreadsheet';
 import {
   closestCell,
   editableColumnKeys,
@@ -75,6 +87,7 @@ import MultiLocaleInput from '../../../components/shared/MultiLocaleInput';
 import { useGetDocumentsQuery } from '../../documents/documentsApi';
 import { useTabManager, useCurrentTabId } from '../../../components/tabs';
 import { ReportSplitButton } from '../../reports/components/ReportSplitButton';
+import type { ExplorerDimension, ExplorerFilter } from '../journalEntryItems/journalEntryItemsApi';
 
 const FINANCIAL_KEYS: readonly string[] = ['debit', 'credit', 'rate', 'currencyAmount'];
 const EPSILON = 0.000001;
@@ -152,11 +165,11 @@ interface JournalEntryEditorProps {
 
 export const JournalEntryEditor = ({ journalEntryId, focusItemId }: JournalEntryEditorProps) => {
   const { t } = useTranslation('shared');
-  const { t: tJE } = useTranslation('accounting');
+  const { t: tJE, i18n } = useTranslation('accounting');
   const { organizationId } = useParams<{ organizationId: string }>();
   const orgId = parseInt(organizationId || '0', 10);
   // Clipboard actions are local (nothing is saved), so they use neutral info toasts.
-  const { showSuccess, showError, showInfo } = useToast();
+  const { showSuccess, showError, showInfo, showWarning } = useToast();
   const confirm = useConfirm();
 
   const { activeFiscalYearId, activeFiscalYear } = useActiveFiscalYear(orgId);
@@ -244,6 +257,7 @@ export const JournalEntryEditor = ({ journalEntryId, focusItemId }: JournalEntry
 
   const [menuAnchor, setMenuAnchor] = useState<HTMLElement | null>(null);
   const [hotkeysOpen, setHotkeysOpen] = useState(false);
+  const [importOpen, setImportOpen] = useState(false);
 
   // "Add account" / "Add center" opened from a grid dropdown with no matches.
   // After creation the new record is selected in the row that requested it.
@@ -1209,6 +1223,57 @@ export const JournalEntryEditor = ({ journalEntryId, focusItemId }: JournalEntry
     }
   }, [copySelectedRowsText, showSuccess, showError, tJE]);
 
+  // ── Excel export and import ───────────────────────────────────────────
+
+  /**
+   * Exports the rows with the codes and names of their accounts and centers
+   * (see utils/rowsSheet); the file can be imported again. Only the selected
+   * rows when several are selected.
+   */
+  const exportRowsToExcel = async () => {
+    setMenuAnchor(null);
+    const ctx = clipboardContext();
+    if (!ctx) return;
+    const ids = selectedRowIdsRef.current;
+    const exported = ids.size > 1 ? rows.filter(r => ids.has(r.id)) : rows.filter(rowHasData);
+    try {
+      await downloadExcel({
+        title: [tJE('journalEntry'), ref].filter(Boolean).join(' '),
+        columns: exportSheetColumns(centerLevels, tJE),
+        rows: rowsToExportCells(exported, ctx),
+        rtl: i18n.dir() === 'rtl',
+      });
+    } catch {
+      showError(tJE('explorer.exportFailed'));
+    }
+  };
+
+  const hasRowData = rows.some(rowHasData);
+
+  const importRows = useCallback(({ rows: imported, unmatched }: PasteResult, mode: ImportMode) => {
+    const newRows: JournalEntryRow[] = imported.map(data => ({ ...data, id: newRowId(), row: 0 }));
+    if (newRows.length === 0) return;
+
+    setRows(prev => {
+      if (mode === 'replace') return renumber(newRows);
+      // Empty rows at the end (e.g. the first row of a new entry) make room.
+      let end = prev.length;
+      while (end > 0 && !rowHasData(prev[end - 1])) end--;
+      return renumber([...prev.slice(0, end), ...newRows]);
+    });
+
+    setSelectedRowIds(new Set(newRows.map(r => r.id)));
+    setSelectionAnchorId(newRows[0].id);
+    setSelectedRowId(newRows[0].id);
+    setSelectedCellKey('account');
+    focusRowCell(newRows[0].id, 'account');
+
+    // The result, in a toast that closes by itself (longer when there's something to fix).
+    const importedText = tJE('rowsImport.imported', { count: newRows.length });
+    if (unmatched > 0) showWarning(`${importedText}. ${tJE('rowsImport.unmatched', { count: unmatched })}`, 8000);
+    else showSuccess(importedText);
+  }, [setRows, focusRowCell, showSuccess, showWarning, tJE]);
+
   const contextMenuActions = useCallback((row: JournalEntryRow): ContextMenuAction[] => {
     const ids = selectedRowIdsRef.current;
     const count = ids.size > 1 && ids.has(row.id) ? ids.size : 1;
@@ -1239,6 +1304,7 @@ export const JournalEntryEditor = ({ journalEntryId, focusItemId }: JournalEntry
     save: () => saveFromKeyboard(false),
     saveDraft: () => saveFromKeyboard(true),
     openHelp: () => setHotkeysOpen(true),
+    openItems: () => openRowItems(),
     moveVertical,
     moveHorizontal,
   });
@@ -1295,6 +1361,45 @@ export const JournalEntryEditor = ({ journalEntryId, focusItemId }: JournalEntry
     if (!editingId) return;
     const path = `/app/organizations/${orgId}/record-history?type=Accounting::JournalEntry&id=${editingId}`;
     openTab('record-history', `${t('changeLog')}: ${tJE('journalEntry')} #${ref || editingId}`, path);
+    navigate(path);
+  };
+
+  // ── Journal entry items of the selected row ───────────────────────────
+
+  /**
+   * Opens the journal entry items of the selected row's account and centers
+   * (all of them, combined), with the default filters of this entry's
+   * fiscal year.
+   */
+  const canOpenRowItems = !!firstSelectedRow?.accountId;
+  const openRowItems = () => {
+    setMenuAnchor(null);
+    const row = firstSelectedRow;
+    if (!row?.accountId) return;
+
+    const account = accounts?.find(a => a.id === row.accountId);
+    const filters: ExplorerFilter[] = [{
+      dimension: 'account',
+      ids: [row.accountId],
+      items: account ? [{ code: account.full_code || account.code, name: account.name }] : undefined,
+    }];
+    for (let level = 1; level <= centerLevels; level++) {
+      const centerId = row[`center${level}Id` as keyof JournalEntryRow] as number | null;
+      if (!centerId) continue;
+      const center = centers?.find(c => c.id === centerId);
+      filters.push({
+        dimension: `center${level}` as ExplorerDimension,
+        ids: [centerId],
+        items: center ? [{ code: center.code, name: center.name }] : undefined,
+      });
+    }
+
+    const params = new URLSearchParams();
+    const fiscalYearId = persisted?.fiscalYearId ?? activeFiscalYearId;
+    if (fiscalYearId) params.set('fiscal_year_id', String(fiscalYearId));
+    params.set('filters', JSON.stringify(filters));
+    const path = `/app/organizations/${orgId}/accounting/journal-entry-items?${params.toString()}`;
+    openTab('journal-entry-items', tJE('items.title', { defaultValue: 'Journal Entry Items' }), path);
     navigate(path);
   };
 
@@ -1424,6 +1529,21 @@ export const JournalEntryEditor = ({ journalEntryId, focusItemId }: JournalEntry
                 Ctrl+/
               </Typography>
             </MenuItem>
+            <MenuItem onClick={() => void exportRowsToExcel()} disabled={!hasRowData}>
+              <ListItemIcon><FileDownloadOutlinedIcon fontSize="small" /></ListItemIcon>
+              <ListItemText>{tJE('explorer.exportExcel')}</ListItemText>
+            </MenuItem>
+            <MenuItem onClick={() => { setMenuAnchor(null); setImportOpen(true); }} disabled={readOnly}>
+              <ListItemIcon><UploadFileRoundedIcon fontSize="small" /></ListItemIcon>
+              <ListItemText>{tJE('rowsImport.menu')}</ListItemText>
+            </MenuItem>
+            <MenuItem onClick={openRowItems} disabled={!canOpenRowItems}>
+              <ListItemIcon><ManageSearchRoundedIcon fontSize="small" /></ListItemIcon>
+              <ListItemText>{tJE('items.openForRow')}</ListItemText>
+              <Typography variant="body2" color="text.secondary" sx={{ ml: 3, fontFamily: 'monospace' }}>
+                F7
+              </Typography>
+            </MenuItem>
             <MenuItem onClick={handleOpenChangeLog} disabled={!editingId}>
               <ListItemIcon><HistoryIcon fontSize="small" /></ListItemIcon>
               <ListItemText
@@ -1532,6 +1652,7 @@ export const JournalEntryEditor = ({ journalEntryId, focusItemId }: JournalEntry
               centers={centers}
               centerLevels={centerLevels}
               totals={totals}
+              onOpenItems={canOpenRowItems ? openRowItems : undefined}
             />
           }
         />
@@ -1556,6 +1677,13 @@ export const JournalEntryEditor = ({ journalEntryId, focusItemId }: JournalEntry
         open={hotkeysOpen}
         onClose={() => setHotkeysOpen(false)}
         centerLevels={centerLevels}
+      />
+      <ImportRowsDialog
+        open={importOpen}
+        onClose={() => setImportOpen(false)}
+        context={clipboardContext()}
+        hasRows={hasRowData}
+        onImport={importRows}
       />
     </Container>
   );

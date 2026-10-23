@@ -12,11 +12,13 @@ import { useToast } from '../../contexts/ToastContext';
 import { REPORT_FONT_FAMILIES } from './reportEngine';
 import { useReportData } from './useReportData';
 import { useReportSetup } from './useReportSetup';
+import { reportTargetFromParams } from './useOpenReport';
 import { parseId, useTabSearchParams } from '../../components/tabs/useTabSearchParams';
 import { useTabLoading } from '../../components/tabs/TabLoadingContext';
 
-// Path: report-designer?template_id=1&record_id=42 (record_id is optional and
-// provides sample data for field detection and the preview).
+// Path: report-designer?template_id=1&record_id=42 (record_id, or source for
+// list reports, is optional and provides sample data for field detection and
+// the preview).
 export const ReportDesignerPage = () => {
   const { t: tReports } = useTranslation('reports');
   const { organizationId } = useParams<{ organizationId: string }>();
@@ -26,13 +28,13 @@ export const ReportDesignerPage = () => {
 
   const orgId = parseInt(organizationId || '0', 10);
   const templateId = parseId(searchParams.get('template_id'));
-  const recordId = parseId(searchParams.get('record_id'));
+  const target = reportTargetFromParams(searchParams);
 
   const { data: template, isLoading: templateLoading } = useGetReportTemplateQuery(
     { organizationId: orgId, id: templateId ?? 0 },
     { skip: !templateId || !orgId }
   );
-  const sample = useReportData(template?.report_key ?? '', orgId, recordId);
+  const sample = useReportData(template?.report_key ?? '', orgId, target, template?.locale);
 
   const [updateTemplate] = useUpdateReportTemplateMutation();
 

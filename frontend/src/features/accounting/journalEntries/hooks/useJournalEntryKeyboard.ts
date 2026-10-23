@@ -21,6 +21,7 @@ export interface JournalEntryKeyboardActions {
   save: () => void;               // Ctrl+S
   saveDraft: () => void;          // Ctrl+Alt+S (Ctrl+Shift+S is Edge's web capture)
   openHelp: () => void;           // Ctrl+/
+  openItems: () => void;          // F7: journal entry items of the row's account and centers
   moveVertical: (direction: 1 | -1, extendSelection: boolean) => void; // ↑ ↓ (Shift)
   moveHorizontal: (direction: 1 | -1) => void;                         // Enter, Shift+Enter
 }
@@ -107,6 +108,8 @@ export const useJournalEntryKeyboard = (
         case 'F3': return withCommit(a.copyRowAbove);
         case 'F4': return withCommit(a.copyCellAbove);
         case 'F6': return withCommit(a.duplicateRows);
+        // Uses the committed row; also keeps Firefox's caret browsing (F7) off.
+        case 'F7': return handle(a.openItems);
         case 'F8': return withCommit(a.balance);
         case 'F9': return withCommit(a.swapRate);
         case 'F10': return withCommit(a.swapDebitCredit);

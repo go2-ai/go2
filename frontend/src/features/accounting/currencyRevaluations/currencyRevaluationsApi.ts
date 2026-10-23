@@ -227,8 +227,15 @@ export const currencyRevaluationsApi = createApi({
       query: ({ organizationId, id }) => `${base(organizationId)}/${id}`,
       providesTags: (_result, _error, { id }) => [{ type: 'CurrencyRevaluation', id }],
     }),
-    getCurrencyRevaluationForPrint: builder.query<CurrencyRevaluationPrint, { organizationId: number; id: number }>({
-      query: ({ organizationId, id }) => ({ url: `${base(organizationId)}/${id}`, params: { view: 'print' } }),
+    /** locale: language of the printed template; names and labels come in it. */
+    getCurrencyRevaluationForPrint: builder.query<
+      CurrencyRevaluationPrint,
+      { organizationId: number; id: number; locale?: string }
+    >({
+      query: ({ organizationId, id, locale }) => ({
+        url: `${base(organizationId)}/${id}`,
+        params: { view: 'print', ...(locale ? { locale } : {}) },
+      }),
       providesTags: (_result, _error, { id }) => [{ type: 'CurrencyRevaluation', id }],
     }),
     createCurrencyRevaluation: builder.mutation<

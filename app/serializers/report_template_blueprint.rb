@@ -3,7 +3,7 @@ class ReportTemplateBlueprint < Blueprinter::Base
 
   # Lightweight fields for lists; template_file is only in the :show view.
   view :index do
-    fields :report_key, :parent_template_id, :is_default, :created_at, :updated_at
+    fields :report_key, :locale, :parent_template_id, :created_at, :updated_at
 
     field :name do |template|
       template.name
@@ -21,14 +21,15 @@ class ReportTemplateBlueprint < Blueprinter::Base
       template.created_by&.name
     end
 
-    # What the current member may do (pass can_manage: when rendering).
-    # System templates are read-only; any template can be copied.
+    # What the current member may do (pass access: a ReportRegistry::Access).
+    # System templates are read-only; any template can be copied by those
+    # who manage its report.
     field :editable do |template, options|
-      options[:can_manage] == true && template.org_specific?
+      template.org_specific? && options[:access]&.can_manage?(template.report_key) == true
     end
 
-    field :copyable do |_template, options|
-      options[:can_manage] == true
+    field :copyable do |template, options|
+      options[:access]&.can_manage?(template.report_key) == true
     end
   end
 

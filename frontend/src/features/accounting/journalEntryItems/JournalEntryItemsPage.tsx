@@ -1,21 +1,35 @@
 // src/pages/accounting/explorer/JournalEntryItemsPage.tsx
-import { useMemo, useState } from 'react';
-import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
-import type { GridColDef, GridRowSelectionModel, GridRowId } from '@mui/x-data-grid';
+import { useEffect, useId, useMemo, useState } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { useGridApiRef, type GridColDef, type GridRowSelectionModel, type GridRowId } from '@mui/x-data-grid';
+import { Group, Panel } from 'react-resizable-panels';
 import { useTranslation } from 'react-i18next';
 import { ExtendedDataGrid } from '../../../components/shared/ExtendedDataGrid';
-import { useActiveFiscalYear } from '../../../hooks/useActiveFiscalYear';
 import {
   useGetJournalEntryItemsQuery,
   type ExplorerFilter,
   type JournalEntryItem,
 } from './journalEntryItemsApi';
 import { AppliedFilters } from './components/AppliedFilters';
+import { ExplorerScopeChips } from './components/ExplorerScopeChips';
+import { ExplorerFilterPanel, PERIOD_CALENDAR_ID } from './components/ExplorerFilterPanel';
+import { FilterPanelResizeHandle } from './components/FilterPanelResizeHandle';
+import { FiltersToggleButton } from './components/FiltersToggleButton';
+import { TableActionsMenu } from './components/TableActionsMenu';
+import { convertPeriod, scopeChanges } from './explorerScope';
+import { useJournalEntryItemsScope } from './useJournalEntryItemsScope';
+import { useExcelExport } from './useExcelExport';
+import { useTabSearchParams } from '../../../components/tabs/useTabSearchParams';
+import { useCalendarPreference } from '../../../components/shared/calendarUtils';
 import { Box, Typography, alpha, IconButton, Tooltip } from '@mui/material';
 import CurrencyExchangeRoundedIcon from '@mui/icons-material/CurrencyExchangeRounded';
 import { FooterStat } from './components/FooterStat';
 import { useTabManager } from '../../../components/tabs/useTabManager';
 import { useTabLoading } from '../../../components/tabs/TabLoadingContext';
+import { ReportSplitButton } from '../../reports/components/ReportSplitButton';
+import { journalEntryItemsPrintSource } from './explorerPrintSource';
+
+const AMOUNT_FORMAT = '#,##0.00';
 
 const fmt = (n: number | null | undefined) =>
   n === null || n === undefined
@@ -26,10 +40,37 @@ export const JournalEntryItemsPage = () => {
   const { t: tAccounting } = useTranslation('accounting');
   const { t } = useTranslation('shared');
   const { organizationId } = useParams<{ organizationId: string }>();
-  const [searchParams] = useSearchParams();
+  // This tab's own query string: hidden tabs stay mounted and must not follow
+  // the browser URL of whichever tab is active.
+  const searchParams = useTabSearchParams();
   const orgId = parseInt(organizationId || '0', 10);
 
-  const { activeFiscalYearId } = useActiveFiscalYear(orgId);
+  // The scope the tab was opened with; filter changes stay in the page.
+  const {
+    applied: scope,
+    draft,
+    defaults,
+    fiscalYears,
+    activeFiscalYear,
+    draftError,
+    isDefault,
+    updateDraft,
+    resetDraft,
+    clearChange,
+  } = useJournalEntryItemsScope(orgId, searchParams);
+  const { calendar, setCalendar } = useCalendarPreference(PERIOD_CALENDAR_ID);
+
+  // Months differ between calendars: keep a month range on whole months.
+  const handleCalendarChange = (next: typeof calendar) => {
+    setCalendar(next);
+    if (draft?.periodMode === 'month') updateDraft(convertPeriod(draft, 'month', next, fiscalYears));
+  };
+
+  // Hidden whenever the page opens.
+  const [panelOpen, setPanelOpen] = useState(false);
+  const formId = useId();
+  const changeCount = scope && defaults ? scopeChanges(scope, defaults, fiscalYears).length : 0;
+
   const navigate = useNavigate();
   const { openTab } = useTabManager();
 
@@ -44,10 +85,12 @@ export const JournalEntryItemsPage = () => {
   }, [searchParams]);
 
   const { data: items, isFetching } = useGetJournalEntryItemsQuery(
-    { organizationId: orgId, fiscalYearId: activeFiscalYearId!, filters },
-    { skip: !orgId || !activeFiscalYearId }
+    { organizationId: orgId, scope: scope!, filters },
+    { skip: !orgId || !scope }
   );
   useTabLoading(isFetching);
+  const gridApiRef = useGridApiRef();
+  const exportExcel = useExcelExport();
 
   const rows = items ?? [];
 
@@ -56,9 +99,22 @@ export const JournalEntryItemsPage = () => {
     ids: new Set<GridRowId>(),
   });
 
+  // A new scope brings new rows: the old selection no longer applies.
+  useEffect(() => {
+    setSelectionModel({ type: 'include', ids: new Set<GridRowId>() });
+  }, [scope]);
+
   const selectedIds = Array.from(selectionModel.ids) as number[];
   const hasMultiSelection = selectedIds.length > 1;
   const activeRows = hasMultiSelection ? rows.filter((r) => selectedIds.includes(r.id)) : rows;
+
+  const handleExportExcel = () =>
+    exportExcel({
+      apiRef: gridApiRef,
+      title: tAccounting('items.title', { defaultValue: 'Journal Entry Items' }),
+      numberFormats: { debit: AMOUNT_FORMAT, credit: AMOUNT_FORMAT, currency_amount: AMOUNT_FORMAT },
+      blankZeroFields: ['debit', 'credit'],
+    });
 
   const totals = useMemo(
     () => {
@@ -170,11 +226,35 @@ export const JournalEntryItemsPage = () => {
     [tAccounting, t]
   );
 
-  return (
-    <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', p: 2 }}>
-      <Typography variant="h6" sx={{ mb: 2 }}>
-        {tAccounting('items.title', { defaultValue: 'Journal Entry Items' })}
-      </Typography>
+  const main = (
+    <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+        <Typography variant="h6" sx={{ mr: 'auto' }}>
+          {tAccounting('items.title', { defaultValue: 'Journal Entry Items' })}
+        </Typography>
+        {/* Prints this tab's items (its scope and filters); only the selected ones when several are. */}
+        {scope && (
+          <ReportSplitButton
+            reportKey="journal_entry_items"
+            source={journalEntryItemsPrintSource(scope, filters, hasMultiSelection ? selectedIds : null)}
+            reportTitle={t('menu.journalEntryItems', { defaultValue: 'Journal Entry Items' })}
+            disabled={isFetching}
+          />
+        )}
+        <FiltersToggleButton open={panelOpen} onToggle={setPanelOpen} changeCount={changeCount} controls={formId} />
+        <TableActionsMenu onExportExcel={handleExportExcel} disabled={isFetching || !scope} />
+      </Box>
+
+      {scope && defaults && (
+        <ExplorerScopeChips
+          scope={scope}
+          defaults={defaults}
+          fiscalYears={fiscalYears}
+          calendar={calendar}
+          onClick={() => setPanelOpen(true)}
+          onDelete={clearChange}
+        />
+      )}
 
       <AppliedFilters filters={filters} />
 
@@ -186,6 +266,7 @@ export const JournalEntryItemsPage = () => {
           checkboxSelection
           rowSelectionModel={selectionModel}
           onRowSelectionModelChange={setSelectionModel}
+          apiRef={gridApiRef}
           onRowOpen={handleOpenJournalEntry}
           rowOpenLabel={tAccounting('openJournalEntry')}
           showHeaderSearchRow
@@ -253,6 +334,38 @@ export const JournalEntryItemsPage = () => {
           />
         </Box>
       </Box>
+    </Box>
+  );
+
+  return (
+    <Box sx={{ height: '100%', overflow: 'hidden', p: 2 }}>
+      <Group orientation="horizontal" id="journal-entry-items-layout">
+        <Panel id="journal-entry-items-main" minSize="40">
+          {main}
+        </Panel>
+
+        {panelOpen && draft && activeFiscalYear && (
+          <>
+            <FilterPanelResizeHandle />
+            <Panel id="journal-entry-items-filters" defaultSize="320px" minSize="260px" maxSize="45">
+              <ExplorerFilterPanel
+                draft={draft}
+                onChange={updateDraft}
+                fiscalYears={fiscalYears}
+                activeFiscalYear={activeFiscalYear}
+                calendar={calendar}
+                onCalendarChange={handleCalendarChange}
+                error={draftError}
+                isDefault={isDefault}
+                onReset={resetDraft}
+                onClose={() => setPanelOpen(false)}
+                showRowOptions={false}
+                formId={formId}
+              />
+            </Panel>
+          </>
+        )}
+      </Group>
     </Box>
   );
 };

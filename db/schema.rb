@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_10_19_100800) do
+ActiveRecord::Schema[8.0].define(version: 2026_10_21_100100) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -553,6 +553,20 @@ ActiveRecord::Schema[8.0].define(version: 2026_10_19_100800) do
     t.index ["organization_id"], name: "index_permissions_on_organization_id"
   end
 
+  create_table "report_defaults", force: :cascade do |t|
+    t.bigint "organization_id", null: false
+    t.bigint "member_id"
+    t.string "report_key", null: false
+    t.bigint "report_template_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["member_id", "report_key"], name: "idx_report_defaults_member_unique", unique: true, where: "(member_id IS NOT NULL)"
+    t.index ["member_id"], name: "index_report_defaults_on_member_id"
+    t.index ["organization_id", "report_key"], name: "idx_report_defaults_organization_unique", unique: true, where: "(member_id IS NULL)"
+    t.index ["organization_id"], name: "index_report_defaults_on_organization_id"
+    t.index ["report_template_id"], name: "index_report_defaults_on_report_template_id"
+  end
+
   create_table "report_templates", force: :cascade do |t|
     t.jsonb "name", default: {}, null: false
     t.string "report_key", null: false
@@ -560,12 +574,12 @@ ActiveRecord::Schema[8.0].define(version: 2026_10_19_100800) do
     t.integer "parent_template_id"
     t.bigint "organization_id"
     t.integer "created_by_id"
-    t.boolean "is_default", default: false, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["organization_id", "report_key"], name: "idx_report_templates_org_default_unique", unique: true, where: "((organization_id IS NOT NULL) AND (is_default = true))"
+    t.string "locale", default: "en", null: false
+    t.index ["organization_id", "report_key", "locale"], name: "idx_report_templates_org_key_locale"
     t.index ["organization_id"], name: "index_report_templates_on_organization_id"
-    t.index ["report_key"], name: "idx_report_templates_system_unique", unique: true, where: "(organization_id IS NULL)"
+    t.index ["report_key", "locale"], name: "idx_report_templates_system_unique", unique: true, where: "(organization_id IS NULL)"
   end
 
   create_table "roles", force: :cascade do |t|
@@ -755,6 +769,9 @@ ActiveRecord::Schema[8.0].define(version: 2026_10_19_100800) do
   add_foreign_key "messages", "conversations"
   add_foreign_key "messages", "messages", column: "reply_to_id"
   add_foreign_key "permissions", "organizations"
+  add_foreign_key "report_defaults", "members", on_delete: :cascade
+  add_foreign_key "report_defaults", "organizations", on_delete: :cascade
+  add_foreign_key "report_defaults", "report_templates", on_delete: :cascade
   add_foreign_key "report_templates", "members", column: "created_by_id"
   add_foreign_key "report_templates", "organizations"
   add_foreign_key "roles", "departments"

@@ -1,42 +1,100 @@
 // ExplorerPage.tsx
-import { useEffect, useMemo, useState } from 'react';
-import { useParams } from 'react-router-dom';
-import { Box, Button, Typography, alpha, Fade } from '@mui/material';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { Alert, Box, Button, alpha } from '@mui/material';
 import RestartAltRoundedIcon from '@mui/icons-material/RestartAltRounded';
-import TrendingFlatRoundedIcon from '@mui/icons-material/TrendingFlatRounded';
-import type { GridColDef, GridRowSelectionModel, GridRowId } from '@mui/x-data-grid';
+import { useGridApiRef, type GridColDef, type GridRowSelectionModel, type GridRowId } from '@mui/x-data-grid';
+import { Group, Panel } from 'react-resizable-panels';
 import { useTranslation } from 'react-i18next';
 import { ExtendedDataGrid } from '../../../components/shared/ExtendedDataGrid';
-import { useActiveFiscalYear } from '../../../hooks/useActiveFiscalYear';
+import { formatForDisplay, useCalendarPreference } from '../../../components/shared/calendarUtils';
 import { useGetAccountingSettingsQuery } from '../settings/settingsApi';
 import {
   useGetExplorerGroupedSummaryQuery,
   type ExplorerDimension,
   type ExplorerFilter,
   type ExplorerRow,
-  type ExplorerQueryArgs
+  type ExplorerQueryArgs,
 } from './journalEntryItemsApi';
 import { DIMENSION_META } from './dimensionConfig';
 import { DrillTrail, type TrailStep } from './components/DrillTrail';
+import { ExplorerFilterPanel, PERIOD_CALENDAR_ID } from './components/ExplorerFilterPanel';
+import { ExplorerScopeChips } from './components/ExplorerScopeChips';
+import { useExplorerScope } from './useExplorerScope';
+import { convertPeriod, scopeChanges, scopeToSearchParams } from './explorerScope';
 import { useToast } from '../../../contexts/ToastContext';
-import { useNavigate } from 'react-router-dom';
+import { apiErrorMessage } from '../../../utils/apiErrorMessage';
 import { useTabManager } from '../../../components/tabs/useTabManager';
 import { FooterStat } from './components/FooterStat';
 import { useTabLoading } from '../../../components/tabs/TabLoadingContext';
+import { ReportSplitButton } from '../../reports/components/ReportSplitButton';
+import { explorerPrintSource } from './explorerPrintSource';
+import { FilterPanelResizeHandle } from './components/FilterPanelResizeHandle';
+import { FiltersToggleButton } from './components/FiltersToggleButton';
+import { TableActionsMenu } from './components/TableActionsMenu';
+import { useExcelExport } from './useExcelExport';
 
+const AMOUNT_FORMAT = '#,##0.00';
+const AMOUNT_FIELDS = ['sum_debit', 'sum_credit', 'debit_balance', 'credit_balance'];
 
 const fmt = (n: number | null | undefined) =>
   n === null || n === undefined
     ? ''
     : n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
+/** The dimension the explorer opens with. */
+const INITIAL_DIMENSION: ExplorerDimension = 'account_category';
+
+const panelStorageKey = (orgId: number) => `explorer_filter_panel_open:${orgId}`;
+
+const readPanelOpen = (orgId: number): boolean => {
+  try {
+    return localStorage.getItem(panelStorageKey(orgId)) !== '0';
+  } catch {
+    return true;
+  }
+};
+
+const writePanelOpen = (orgId: number, open: boolean) => {
+  try {
+    localStorage.setItem(panelStorageKey(orgId), open ? '1' : '0');
+  } catch {
+    // localStorage unavailable
+  }
+};
+
+interface GroupQuery {
+  groupBy: ExplorerDimension;
+  filters: ExplorerFilter[];
+}
+
 export const ExplorerPage = () => {
   const { t: tAccounting } = useTranslation('accounting');
+  const { t } = useTranslation('shared');
   const { organizationId } = useParams<{ organizationId: string }>();
   const orgId = parseInt(organizationId || '0', 10);
   const { showError } = useToast();
 
-  const { activeFiscalYearId } = useActiveFiscalYear(orgId);
+  const {
+    applied,
+    draft,
+    defaults,
+    fiscalYears,
+    activeFiscalYear,
+    draftError,
+    isDefault,
+    updateDraft,
+    resetDraft,
+    clearChange,
+  } = useExplorerScope(orgId);
+  const { calendar, setCalendar } = useCalendarPreference(PERIOD_CALENDAR_ID);
+
+  // Months differ between calendars: keep a month range on whole months.
+  const handleCalendarChange = (next: typeof calendar) => {
+    setCalendar(next);
+    if (draft?.periodMode === 'month') updateDraft(convertPeriod(draft, 'month', next, fiscalYears));
+  };
+
   const { data: settings } = useGetAccountingSettingsQuery(orgId, { skip: !orgId });
   const centerLevels = settings?.center_levels ?? 3;
 
@@ -44,6 +102,12 @@ export const ExplorerPage = () => {
     () => DIMENSION_META.filter((m) => !m.centerLevel || m.centerLevel <= centerLevels),
     [centerLevels]
   );
+
+  const [panelOpen, setPanelOpen] = useState(() => readPanelOpen(orgId));
+  const togglePanel = (open: boolean) => {
+    setPanelOpen(open);
+    writePanelOpen(orgId, open);
+  };
 
   const [path, setPath] = useState<TrailStep[]>([]);
   const [pathFilters, setPathFilters] = useState<ExplorerFilter[]>([]);
@@ -54,22 +118,42 @@ export const ExplorerPage = () => {
     ids: new Set<GridRowId>(),
   });
 
-  const [queryArgs, setQueryArgs] = useState<ExplorerQueryArgs | null>(null);
+  // The grid's dimension and drill filters; the scope comes from the panel.
+  const [groupQuery, setGroupQuery] = useState<GroupQuery | null>(null);
+  const queryArgs = useMemo<ExplorerQueryArgs | null>(
+    () =>
+      groupQuery && applied
+        ? {
+            organizationId: orgId,
+            scope: applied,
+            groupBy: groupQuery.groupBy,
+            filters: groupQuery.filters,
+            hideZeroBalance: applied.hideZeroBalance,
+          }
+        : null,
+    [groupQuery, applied, orgId]
+  );
   const { data, isFetching, isError, error } = useGetExplorerGroupedSummaryQuery(queryArgs!, { skip: !queryArgs });
   useTabLoading(isFetching);
+  const gridApiRef = useGridApiRef();
+  const exportExcel = useExcelExport();
 
   const { openTab } = useTabManager();
   const navigate = useNavigate();
 
   const handleOpenItems = (row: ExplorerRow) => {
+    if (!applied) return;
     const filters: ExplorerFilter[] = currentDimension
       ? [...pathFilters, { dimension: currentDimension, ids: [row.id], items: [{ code: row.code, name: row.name }] }]
       : pathFilters;
 
-    const filtersJson = encodeURIComponent(JSON.stringify(filters));
-    const path = `/app/organizations/${orgId}/accounting/journal-entry-items?fiscal_year_id=${activeFiscalYearId}&filters=${filtersJson}`;
-    openTab('journal-entry-items', tAccounting('items.title', { defaultValue: 'Journal Entry Items' }), path);
-    navigate(path);
+    const params = scopeToSearchParams(applied, false);
+    // The items page's filter panel picks the period the same way.
+    params.set('mode', applied.periodMode);
+    params.set('filters', JSON.stringify(filters));
+    const itemsPath = `/app/organizations/${orgId}/accounting/journal-entry-items?${params.toString()}`;
+    openTab('journal-entry-items', tAccounting('items.title', { defaultValue: 'Journal Entry Items' }), itemsPath);
+    navigate(itemsPath);
   };
 
   // Sync rows from query response and handle errors
@@ -79,14 +163,19 @@ export const ExplorerPage = () => {
     }
   }, [data]);
 
+  // Shows the server's message, e.g. an invalid period.
   useEffect(() => {
     if (isError) {
       showError(
-        (error as any)?.data?.errors?.[0] ||
-          tAccounting('explorer.loadFailed', { defaultValue: 'Could not load this view.' })
+        apiErrorMessage(error) || tAccounting('explorer.loadFailed', { defaultValue: 'Could not load this view.' })
       );
     }
-  }, [isError, error]);
+  }, [isError, error, showError, tAccounting]);
+
+  // A new scope brings new rows: the old selection no longer applies.
+  useEffect(() => {
+    setSelectionModel({ type: 'include', ids: new Set<GridRowId>() });
+  }, [applied]);
 
   const usedDimensions = new Set([
     ...path.map((s) => s.dimension),
@@ -94,18 +183,20 @@ export const ExplorerPage = () => {
   ]);
 
   const runQuery = (groupBy: ExplorerDimension, filters: ExplorerFilter[]) => {
-    if (!activeFiscalYearId) return;
     setCurrentDimension(groupBy);
     setRows([]); // Clear rows immediately for the new dimension
     setSelectionModel({ type: 'include', ids: new Set<GridRowId>() });
     setPathFilters(filters);
-    setQueryArgs({
-      organizationId: orgId,
-      fiscalYearId: activeFiscalYearId,
-      groupBy,
-      filters,
-    });
+    setGroupQuery({ groupBy, filters });
   };
+
+  // Open grouped by account category once the scope is known.
+  const startedRef = useRef(false);
+  useEffect(() => {
+    if (!applied || startedRef.current) return;
+    startedRef.current = true;
+    runQuery(INITIAL_DIMENSION, []);
+  }, [applied]);
 
   const handleDimensionClick = (dimension: ExplorerDimension) => {
     if (usedDimensions.has(dimension)) return;
@@ -148,17 +239,32 @@ export const ExplorerPage = () => {
 
   const handleReset = () => {
     setPath([]);
-    setPathFilters([]);
-    setCurrentDimension(null);
-    setRows([]);
-    setQueryArgs(null);
-    setSelectionModel({ type: 'include', ids: new Set<GridRowId>() });
+    runQuery(INITIAL_DIMENSION, []);
   };
 
+  const canResetDrill = path.length > 0 || (currentDimension !== null && currentDimension !== INITIAL_DIMENSION);
+  const changeCount = applied && defaults ? scopeChanges(applied, defaults, fiscalYears).length : 0;
+  const meta = data?.meta;
+
   // Footer sums — over the selection when one exists, otherwise over all rows
+  // shown (zero-balance rows the server left out don't count).
   const selectedIds = Array.from(selectionModel.ids) as number[];
   const hasMultiSelection = selectedIds.length > 1;
   const activeRows = hasMultiSelection ? rows.filter((r) => selectedIds.includes(r.id)) : rows;
+
+  // Prints the grid as shown: the applied scope, the grouping and the drill
+  // filters; only the selected rows when several are selected.
+  const printSource =
+    groupQuery && applied
+      ? explorerPrintSource(applied, groupQuery.groupBy, groupQuery.filters, hasMultiSelection ? selectedIds : null)
+      : null;
+
+  const handleExportExcel = () =>
+    exportExcel({
+      apiRef: gridApiRef,
+      title: t('menu.explorer', { defaultValue: 'Explorer' }),
+      numberFormats: Object.fromEntries(AMOUNT_FIELDS.map((field) => [field, AMOUNT_FORMAT])),
+    });
 
   const totals = useMemo(
     () => {
@@ -206,8 +312,8 @@ export const ExplorerPage = () => {
     ];
   }, [currentDimension, tAccounting]);
 
-  return (
-    <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', p: 2 }}>
+  const main = (
+    <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', minWidth: 0 }}>
       {/* Dimension rail */}
       <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 1, mb: 1.5 }}>
         {visibleDimensions.map((meta) => {
@@ -233,44 +339,53 @@ export const ExplorerPage = () => {
           );
         })}
 
-        {currentDimension && (
-          <Button
-            onClick={handleReset}
-            size="small"
-            color="inherit"
-            startIcon={<RestartAltRoundedIcon sx={{ fontSize: 16 }} />}
-            sx={{ ml: 'auto', textTransform: 'none', color: 'text.secondary' }}
-          >
-            {tAccounting('explorer.reset', { defaultValue: 'Reset' })}
-          </Button>
-        )}
+        <Box sx={{ ml: 'auto', display: 'flex', alignItems: 'center', gap: 1 }}>
+          {printSource && (
+            <ReportSplitButton
+              reportKey="explorer"
+              source={printSource}
+              reportTitle={t('menu.explorer', { defaultValue: 'Explorer' })}
+              disabled={isFetching}
+            />
+          )}
+          {canResetDrill && (
+            <Button
+              onClick={handleReset}
+              size="small"
+              color="inherit"
+              startIcon={<RestartAltRoundedIcon sx={{ fontSize: 16 }} />}
+              sx={{ textTransform: 'none', color: 'text.secondary' }}
+            >
+              {tAccounting('explorer.reset', { defaultValue: 'Reset' })}
+            </Button>
+          )}
+          <FiltersToggleButton
+            open={panelOpen}
+            onToggle={togglePanel}
+            changeCount={changeCount}
+            controls="explorer-filters-form"
+          />
+          <TableActionsMenu onExportExcel={handleExportExcel} disabled={!currentDimension || isFetching} />
+        </Box>
       </Box>
+
+      {applied && defaults && (
+        <ExplorerScopeChips
+          scope={applied}
+          defaults={defaults}
+          fiscalYears={fiscalYears}
+          calendar={calendar}
+          onClick={() => togglePanel(true)}
+          onDelete={clearChange}
+        />
+      )}
 
       <DrillTrail steps={path} currentDimension={currentDimension} onStepClick={handleTrailStepClick} />
 
-      {!currentDimension && (
-        <Fade in>
-          <Box
-            sx={{
-              flex: 1,
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: 1,
-              color: 'text.secondary',
-              border: (theme) => `1px dashed ${theme.palette.divider}`,
-              borderRadius: 2,
-            }}
-          >
-            <TrendingFlatRoundedIcon sx={{ fontSize: 32, opacity: 0.4 }} />
-            <Typography variant="body2">
-              {tAccounting('explorer.emptyState', {
-                defaultValue: 'Choose a dimension above to start exploring the ledger.',
-              })}
-            </Typography>
-          </Box>
-        </Fade>
+      {meta?.prior_entries_excluded && (
+        <Alert severity="warning" sx={{ mb: 1, py: 0 }}>
+          {tAccounting('explorer.filters.priorEntriesExcluded', { from: formatForDisplay(meta.from, calendar) })}
+        </Alert>
       )}
 
       {currentDimension && (
@@ -282,6 +397,7 @@ export const ExplorerPage = () => {
             checkboxSelection
             rowSelectionModel={selectionModel}
             onRowSelectionModelChange={setSelectionModel}
+            apiRef={gridApiRef}
             onRowOpen={handleOpenItems}
             rowOpenLabel={tAccounting('explorer.openItems', { defaultValue: 'Open Journal Entry Items' })}
             showHeaderSearchRow
@@ -301,6 +417,7 @@ export const ExplorerPage = () => {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'flex-end',
+              flexWrap: 'wrap',
               gap: 3,
               px: 2,
               py: 1,
@@ -311,11 +428,11 @@ export const ExplorerPage = () => {
               transition: 'background-color 0.15s ease, border-color 0.15s ease',
             }}
           >
-            <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600, mr: 'auto' }}>
+            <Box sx={{ typography: 'caption', color: 'text.secondary', fontWeight: 600, mr: 'auto' }}>
               {hasMultiSelection
                 ? tAccounting('explorer.selectedTotal', { defaultValue: 'Selected total ({{count}})', count: selectedIds.length })
                 : tAccounting('explorer.total', { defaultValue: 'Total' })}
-            </Typography>
+            </Box>
 
             <FooterStat
               label={tAccounting('explorer.totalDebit', { defaultValue: 'Total Debit' })}
@@ -341,6 +458,36 @@ export const ExplorerPage = () => {
           </Box>
         </Box>
       )}
+    </Box>
+  );
+
+  return (
+    <Box sx={{ height: '100%', overflow: 'hidden', p: 2 }}>
+      <Group orientation="horizontal" id="explorer-layout">
+        <Panel id="explorer-main" minSize="40">
+          {main}
+        </Panel>
+
+        {panelOpen && draft && activeFiscalYear && (
+          <>
+            <FilterPanelResizeHandle />
+            <Panel id="explorer-filters" defaultSize="320px" minSize="260px" maxSize="45">
+              <ExplorerFilterPanel
+                draft={draft}
+                onChange={updateDraft}
+                fiscalYears={fiscalYears}
+                activeFiscalYear={activeFiscalYear}
+                calendar={calendar}
+                onCalendarChange={handleCalendarChange}
+                error={draftError}
+                isDefault={isDefault}
+                onReset={resetDraft}
+                onClose={() => togglePanel(false)}
+              />
+            </Panel>
+          </>
+        )}
+      </Group>
     </Box>
   );
 };

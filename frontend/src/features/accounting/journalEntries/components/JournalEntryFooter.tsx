@@ -1,4 +1,5 @@
-import { Box, Chip, Divider, Stack, Typography } from '@mui/material';
+import { Box, Chip, Divider, IconButton, Stack, Tooltip, Typography } from '@mui/material';
+import ManageSearchRoundedIcon from '@mui/icons-material/ManageSearchRounded';
 import { alpha, useTheme } from '@mui/material/styles';
 import { creditColor, debitColor } from '../../../../theme/amountColors';
 import { useTranslation } from 'react-i18next';
@@ -12,6 +13,8 @@ interface JournalEntryFooterProps {
   centers: Center[];
   centerLevels: number;
   totals: { debit: number; credit: number; difference: number; balanced: boolean };
+  /** Opens the journal entry items of the row's account and centers (F7). */
+  onOpenItems?: () => void;
 }
 
 export const JournalEntryFooter = ({
@@ -20,6 +23,7 @@ export const JournalEntryFooter = ({
   centers,
   centerLevels,
   totals,
+  onOpenItems,
 }: JournalEntryFooterProps) => {
   const { t: tJE } = useTranslation('accounting');
   const theme = useTheme();
@@ -102,6 +106,13 @@ export const JournalEntryFooter = ({
                 />
               ))}
             </Box>
+            {onOpenItems && (
+              <Tooltip title={`${tJE('items.openForRow')} (F7)`}>
+                <IconButton size="small" color="primary" onClick={onOpenItems} aria-label={tJE('items.openForRow')}>
+                  <ManageSearchRoundedIcon fontSize="small" />
+                </IconButton>
+              </Tooltip>
+            )}
           </>
         )}
       </Box>

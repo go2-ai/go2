@@ -189,6 +189,22 @@ RSpec.describe 'Accounting::CurrencyRevaluations API', openapi_spec: 'v1/account
         end
       end
 
+      response '200', 'Print data in the locale of the printed template' do
+        parameter name: :locale, in: :query, type: :string, required: false,
+                  description: 'Locale of the printed template; labels and names are returned in it'
+        let(:view) { 'print' }
+        let(:locale) { 'fa' }
+
+        before { bank.update_columns(name: { 'en' => 'Bank', 'fa' => 'بانک' }) }
+
+        run_test! do |response|
+          data = JSON.parse(response.body)
+          expect(data['kind_name']).to eq(I18n.t('models.accounting/currency_revaluation.kinds.temporary', locale: :fa))
+          expect(data['kind_name']).not_to eq('Temporary')
+          expect(data['items'].first['account_name']).to eq('بانک')
+        end
+      end
+
       response '400', 'Unknown view' do
         let(:view) { 'other' }
 

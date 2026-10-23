@@ -73,7 +73,15 @@ class OrganizationsController < ApplicationController
   end
 
   def permitted_params
-    params.permit(:locale, :max_file_size, :time_zone, *t_params(:name), active_locales: [], calendar_types: [])
+    params.permit(:locale, :max_file_size, :time_zone, *name_params, active_locales: [], calendar_types: [])
+  end
+
+  # name_en, name_fa, ... for the organization's languages, including the ones
+  # added in this request, so a new language can get its name in the same save.
+  def name_params
+    requested = [ params[:locale], *Array(params[:active_locales]) ].compact_blank.map(&:to_s)
+    locales = (@organization.available_locales.map(&:to_s) | requested) & I18n.available_locales.map(&:to_s)
+    locales.map { |locale| :"name_#{locale}" }
   end
 
   def setCurrentUserAsAdmin

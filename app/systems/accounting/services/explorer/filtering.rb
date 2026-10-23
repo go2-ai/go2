@@ -15,20 +15,16 @@ module Accounting
         raise InvalidDimensionError, "Unknown dimension: #{dimension}" unless DIMENSIONS.include?(dimension)
       end
 
-      # Booked + approved only — drafts aren't part of the trial-balance style report.
-      # We always join account -> ledger since it's needed by several dimensions and
-      # is safe: account is required on any non-draft item.
+      # The items of the entries in `scope` (an EntryScope: period, entry
+      # types and states — drafts are never included). We always join
+      # account -> ledger since it's needed by several dimensions and is safe:
+      # account is required on any non-draft item.
       def base_relation
-        Accounting::JournalEntryItem
+        relation = Accounting::JournalEntryItem
           .joins(:journal_entry)
           .joins(account: :ledger)
-          .where(
-            journal_entries: {
-              organization_id: organization.id,
-              fiscal_year_id: fiscal_year_id,
-              state: Accounting::JournalEntry.states.values_at("booked", "approved")
-            }
-          )
+
+        scope.apply(relation)
       end
 
       def apply_filter(relation, dimension, ids)

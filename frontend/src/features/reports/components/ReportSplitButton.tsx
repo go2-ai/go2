@@ -5,21 +5,30 @@ import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import { useTranslation } from 'react-i18next';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
-  findDefaultTemplate,
+  useGetReportResolutionQuery,
   useGetReportTemplatesQuery,
   type ReportTemplateSummary,
 } from '../../reportTemplates/reportTemplatesApi';
-import { useOpenReport } from '../useOpenReport';
+import { reportTargetParams, useOpenReport, type ReportTarget } from '../useOpenReport';
 import { useTabManager } from '../../../components/tabs/useTabManager';
 
 interface ReportSplitButtonProps {
   reportKey: string;
   /** Id of the record to print, e.g. the journal entry id. */
-  recordId: number;
+  recordId?: number;
+  /** For list pages: what the page shows, as a query string (see ReportTarget). */
+  source?: string;
   reportTitle: string;
+  disabled?: boolean;
 }
 
-export const ReportSplitButton = ({ reportKey, recordId, reportTitle }: ReportSplitButtonProps) => {
+/**
+ * Print prints with the default template (the member's own default, else the
+ * organization's, else the system template in the organization's language).
+ * The menu lists the other templates in the organization's primary language;
+ * other languages are in the report settings.
+ */
+export const ReportSplitButton = ({ reportKey, recordId, source, reportTitle, disabled = false }: ReportSplitButtonProps) => {
   const { t } = useTranslation('shared');
   const { t: treports } = useTranslation('reports');
   const { organizationId } = useParams<{ organizationId: string }>();
@@ -29,32 +38,41 @@ export const ReportSplitButton = ({ reportKey, recordId, reportTitle }: ReportSp
   const { openReport } = useOpenReport();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
+  const { data: resolution } = useGetReportResolutionQuery(
+    { organizationId: orgId, reportKey },
+    { skip: !orgId }
+  );
   const { data: templates } = useGetReportTemplatesQuery(orgId, { skip: !orgId });
 
-  const reportTemplates = templates?.filter((t) => t.report_key === reportKey) || [];
-  const defaultTemplate = findDefaultTemplate(reportTemplates, reportKey);
+  const defaultTemplateId = resolution?.default_template_id ?? null;
+  const primary = resolution?.locales[0];
 
-  // Templates to show in menu = all except the default
-  const menuTemplates = reportTemplates.filter((t) => t.id !== defaultTemplate?.id);
+  // Templates in the primary language; the system one may be a fallback (e.g. English).
+  const menuTemplates = (templates ?? []).filter(
+    (template) =>
+      template.report_key === reportKey &&
+      template.id !== defaultTemplateId &&
+      (template.system ? template.id === primary?.system_template_id : template.locale === primary?.locale)
+  );
 
   const templateName = (template: ReportTemplateSummary) => template.name || treports('untitled');
 
   const handleMenuClose = () => setAnchorEl(null);
 
+  const target: ReportTarget = { recordId, source };
+
   const handlePrintDefault = () => {
-    if (defaultTemplate) {
-      openReport(reportKey, recordId, reportTitle, defaultTemplate.id);
-    }
+    if (defaultTemplateId) openReport(reportKey, target, defaultTemplateId, reportTitle);
   };
 
   const handlePrintTemplate = (templateId: number) => {
     handleMenuClose();
-    openReport(reportKey, recordId, reportTitle, templateId);
+    openReport(reportKey, target, templateId, reportTitle);
   };
 
   const handleOpenSettings = () => {
     handleMenuClose();
-    const params = new URLSearchParams({ report_key: reportKey, record_id: String(recordId) });
+    const params = reportTargetParams(target, new URLSearchParams({ report_key: reportKey }));
     const path = `/app/organizations/${orgId}/report-settings?${params.toString()}`;
     openTab('report-settings', treports('reportSettings'), path);
     navigate(path);
@@ -66,7 +84,7 @@ export const ReportSplitButton = ({ reportKey, recordId, reportTitle }: ReportSp
         <Button
           onClick={handlePrintDefault}
           size="small"
-          disabled={!defaultTemplate}
+          disabled={disabled || !defaultTemplateId}
           startIcon={<PrintIcon fontSize="small" />}
         >
           {t('commonActions.print')}

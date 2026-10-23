@@ -175,10 +175,13 @@ export const journalEntriesApi = createApi({
 
     getJournalEntryForPrint: builder.query<
       JournalEntryPrint,
-      { organizationId: number; id: number }
+      /** locale: language of the printed template; names and labels come in it. */
+      { organizationId: number; id: number; locale?: string }
     >({
-      query: ({ organizationId, id }) =>
-        `/organizations/${organizationId}/accounting/journal_entries/${id}?view=print`,
+      query: ({ organizationId, id, locale }) => ({
+        url: `/organizations/${organizationId}/accounting/journal_entries/${id}`,
+        params: { view: 'print', ...(locale ? { locale } : {}) },
+      }),
       providesTags: (result, error, { id }) => [
         { type: 'JournalEntry', id },
         { type: 'JournalEntryPrint', id },

@@ -1,6 +1,8 @@
 # app/systems/accounting/controllers/journal_entries_controller.rb
 module Accounting
   class JournalEntriesController < ApplicationController
+    include PrintLocale
+
     # Blueprint views that clients may request with ?view=
     SHOW_VIEWS = %w[show print].freeze
 
@@ -36,7 +38,8 @@ module Accounting
         return render json: { errors: [ "Unknown view: #{view}" ] }, status: :bad_request
       end
 
-      render json: Accounting::JournalEntryBlueprint.render(@journal_entry, view: view.to_sym), status: :ok
+      json = with_print_locale { Accounting::JournalEntryBlueprint.render(@journal_entry, view: view.to_sym) }
+      render json: json, status: :ok
     end
 
     def create

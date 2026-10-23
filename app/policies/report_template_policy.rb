@@ -1,42 +1,37 @@
-# Report templates are visible to every member of the organization (system
-# templates plus the organization's own copies). Only organization admins can
-# create, change or delete templates, and only the organization's own ones:
-# system templates are read-only.
+# Report templates are visible to members who may print or manage their report
+# (system templates plus the organization's own copies). Members with the
+# report's manage permission can create, change and
+# delete the organization's own templates; system templates are read-only.
+# See ReportRegistry for the permissions of each report.
 class ReportTemplatePolicy < ApplicationPolicy
   def index?
     member?
   end
 
   def show?
-    member? && visible?
+    member? && visible? && access.can_view?(record.report_key)
   end
 
   def create?
-    manage? && own_template?
+    own_template? && access.can_manage?(record.report_key)
   end
 
   def update?
-    manage? && own_template?
+    own_template? && access.can_manage?(record.report_key)
   end
 
   def destroy?
-    manage? && own_template?
+    own_template? && access.can_manage?(record.report_key)
   end
 
   private
 
-  def member
-    return @member if defined?(@member)
-
-    @member = organization && user.member(organization)
+  def access
+    @access ||= ReportRegistry.access(user, organization)
   end
 
   def member?
-    member.present?
-  end
-
-  def manage?
-    member&.has_permission?(Permission::ORG_ADMIN) || false
+    access.member.present?
   end
 
   def visible?
@@ -52,7 +47,7 @@ class ReportTemplatePolicy < ApplicationPolicy
       return scope.none unless organization
       return scope.none unless user.is_go3_admin? || user.member(organization)
 
-      scope.for_organization(organization.id)
+      scope.for_organization(organization.id).where(report_key: ReportRegistry.access(user, organization).visible_keys)
     end
   end
 end

@@ -4,6 +4,8 @@ module Accounting
   # (preview), adjust it (gain/loss accounts, combinations left out, line
   # description templates), post it, or delete it with its entry.
   class CurrencyRevaluationsController < ApplicationController
+    include PrintLocale
+
     SHOW_VIEWS = %w[show print].freeze
 
     before_action :set_revaluation, only: %i[show update destroy rebuild post_entry change_kind]
@@ -27,7 +29,8 @@ module Accounting
       view = params[:view].presence || "show"
       return render_errors([ model_t("errors.invalid_view") ], status: :bad_request) unless SHOW_VIEWS.include?(view)
 
-      render json: Accounting::CurrencyRevaluationBlueprint.render(@revaluation, view: view.to_sym), status: :ok
+      json = with_print_locale { Accounting::CurrencyRevaluationBlueprint.render(@revaluation, view: view.to_sym) }
+      render json: json, status: :ok
     end
 
     # Creates a draft and computes its items (the preview).

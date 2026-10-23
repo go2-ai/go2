@@ -3,11 +3,16 @@ module Accounting
     class GroupedSummaryQuery
       include Filtering
 
-      def initialize(organization:, fiscal_year_id:, group_by:, filters: [])
+      ZERO = BigDecimal("0")
+
+      # scope              an EntryScope
+      # hide_zero_balance  leave out rows whose debit and credit net to zero
+      def initialize(organization:, scope:, group_by:, filters: [], hide_zero_balance: false)
         @organization = organization
-        @fiscal_year_id = fiscal_year_id
+        @scope = scope
         @group_by = group_by.to_s
         @filters = filters || []
+        @hide_zero_balance = hide_zero_balance
 
         validate_dimension!(@group_by)
         @filters.each { |f| validate_dimension!(f[:dimension].to_s) }
@@ -30,22 +35,25 @@ module Accounting
         ids = rows_data.map(&:first).compact
         records_by_id = lookup_records(group_by, ids)
 
+        # Sums stay BigDecimal so the balances are exact; they're converted to
+        # floats only for the response, as before.
         rows = rows_data.filter_map do |id, sum_debit, sum_credit|
           record = records_by_id[id]
           next unless record
 
-          sum_debit = sum_debit.to_f
-          sum_credit = sum_credit.to_f
+          sum_debit = to_decimal(sum_debit)
+          sum_credit = to_decimal(sum_credit)
           net = (sum_debit - sum_credit).round(2)
+          next if hide_zero_balance && net.zero?
 
           {
             id: id,
             code: code_for(record, group_by),
             name: record.name,
-            sum_debit: sum_debit,
-            sum_credit: sum_credit,
-            debit_balance: net.positive? ? net : nil,
-            credit_balance: net.negative? ? -net : nil
+            sum_debit: sum_debit.to_f,
+            sum_credit: sum_credit.to_f,
+            debit_balance: net.positive? ? net.to_f : nil,
+            credit_balance: net.negative? ? (-net).to_f : nil
           }
         end
 
@@ -54,7 +62,11 @@ module Accounting
 
       private
 
-      attr_reader :organization, :fiscal_year_id, :group_by, :filters
+      attr_reader :organization, :scope, :group_by, :filters, :hide_zero_balance
+
+      def to_decimal(value)
+        value.nil? ? ZERO : BigDecimal(value.to_s)
+      end
 
       def column_for(dimension)
         case dimension

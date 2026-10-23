@@ -10,6 +10,23 @@ en:
     balances:
       fiscal_year_required: Select a valid fiscal year
       invalid_date: Dates must be in YYYY-MM-DD format
+    journal_entry_items:
+      fiscal_year_required: Select a valid fiscal year or a date range
+      invalid_date: Dates must be in YYYY-MM-DD format
+      invalid_entry_types: "Unknown entry types: %{types}"
+      invalid_range: The start date must be on or before the end date
+      invalid_view: Unknown view
+      out_of_range: "The period must be within your fiscal years (%{start_date} to %{finish_date})"
+    report_defaults:
+      invalid_scope: The scope must be organization or personal
+      organization_not_found: Organization not found
+      template_not_found: Report template not found
+      unknown_report: Unknown report
+    report_templates:
+      locale_not_available: The language is not one of the organization's languages
+      not_found: Report template not found
+      organization_not_found: Organization not found
+      source_not_found: Source report template not found
   devise:
     confirmations:
       confirmed: Your email address has been successfully confirmed.
@@ -339,6 +356,19 @@ en:
       revalue_currencies: Create, post, and delete foreign currency revaluations and their schedules
       accounting_close_fiscal_years: Close fiscal years
       close_fiscal_years: Close and reopen fiscal years, including posting closing, ending, and beginning entries
+      reports_manage_journal_entry: Manage journal entry print templates
+      manage_journal_entry_reports: Copy, design, rename, and delete journal entry print templates and set the default for everyone
+      reports_manage_currency_revaluation: Manage revaluation print templates
+      manage_currency_revaluation_reports: Copy, design, rename, and delete revaluation print templates and set the default for everyone
+      reports_manage_explorer: Manage explorer print templates
+      manage_explorer_reports: Copy, design, rename, and delete explorer print templates and set the default for everyone
+      reports_manage_journal_entry_items: Manage journal entry items print templates
+      manage_journal_entry_items_reports: Copy, design, rename, and delete journal entry items print templates and set the default for everyone
+    report_default:
+      errors:
+        not_available: is not available to the organization
+        other_organization: is not a member of the organization
+        other_report: belongs to another report
     report_template:
       copy_name: "%{name} (Copy)"
       errors:
@@ -354,6 +384,85 @@ en:
     subtitle: Create your first organization to begin your journey with us
     success_message: Organization created successfully! Welcome aboard!
     title: Welcome to GO3! Let's Get Started
+  reports:
+    currency_revaluation:
+      account: Account
+      book_balance: Balance in %{currency}
+      center: Center %{level}
+      code: Code
+      currency: Currency
+      currency_balance: Balance in foreign currency
+      date: 'Revaluation date:'
+      description: Balances revalued to the exchange rates of the revaluation date, per account, centers and currency, with differences and gain/loss accounts.
+      difference: Difference
+      entry: 'Journal entry:'
+      gain_loss: Gain/loss account
+      kind: 'Kind:'
+      main_currency: 'Main currency:'
+      name: Name
+      note: Note
+      page_of: Page %{number} of %{count}
+      posted: 'Posted:'
+      rate: Rate
+      revalued: Revalued balance
+      status: 'Status:'
+      title: Revaluation of Monetary Items
+      total_gain: Total gain
+      total_loss: Total loss
+      total_net: Total difference (posted)
+    explorer:
+      code: Code
+      credit_balance: Credit balance
+      debit_balance: Debit balance
+      description: Balances grouped by a dimension for the explorer's period, entry types and filters.
+      grouped_by: 'Grouped by:'
+      name: Name
+      sum_credit: Sum credit
+      sum_debit: Sum debit
+      title: Explorer
+    journal_entry_items:
+      account: Account
+      credit: Credit
+      currency: Cur.
+      currency_amount: Currency amount
+      date: Date
+      debit: Debit
+      description: Description
+      "no": No.
+      rate: Rate
+      ref: Ref.
+      row: Row
+      title: Journal Entry Items
+    shared:
+      currency: 'Currency:'
+      dimensions:
+        account: Account
+        account_category: Account category
+        center1: Center 1
+        center2: Center 2
+        center3: Center 3
+        center4: Center 4
+        center5: Center 5
+        center6: Center 6
+        currency: Currency
+        ledger: Ledger
+      entry_types: 'Entry types:'
+      entry_types_names:
+        beginning: Beginning
+        closing_temp_accounts: Closing temporary accounts
+        ending: Ending
+        normal: Normal
+        revaluation: Revaluation
+      page_of: Page %{number} of %{count}
+      period: 'Period:'
+      period_to: to
+      printed_at: Printed at %{date}
+      separator: ', '
+      states: 'Entries:'
+      states_names:
+        approved: Approved
+        booked_and_approved: Booked and approved
+      total: Total
   sign_up:
     already_have_account: Already have an account?
     email: Email

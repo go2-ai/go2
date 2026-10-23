@@ -60,6 +60,19 @@ export function useTabOperations(
     }));
   }, [setLayout]);
 
+  // Changes the URL a tab points at (e.g. a page keeping its filters in the
+  // query string). Update it before navigating there, so RouteSynchronizer
+  // finds this tab instead of opening a new one.
+  const updateTabPath = useCallback((tabId: string, path: string) => {
+    setLayout((prev) => ({
+      ...prev,
+      panels: prev.panels.map((p) => ({
+        ...p,
+        tabs: p.tabs.map((t) => (t.id === tabId && t.path !== path ? { ...t, path } : t)),
+      })),
+    }));
+  }, [setLayout]);
+
   const closeTab = useCallback((tabId: string, panelId: string) => {
     setLayout((prev) => {
       const panel = prev.panels.find((p) => p.id === panelId);
@@ -170,5 +183,5 @@ export function useTabOperations(
     });
   }, [setLayout]);
 
-  return { openTab, closeTab, splitTab, duplicateTab, resetLayout, updateTabTitle };
+  return { openTab, closeTab, splitTab, duplicateTab, resetLayout, updateTabTitle, updateTabPath };
 }

@@ -35,6 +35,21 @@
   font-style: italic;
   font-display: swap;
 }
+/* Vazirmatn v33.003 (SIL OFL 1.1, src/assets/fonts/vazirmatn): Persian/Arabic report templates. Also embedded in report PDFs. */
+@font-face {
+  font-family: 'Vazirmatn';
+  src: url('../assets/fonts/vazirmatn/Vazirmatn-Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Vazirmatn';
+  src: url('../assets/fonts/vazirmatn/Vazirmatn-Bold.ttf') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
 @keyframes cell-blink {
   0% { background-color: #fef08a; }
   50% { background-color: transparent; }

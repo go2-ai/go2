@@ -35,6 +35,25 @@ RSpec.describe "Accounting::JournalEntries print view", type: :request do
     expect(data["items"].map { |item| item["row"] }).to eq([ 1, 2 ])
   end
 
+  it "returns names in the locale of the printed template, not the user's" do
+    account.update_columns(name: { "en" => "Cash", "fa" => "صندوق" })
+
+    get path, params: { view: "print", locale: "fa" }, as: :json
+
+    expect(response.parsed_body["items"].first["account_name"]).to eq("صندوق")
+
+    get path, params: { view: "print" }, as: :json
+
+    expect(response.parsed_body["items"].first["account_name"]).to eq("Cash")
+  end
+
+  it "uses the default locale for locales without translations" do
+    get path, params: { view: "print", locale: "xx" }, as: :json
+
+    expect(response).to have_http_status(:ok)
+    expect(response.parsed_body["items"].first["account_name"]).to eq("Cash")
+  end
+
   it "rejects views that are not whitelisted" do
     get path, params: { view: "explorer" }, as: :json
 

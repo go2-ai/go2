@@ -16,12 +16,22 @@ const readStored = (organizationId: number): number | null => {
   }
 };
 
+// Every component using the hook keeps its own copy of the selection; this
+// event tells the others (e.g. open pages when the top bar's selector changes).
+const CHANGE_EVENT = 'active-fiscal-year-change';
+
+interface ChangeDetail {
+  organizationId: number;
+  fiscalYearId: number;
+}
+
 const writeStored = (organizationId: number, fiscalYearId: number) => {
   try {
     localStorage.setItem(storageKey(organizationId), String(fiscalYearId));
   } catch {
     // localStorage unavailable
   }
+  window.dispatchEvent(new CustomEvent<ChangeDetail>(CHANGE_EVENT, { detail: { organizationId, fiscalYearId } }));
 };
 
 export const useActiveFiscalYear = (organizationId: number) => {
@@ -36,6 +46,16 @@ export const useActiveFiscalYear = (organizationId: number) => {
   // Re-read the stored selection when the organization changes
   useEffect(() => {
     setActiveFiscalYearId(readStored(organizationId));
+  }, [organizationId]);
+
+  // Follow selections made elsewhere
+  useEffect(() => {
+    const handleChange = (event: Event) => {
+      const { detail } = event as CustomEvent<ChangeDetail>;
+      if (detail.organizationId === organizationId) setActiveFiscalYearId(detail.fiscalYearId);
+    };
+    window.addEventListener(CHANGE_EVENT, handleChange);
+    return () => window.removeEventListener(CHANGE_EVENT, handleChange);
   }, [organizationId]);
 
   // Auto-select a fiscal year when none is selected or the selection is not

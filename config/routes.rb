@@ -103,6 +103,7 @@ Rails.application.routes.draw do
     end
 
     resources :report_templates, only: [ :index, :show, :create, :update, :destroy ]
+    resource :report_defaults, only: [ :show, :update, :destroy ]
 
     resources :conversations do
       member do

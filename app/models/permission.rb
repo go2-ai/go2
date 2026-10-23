@@ -33,6 +33,10 @@ class Permission < ApplicationRecord
   ACCOUNTING_MANAGE_EXCHANGE_RATES = "Accounting.manage_exchange_rates".freeze
   ACCOUNTING_REVALUE_CURRENCIES = "Accounting.revalue_currencies".freeze
   ACCOUNTING_CLOSE_FISCAL_YEARS = "Accounting.close_fiscal_years".freeze
+  REPORTS_MANAGE_JOURNAL_ENTRY = "Reports.manage_journal_entry".freeze
+  REPORTS_MANAGE_CURRENCY_REVALUATION = "Reports.manage_currency_revaluation".freeze
+  REPORTS_MANAGE_EXPLORER = "Reports.manage_explorer".freeze
+  REPORTS_MANAGE_JOURNAL_ENTRY_ITEMS = "Reports.manage_journal_entry_items".freeze
 
   def self.grantable_permissions
     [
@@ -165,6 +169,42 @@ class Permission < ApplicationRecord
         ],
         tags: %w[accounting],
         perquisites: [ ACCOUNTING_APPROVE_JOURNAL_ENTRIES ]
+      },
+      {
+        code: REPORTS_MANAGE_JOURNAL_ENTRY,
+        name: model_t("reports_manage_journal_entry"),
+        abilities: [
+          model_t("manage_journal_entry_reports")
+        ],
+        tags: %w[accounting reports],
+        perquisites: [ ACCOUNTING_VIEW_JOURNAL_ENTRIES ]
+      },
+      {
+        code: REPORTS_MANAGE_CURRENCY_REVALUATION,
+        name: model_t("reports_manage_currency_revaluation"),
+        abilities: [
+          model_t("manage_currency_revaluation_reports")
+        ],
+        tags: %w[accounting reports],
+        perquisites: [ ACCOUNTING_REVALUE_CURRENCIES ]
+      },
+      {
+        code: REPORTS_MANAGE_EXPLORER,
+        name: model_t("reports_manage_explorer"),
+        abilities: [
+          model_t("manage_explorer_reports")
+        ],
+        tags: %w[accounting reports],
+        perquisites: [ ACCOUNTING_VIEW_JOURNAL_ENTRIES ]
+      },
+      {
+        code: REPORTS_MANAGE_JOURNAL_ENTRY_ITEMS,
+        name: model_t("reports_manage_journal_entry_items"),
+        abilities: [
+          model_t("manage_journal_entry_items_reports")
+        ],
+        tags: %w[accounting reports],
+        perquisites: [ ACCOUNTING_VIEW_JOURNAL_ENTRIES ]
       }
     ]
   end

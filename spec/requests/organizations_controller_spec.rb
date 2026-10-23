@@ -64,6 +64,16 @@ RSpec.describe 'Organizations API', type: :request do
         expect(response).to have_http_status(:unprocessable_content)
         expect(organization.reload.time_zone).to eq('UTC')
       end
+
+      it 'saves the name in a language added in the same request' do
+        patch "/organizations/#{organization.id}",
+              params: { organization_id: organization.id, active_locales: [ 'fa' ], name_fa: 'سازمان' }, as: :json
+
+        expect(response).to have_http_status(:ok)
+        organization.reload
+        expect(organization.active_locales).to eq([ 'fa' ])
+        expect(organization.read_attribute(:name)).to include('fa' => 'سازمان')
+      end
     end
 
     it 'is forbidden for members without admin permission' do
