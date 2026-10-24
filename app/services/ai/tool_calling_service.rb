@@ -76,8 +76,23 @@ module Ai
       raise NotImplementedError, "#{self.class} must implement #build_retries_exhausted_message"
     end
 
-    def format_validation_error(_error)
-      raise NotImplementedError, "#{self.class} must implement #format_validation_error"
+    # "path (field): message" for errors with path/field/message.
+    def format_validation_error(error)
+      path    = error.respond_to?(:path) ? error.path : "?"
+      field   = error.respond_to?(:field) ? error.field : "?"
+      message = error.respond_to?(:message) ? error.message : error.to_s
+      "#{path} (#{field}): #{message}"
+    end
+
+    # Validation errors as stored in chat.state["errors"].
+    def serialize_errors(errors)
+      errors.map do |error|
+        {
+          "path"    => error.respond_to?(:path) ? error.path : nil,
+          "field"   => error.respond_to?(:field) ? error.field : nil,
+          "message" => error.respond_to?(:message) ? error.message : error.to_s
+        }
+      end
     end
 
     # ── Subclass hooks: lifecycle ───────────────────────────────────────
@@ -102,7 +117,7 @@ module Ai
     end
 
     def result_class
-      Result
+      Ai::ToolCallingResult
     end
 
     def retryable_error_classes
@@ -233,10 +248,17 @@ module Ai
 
     def call_ai
       Ai::Client.complete(
-        messages: build_messages,
-        tools:    [ tool_definition ],
-        feature:  feature_name
+        messages:     build_messages,
+        tools:        [ tool_definition ],
+        feature:      feature_name,
+        lookup_tools: lookup_tools
       )
+    end
+
+    # Read-only RubyLLM::Tool instances the model may call to look data up
+    # before answering with the target tool. None by default.
+    def lookup_tools
+      nil
     end
 
     def build_messages
@@ -296,8 +318,10 @@ module Ai
 
     # ── State persistence ───────────────────────────────────────────────
 
+    # Under the row lock, on fresh state: another request (e.g. applying a
+    # proposal) may have written other keys meanwhile.
     def merge_chat_state(**new_keys)
-      chat.update!(state: chat.state.merge(stringify_keys(new_keys)))
+      chat.with_lock { chat.update!(state: chat.state.merge(stringify_keys(new_keys))) }
     end
 
     def stringify_keys(hash)

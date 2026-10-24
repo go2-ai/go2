@@ -51,10 +51,13 @@ module Accounting
       # exclude_sources:    records whose generated entries are ignored
       # exclude_entry_ids:  entries to ignore
       # include_zero:       keep rows whose balances are both zero
+      # entry_scope:        an Explorer::EntryScope; it then decides the
+      #                     dates, entry types and states (`states` is ignored)
       def initialize(organization:, fiscal_year: nil, as_of: nil, from: nil, states: DEFAULT_STATES,
                      category_types: nil, monetary_only: false, foreign_only: false,
-                     exclude_sources: [], exclude_entry_ids: [], include_zero: false, **filters)
+                     exclude_sources: [], exclude_entry_ids: [], include_zero: false, entry_scope: nil, **filters)
         @organization = organization
+        @entry_scope = entry_scope
         @fiscal_year_id = fiscal_year.respond_to?(:id) ? fiscal_year.id : fiscal_year
         @as_of = as_of
         @from = from
@@ -87,10 +90,13 @@ module Accounting
         scope = Accounting::JournalEntryItem
                 .joins(:journal_entry)
                 .joins(account: { ledger: :account_category })
-                .where(journal_entries: {
-                  organization_id: organization.id,
-                  state: Accounting::JournalEntry.states.values_at(*states)
-                })
+                .where(journal_entries: { organization_id: organization.id })
+
+        scope = if entry_scope
+          entry_scope.apply(scope)
+        else
+          scope.where(journal_entries: { state: Accounting::JournalEntry.states.values_at(*states) })
+        end
 
         scope = scope.where(journal_entries: { fiscal_year_id: fiscal_year_id }) if fiscal_year_id
         scope = scope.where("journal_entries.date <= ?", as_of) if as_of
@@ -115,7 +121,7 @@ module Accounting
 
       private
 
-      attr_reader :organization, :fiscal_year_id, :as_of, :from, :states, :category_types,
+      attr_reader :organization, :entry_scope, :fiscal_year_id, :as_of, :from, :states, :category_types,
                   :monetary_only, :foreign_only, :exclude_sources, :exclude_entry_ids,
                   :include_zero, :filters
 
@@ -176,11 +182,16 @@ module Accounting
         SQL
       end
 
+      # pluck already returns BigDecimals for decimal sums.
+      def decimal(value)
+        value.is_a?(BigDecimal) ? value : BigDecimal(value.to_s)
+      end
+
       def build_row(values)
         account_id, *center_ids = values.first(7)
         currency_id, debit, credit, currency_balance = values.drop(7)
-        debit = BigDecimal(debit.to_s)
-        credit = BigDecimal(credit.to_s)
+        debit = decimal(debit)
+        credit = decimal(credit)
 
         Row.new(
           account_id: account_id,
@@ -189,7 +200,7 @@ module Accounting
           debit: debit,
           credit: credit,
           base_balance: debit - credit,
-          currency_balance: BigDecimal(currency_balance.to_s)
+          currency_balance: decimal(currency_balance)
         )
       end
     end

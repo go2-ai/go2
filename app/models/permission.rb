@@ -37,6 +37,8 @@ class Permission < ApplicationRecord
   REPORTS_MANAGE_CURRENCY_REVALUATION = "Reports.manage_currency_revaluation".freeze
   REPORTS_MANAGE_EXPLORER = "Reports.manage_explorer".freeze
   REPORTS_MANAGE_JOURNAL_ENTRY_ITEMS = "Reports.manage_journal_entry_items".freeze
+  REPORTS_MANAGE_STATEMENTS = "Reports.manage_statements".freeze
+  REPORTS_MANAGE_ACCESS = "Reports.manage_access".freeze
 
   def self.grantable_permissions
     [
@@ -205,6 +207,25 @@ class Permission < ApplicationRecord
         ],
         tags: %w[accounting reports],
         perquisites: [ ACCOUNTING_VIEW_JOURNAL_ENTRIES ]
+      },
+      {
+        code: REPORTS_MANAGE_STATEMENTS,
+        name: model_t("reports_manage_statements"),
+        abilities: [
+          model_t("manage_statement_reports"),
+          model_t("use_statement_mapping_ai")
+        ],
+        tags: %w[accounting reports],
+        perquisites: [ ACCOUNTING_VIEW_JOURNAL_ENTRIES, ACCOUNTING_VIEW_ACCOUNTS ]
+      },
+      {
+        code: REPORTS_MANAGE_ACCESS,
+        name: model_t("reports_manage_access"),
+        abilities: [
+          model_t("manage_report_access")
+        ],
+        tags: %w[reports],
+        perquisites: []
       }
     ]
   end

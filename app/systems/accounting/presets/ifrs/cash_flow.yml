@@ -1,0 +1,159 @@
+# IFRS statement of cash flows, indirect method (IAS 7). Every line is
+# credit-normal: inflows are positive, outflows negative.
+#
+# Measures: "change" is the period's movement of a balance (its cash effect
+# is the opposite: more receivables, less cash), "balance" of income
+# statement rows is the period's result, debit_movement / credit_movement
+# take one side only (e.g. purchases of equipment, depreciation charged to
+# accumulated depreciation).
+#
+# The catch-all rules put every movement somewhere, so the statement
+# reconciles once the cash ledgers are mapped to "cash_movement" (a hidden
+# line). Cash at the beginning and end and the effect of exchange rate
+# changes are computed from the balances mapped there.
+key: ifrs.cash_flow
+standard: ifrs
+statement_type: cash_flow
+category: financial_statements
+name:
+  en: Statement of cash flows (IFRS, indirect method)
+  fa: صورت جریان‌های نقدی (IFRS، روش غیرمستقیم)
+description:
+  en: Cash flows from operating, investing and financing activities for a period, reconciled to the change in cash.
+  fa: جریان‌های نقدی فعالیت‌های عملیاتی، سرمایه‌گذاری و تأمین مالی یک دوره، تطبیق‌شده با تغییر موجودی نقد.
+settings:
+  category_types: [balance_sheet, income_statement]
+  cash_flow:
+    cash_line: cash_movement
+    opening_line: cash_at_beginning
+    closing_line: cash_at_end
+    fx_line: effect_of_exchange_rate_changes
+  checks:
+    - type: equal
+      left: cash_at_end
+      right_formula: cash_at_beginning + net_increase_in_cash + effect_of_exchange_rate_changes
+lines:
+  - key: operating_activities
+    kind: heading
+    label: { en: Cash flows from operating activities, fa: جریان‌های نقدی حاصل از فعالیت‌های عملیاتی }
+    style: { bold: true }
+    children:
+      - key: profit_for_the_period
+        normal_side: credit
+        label: { en: Profit for the period, fa: سود (زیان) دوره }
+      - key: depreciation_and_amortisation
+        normal_side: credit
+        label: { en: Depreciation and amortisation, fa: استهلاک }
+      - key: other_non_cash_items
+        normal_side: credit
+        label: { en: Other non-cash items, fa: سایر اقلام غیرنقدی }
+      - key: change_in_trade_and_other_receivables
+        normal_side: credit
+        label: { en: (Increase) decrease in trade and other receivables, fa: (افزایش) کاهش دریافتنی‌ها }
+      - key: change_in_inventories
+        normal_side: credit
+        label: { en: (Increase) decrease in inventories, fa: (افزایش) کاهش موجودی‌ها }
+      - key: change_in_other_current_assets
+        normal_side: credit
+        label: { en: (Increase) decrease in other current assets, fa: (افزایش) کاهش سایر دارایی‌های جاری }
+      - key: change_in_trade_and_other_payables
+        normal_side: credit
+        label: { en: Increase (decrease) in trade and other payables, fa: افزایش (کاهش) پرداختنی‌ها }
+      - key: change_in_other_current_liabilities
+        normal_side: credit
+        label: { en: Increase (decrease) in other current liabilities, fa: افزایش (کاهش) سایر بدهی‌های جاری }
+      - key: income_taxes_paid
+        normal_side: credit
+        label: { en: Income taxes paid, fa: مالیات بر درآمد پرداختی }
+      - key: net_cash_from_operating_activities
+        kind: formula
+        normal_side: credit
+        formula: >-
+          profit_for_the_period + depreciation_and_amortisation + other_non_cash_items
+          + change_in_trade_and_other_receivables + change_in_inventories + change_in_other_current_assets
+          + change_in_trade_and_other_payables + change_in_other_current_liabilities + income_taxes_paid
+        label: { en: Net cash from operating activities, fa: جریان خالص نقد حاصل از فعالیت‌های عملیاتی }
+        style: { bold: true }
+  - key: investing_activities
+    kind: heading
+    label: { en: Cash flows from investing activities, fa: جریان‌های نقدی حاصل از فعالیت‌های سرمایه‌گذاری }
+    style: { bold: true }
+    children:
+      - key: purchase_of_property_plant_and_equipment
+        normal_side: credit
+        label: { en: Purchase of property, plant and equipment, fa: پرداخت برای خرید دارایی‌های ثابت مشهود }
+      - key: proceeds_from_sale_of_property_plant_and_equipment
+        normal_side: credit
+        label: { en: Proceeds from sale of property, plant and equipment, fa: دریافت حاصل از فروش دارایی‌های ثابت مشهود }
+      - key: other_investing_activities
+        normal_side: credit
+        label: { en: Other investing activities, fa: سایر فعالیت‌های سرمایه‌گذاری }
+      - key: net_cash_from_investing_activities
+        kind: formula
+        normal_side: credit
+        formula: >-
+          purchase_of_property_plant_and_equipment + proceeds_from_sale_of_property_plant_and_equipment
+          + other_investing_activities
+        label: { en: Net cash used in investing activities, fa: جریان خالص نقد حاصل از فعالیت‌های سرمایه‌گذاری }
+        style: { bold: true }
+  - key: financing_activities
+    kind: heading
+    label: { en: Cash flows from financing activities, fa: جریان‌های نقدی حاصل از فعالیت‌های تأمین مالی }
+    style: { bold: true }
+    children:
+      - key: change_in_borrowings
+        normal_side: credit
+        label: { en: Proceeds from (repayment of) borrowings, fa: دریافت (بازپرداخت) تسهیلات }
+      - key: change_in_equity
+        normal_side: credit
+        label: { en: Capital contributions and dividends, fa: افزایش سرمایه و سود سهام پرداختی }
+      - key: net_cash_from_financing_activities
+        kind: formula
+        normal_side: credit
+        formula: change_in_borrowings + change_in_equity
+        label: { en: Net cash from financing activities, fa: جریان خالص نقد حاصل از فعالیت‌های تأمین مالی }
+        style: { bold: true }
+  - key: net_increase_in_cash
+    kind: formula
+    normal_side: credit
+    formula: net_cash_from_operating_activities + net_cash_from_investing_activities + net_cash_from_financing_activities
+    label: { en: Net increase (decrease) in cash and cash equivalents, fa: خالص افزایش (کاهش) موجودی نقد }
+    style: { bold: true }
+  - key: cash_at_beginning
+    normal_side: debit
+    label: { en: Cash and cash equivalents at the beginning of the period, fa: موجودی نقد در ابتدای دوره }
+  - key: effect_of_exchange_rate_changes
+    normal_side: debit
+    label: { en: Effect of exchange rate changes on cash, fa: اثر تغییرات نرخ ارز بر موجودی نقد }
+  - key: cash_at_end
+    normal_side: debit
+    label: { en: Cash and cash equivalents at the end of the period, fa: موجودی نقد در پایان دوره }
+    style: { bold: true, underline: true }
+  - key: cash_movement
+    normal_side: debit
+    label: { en: Movement of cash accounts (map the cash ledgers here), fa: گردش حساب‌های نقد (حساب‌های نقد را اینجا نگاشت کنید) }
+    style: { hidden: true }
+rules:
+  - line: profit_for_the_period
+    selector_type: profit_or_loss
+    selector: { period: current }
+  - line: change_in_other_current_assets
+    selector_type: category
+    selector: { identifiers: [CA] }
+    measure: change
+  - line: change_in_other_current_liabilities
+    selector_type: category
+    selector: { identifiers: [CL] }
+    measure: change
+  - line: other_investing_activities
+    selector_type: category
+    selector: { identifiers: [LA] }
+    measure: change
+  - line: change_in_borrowings
+    selector_type: category
+    selector: { identifiers: [LL] }
+    measure: change
+  - line: change_in_equity
+    selector_type: category
+    selector: { identifiers: [OE] }
+    measure: change

@@ -16,7 +16,7 @@ module Ai
         @model = model
       end
 
-      def complete(messages:, tools: nil, system: nil, model: nil)
+      def complete(messages:, tools: nil, system: nil, model: nil, lookup_tools: nil)
         Ai::Response.new(
           content: DEFAULT_CONTENT,
           tool_calls: [],

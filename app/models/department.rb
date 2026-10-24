@@ -11,7 +11,7 @@ class Department < ApplicationRecord
   belongs_to :organization
   has_many :roles, dependent: :nullify
   has_many :permissions, as: :grantee, dependent: :destroy
-
+  has_many :report_grants, as: :grantee, class_name: "Reporting::ReportGrant", dependent: :destroy
   # Validations
   validates :abbreviation, presence: true
   validates_non_empty_translation :name, locales: ->(dept) { [ dept.organization&.locale ] }

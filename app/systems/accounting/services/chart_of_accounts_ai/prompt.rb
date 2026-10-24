@@ -52,38 +52,11 @@ module Accounting
       def build_messages(override_last_user_content: nil)
         raise ArgumentError, "chat is required" if @chat.nil?
 
-        history = @chat.messages.chronological.to_a
-        history = history.last(MAX_MESSAGES) if history.length > MAX_MESSAGES
-
-        messages = [ { role: "system", content: system_prompt } ]
-
-        history.each do |msg|
-          messages << format_message(msg)
-        end
-
-        if override_last_user_content.present?
-          idx = messages.rindex { |m| m[:role] == "user" }
-          messages[idx] = { role: "user", content: override_last_user_content } if idx
-        end
-        messages
+        Ai::PromptHistory.build(chat: @chat, system: system_prompt,
+                                override_last_user_content: override_last_user_content, max: MAX_MESSAGES)
       end
 
       private
-
-      def format_message(msg)
-        case msg.role
-        when "user"
-          { role: "user", content: msg.content.to_s }
-        when "assistant"
-          { role: "assistant", content: msg.content.to_s }
-        when "tool"
-          # Tool results are fed back as user messages with a marker so
-          # the model knows they came from its own tool call.
-          { role: "user", content: "[Tool result]\n#{msg.content}" }
-        else
-          { role: "user", content: msg.content.to_s }
-        end
-      end
 
       def base_prompt
         <<~PROMPT.strip

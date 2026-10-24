@@ -1,4 +1,4 @@
-import type { AiChat, AiChatState, AiMessage } from '../../ai/types';
+import type { AiChat, AiChatState } from '../../ai/types';
 
 // Re-export the generic types so feature consumers can import
 // everything from this folder.

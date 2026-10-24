@@ -139,6 +139,10 @@ class Organization < ApplicationRecord
     calendar_types.first
   end
 
+  # Center levels used on journal entry items (accounting settings), 1 to 6.
+  def center_levels
+    (accounting_setting&.center_levels || 3).clamp(1, 6)
+  end
   # The organization's time zone as an ActiveSupport::TimeZone.
   def tz
     ActiveSupport::TimeZone[time_zone] || ActiveSupport::TimeZone["UTC"]

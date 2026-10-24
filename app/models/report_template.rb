@@ -27,6 +27,15 @@ class ReportTemplate < ApplicationRecord
     },
     "journal_entry_items" => lambda { |organization, locale|
       Accounting::Reports::JournalEntryItemsTemplate.for(organization, locale: locale).to_json
+    },
+    "financial_statement" => lambda { |organization, locale|
+      Accounting::Reports::FinancialStatementTemplate.for(organization, locale: locale).to_json
+    },
+    "trial_balance" => lambda { |organization, locale|
+      Accounting::Reports::TrialBalanceTemplate.for(organization, locale: locale).to_json
+    },
+    "financial_ratios" => lambda { |organization, locale|
+      Accounting::Reports::FinancialRatiosTemplate.for(organization, locale: locale).to_json
     }
   }.freeze
 

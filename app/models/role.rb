@@ -15,7 +15,7 @@ class Role < ApplicationRecord
   belongs_to :parent, class_name: "Role", optional: true
   has_many :children, class_name: "Role", foreign_key: "parent_id", dependent: :nullify
   has_many :permissions, as: :grantee, dependent: :destroy
-
+  has_many :report_grants, as: :grantee, class_name: "Reporting::ReportGrant", dependent: :destroy
   # Validations
   validates_non_empty_translation :name, locales: ->(role) { [ role.organization&.locale ] }
   validate :no_circular_references

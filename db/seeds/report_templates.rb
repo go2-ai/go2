@@ -5,6 +5,16 @@ journal_entry_name = { "en" => "Journal Entry", "fa" => "سند حسابداری
 revaluation_name = { "en" => "Revaluation of Monetary Items", "fa" => "تسعیر اقلام پولی" }
 explorer_name = { "en" => "Explorer", "fa" => "کاوشگر" }
 journal_entry_items_name = { "en" => "Journal Entry Items", "fa" => "آرتیکل‌های سند حسابداری" }
+reporting_names = {
+  "financial_statement" => { "en" => "Financial Statement", "fa" => "صورت مالی" },
+  "trial_balance" => { "en" => "Trial Balance", "fa" => "تراز آزمایشی" },
+  "financial_ratios" => { "en" => "Financial Ratios", "fa" => "نسبت‌های مالی" }
+}
+reporting_generators = {
+  "financial_statement" => Accounting::Reports::FinancialStatementTemplate,
+  "trial_balance" => Accounting::Reports::TrialBalanceTemplate,
+  "financial_ratios" => Accounting::Reports::FinancialRatiosTemplate
+}
 
 report_templates = %w[en fa].flat_map do |locale|
   [
@@ -33,7 +43,11 @@ report_templates = %w[en fa].flat_map do |locale|
       report_key: "journal_entry_items",
       locale: locale,
       template_file: Accounting::Reports::JournalEntryItemsTemplate.build(locale: locale).to_json
-    }
+    },
+    # Generated per organization when served (main currency decimals).
+    *reporting_generators.map do |key, generator|
+      { name: reporting_names.fetch(key), report_key: key, locale: locale, template_file: generator.build(locale: locale).to_json }
+    end
   ]
 end
 

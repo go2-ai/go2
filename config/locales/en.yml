@@ -27,6 +27,39 @@ en:
       not_found: Report template not found
       organization_not_found: Organization not found
       source_not_found: Source report template not found
+    reports:
+      errors:
+        conflict: The report was changed at the same time; try again
+        not_found: Report not found
+        organization_not_found: Organization not found
+    report_grants:
+      errors:
+        invalid_grant: Choose a member, role, group or department of the organization
+        not_found: Report or access not found
+    statement_layouts:
+      errors:
+        inspection_not_allowed: The inspection list shows every account; it needs edit access to the report or permission to read journal entries
+    statement_lines:
+      errors:
+        not_found: Line not found
+    statement_mapping_rules:
+      errors:
+        not_found: Mapping rule not found
+    statement_mapping_ai:
+      errors:
+        no_proposal: The assistant hasn't proposed rules yet
+        busy: The assistant is still working; apply the proposal when it has finished
+        rules_changed: The rules changed after the proposal was made; ask the assistant again
+      proposal_errors:
+        account_selector: give account_codes or settings inside selector
+        action: must be add, update or remove
+        empty: propose at least one change
+        no_rule: "no rule %{number}"
+        period: must be current or prior
+        required: is required (inside selector)
+        selector_type: "unknown selector type %{type}"
+        unknown: "unknown %{values}"
+        unknown_codes: "unknown codes %{codes}"
   devise:
     confirmations:
       confirmed: Your email address has been successfully confirmed.
@@ -304,6 +337,15 @@ en:
         income_summary_not_monetary: "can't be a monetary account"
         must_be_income_statement: "must be a revenue or expense account"
         must_be_owners_equity: "must be an owners' equity account"
+    accounting/statement_mapping_rule:
+      errors:
+        overlapping_rule: "matches the same balances as a rule of line \"%{line}\" with the same priority; give one of them a higher priority"
+        unknown_line: "Unknown line \"%{key}\""
+        invalid_rules: "The rules must be a JSON list"
+    accounting/statement_line:
+      errors:
+        invalid_formula: "is not a valid formula: %{detail}"
+        key_in_use: "is used by the formulas of %{lines}"
     fiscal_year:
       default_name: "Fiscal Year %{year}"
       errors:
@@ -364,6 +406,11 @@ en:
       manage_explorer_reports: Copy, design, rename, and delete explorer print templates and set the default for everyone
       reports_manage_journal_entry_items: Manage journal entry items print templates
       manage_journal_entry_items_reports: Copy, design, rename, and delete journal entry items print templates and set the default for everyone
+      reports_manage_statements: Manage financial statement reports
+      manage_statement_reports: Copy, rename, archive and change financial statement reports, their lines and mapping rules
+      use_statement_mapping_ai: Use the AI mapping assistant
+      reports_manage_access: Manage report access
+      manage_report_access: Choose which members, roles, groups and departments may view or edit each report
     report_default:
       errors:
         not_available: is not available to the organization
@@ -374,6 +421,8 @@ en:
       errors:
         invalid_json: must be a valid JSON report template
         too_large: is too large (maximum is %{size})
+    reporting/report:
+      copy_name: "%{name} (Copy)"
   onboarding:
     description: Your organization is where you'll manage your team, projects, and resources. You can always change this later.
     error_message: There was an error creating your organization. Please try again.
@@ -433,6 +482,44 @@ en:
       ref: Ref.
       row: Row
       title: Journal Entry Items
+    financial_ratios:
+      days:
+        one: "%{count} day"
+        other: "%{count} days"
+      description: Financial ratios of a period and its comparison.
+      group: Group
+      groups:
+        efficiency: Efficiency
+        leverage: Leverage
+        liquidity: Liquidity
+        profitability: Profitability
+      not_available: n/a
+      ratio: Ratio
+      title: Financial ratios
+    financial_statement:
+      as_of: "As of %{date}"
+      description: A financial statement with its comparative figures.
+      line: Line
+      period: "%{from} to %{to}"
+      title: Financial statement
+      variance: Change
+    trial_balance:
+      closing_credit: Closing credit
+      closing_debit: Closing debit
+      code: Code
+      credit: Period credit
+      debit: Period debit
+      description: Opening balances, period movements and closing balances.
+      level: "Level:"
+      levels:
+        account: Account
+        category: Category
+        ledger: Ledger
+      name: Name
+      opening_credit: Opening credit
+      opening_debit: Opening debit
+      prior_result: Prior years' result
+      title: Trial balance
     shared:
       currency: 'Currency:'
       dimensions:

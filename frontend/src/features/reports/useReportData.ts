@@ -7,6 +7,7 @@ import {
 } from '../accounting/journalEntryItems/journalEntryItemsApi';
 import { parseExplorerPrintSource } from '../accounting/journalEntryItems/explorerPrintSource';
 import type { ReportTarget } from './useOpenReport';
+import { useGetReportPrintQuery } from '../reporting/reportingApi';
 
 /**
  * Loads the data a report prints, by report key and target: a record id
@@ -58,6 +59,15 @@ export const useReportData = (reportKey: string, organizationId: number, target:
       : skipToken
   );
 
+  // Reports of the reporting platform: the record is the report, the
+  // source its run params.
+  const reportingKeys = ['financial_statement', 'trial_balance', 'financial_ratios'];
+  const reporting = useGetReportPrintQuery(
+    reportingKeys.includes(reportKey) && !skipRecord
+      ? { organizationId, id: recordId ?? 0, source: target.source ?? null, locale }
+      : skipToken
+  );
+
   const wrap = <T,>(query: { data?: T; isLoading: boolean; isError: boolean }) => ({
     data: query.data ? { root: query.data } : undefined,
     isLoading: query.isLoading,
@@ -74,6 +84,10 @@ export const useReportData = (reportKey: string, organizationId: number, target:
       return wrap(explorer);
     case 'journal_entry_items':
       return wrap(items);
+    case 'financial_statement':
+    case 'trial_balance':
+    case 'financial_ratios':
+      return wrap(reporting);
     default:
       return { data: undefined, isLoading: false, isError: false, supported: false };
   }

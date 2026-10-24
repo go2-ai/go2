@@ -1,0 +1,153 @@
+# IFRS statement of financial position (IAS 1 format; current/non-current
+# classification). The catch-all rules map every balance sheet category,
+# so a new organization's statement balances at once; organizations refine
+# copies with ledger, account and range rules.
+key: ifrs.balance_sheet
+standard: ifrs
+statement_type: balance_sheet
+category: financial_statements
+name:
+  en: Statement of financial position (IFRS)
+  fa: صورت وضعیت مالی (IFRS)
+description:
+  en: Assets, liabilities and equity at a date, with comparative figures.
+  fa: دارایی‌ها، بدهی‌ها و حقوق مالکانه در یک تاریخ، همراه با ارقام مقایسه‌ای.
+settings:
+  category_types: [balance_sheet, income_statement]
+  checks:
+    - type: equal
+      left: total_assets
+      right: total_equity_and_liabilities
+lines:
+  - key: assets
+    kind: heading
+    label: { en: Assets, fa: دارایی‌ها }
+    style: { bold: true }
+    children:
+      - key: non_current_assets
+        kind: mapped
+        normal_side: debit
+        label: { en: Non-current assets, fa: دارایی‌های غیرجاری }
+        style: { bold: true }
+        children:
+          - key: property_plant_and_equipment
+            label: { en: Property, plant and equipment, fa: دارایی‌های ثابت مشهود }
+          - key: investment_property
+            label: { en: Investment property, fa: سرمایه‌گذاری در املاک }
+          - key: intangible_assets
+            label: { en: Intangible assets, fa: دارایی‌های نامشهود }
+          - key: other_non_current_assets
+            label: { en: Other non-current assets, fa: سایر دارایی‌های غیرجاری }
+      - key: current_assets
+        kind: mapped
+        normal_side: debit
+        label: { en: Current assets, fa: دارایی‌های جاری }
+        style: { bold: true }
+        children:
+          - key: inventories
+            label: { en: Inventories, fa: موجودی مواد و کالا }
+          - key: trade_and_other_receivables
+            label: { en: Trade and other receivables, fa: دریافتنی‌های تجاری و سایر دریافتنی‌ها }
+          - key: prepayments
+            label: { en: Prepayments, fa: پیش‌پرداخت‌ها }
+          - key: cash_and_cash_equivalents
+            label: { en: Cash and cash equivalents, fa: موجودی نقد و معادل نقد }
+          - key: other_current_assets
+            label: { en: Other current assets, fa: سایر دارایی‌های جاری }
+      - key: total_assets
+        kind: formula
+        normal_side: debit
+        formula: non_current_assets + current_assets
+        label: { en: Total assets, fa: جمع دارایی‌ها }
+        style: { bold: true, underline: true }
+  - key: equity_and_liabilities
+    kind: heading
+    label: { en: Equity and liabilities, fa: حقوق مالکانه و بدهی‌ها }
+    style: { bold: true }
+    children:
+      - key: equity
+        kind: mapped
+        normal_side: credit
+        label: { en: Equity, fa: حقوق مالکانه }
+        style: { bold: true }
+        children:
+          - key: share_capital
+            label: { en: Share capital, fa: سرمایه }
+          - key: retained_earnings
+            label: { en: Retained earnings, fa: سود (زیان) انباشته }
+          - key: profit_for_the_year
+            label: { en: Profit for the year, fa: سود (زیان) سال جاری }
+          - key: other_reserves
+            label: { en: Other reserves, fa: سایر اندوخته‌ها }
+      - key: non_current_liabilities
+        kind: mapped
+        normal_side: credit
+        label: { en: Non-current liabilities, fa: بدهی‌های غیرجاری }
+        style: { bold: true }
+        children:
+          - key: borrowings_non_current
+            label: { en: Long-term borrowings, fa: تسهیلات مالی بلندمدت }
+          - key: provisions_non_current
+            label: { en: Long-term provisions, fa: ذخایر بلندمدت }
+          - key: deferred_tax_liabilities
+            label: { en: Deferred tax liabilities, fa: بدهی مالیات انتقالی }
+          - key: other_non_current_liabilities
+            label: { en: Other non-current liabilities, fa: سایر بدهی‌های غیرجاری }
+      - key: current_liabilities
+        kind: mapped
+        normal_side: credit
+        label: { en: Current liabilities, fa: بدهی‌های جاری }
+        style: { bold: true }
+        children:
+          - key: trade_and_other_payables
+            label: { en: Trade and other payables, fa: پرداختنی‌های تجاری و سایر پرداختنی‌ها }
+          - key: contract_liabilities
+            label: { en: Contract liabilities (advances from customers), fa: بدهی‌های قراردادی (پیش‌دریافت‌ها) }
+          - key: borrowings_current
+            label: { en: Short-term borrowings, fa: تسهیلات مالی کوتاه‌مدت }
+          - key: current_tax_liabilities
+            label: { en: Current tax liabilities, fa: مالیات پرداختنی }
+          - key: provisions_current
+            label: { en: Short-term provisions, fa: ذخایر کوتاه‌مدت }
+          - key: other_current_liabilities
+            label: { en: Other current liabilities, fa: سایر بدهی‌های جاری }
+      - key: total_liabilities
+        kind: formula
+        normal_side: credit
+        formula: non_current_liabilities + current_liabilities
+        label: { en: Total liabilities, fa: جمع بدهی‌ها }
+        style: { bold: true }
+      - key: total_equity_and_liabilities
+        kind: formula
+        normal_side: credit
+        formula: equity + total_liabilities
+        label: { en: Total equity and liabilities, fa: جمع حقوق مالکانه و بدهی‌ها }
+        style: { bold: true, underline: true }
+rules:
+  - line: other_non_current_assets
+    selector_type: category
+    selector: { identifiers: [LA] }
+  - line: other_current_assets
+    selector_type: category
+    selector: { identifiers: [CA] }
+  - line: other_reserves
+    selector_type: category
+    selector: { identifiers: [OE] }
+  - line: other_non_current_liabilities
+    selector_type: category
+    selector: { identifiers: [LL] }
+  - line: other_current_liabilities
+    selector_type: category
+    selector: { identifiers: [CL] }
+  - line: retained_earnings
+    selector_type: account
+    selector: { settings: [retained_earnings_account_id] }
+  - line: profit_for_the_year
+    selector_type: account
+    selector: { settings: [current_year_profit_account_id, income_summary_account_id] }
+  - line: retained_earnings
+    selector_type: profit_or_loss
+    selector: { period: prior }
+  - line: profit_for_the_year
+    selector_type: profit_or_loss
+    selector: { period: current }

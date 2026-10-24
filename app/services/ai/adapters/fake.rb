@@ -25,15 +25,29 @@ module Ai
         @calls     = []
       end
 
-      def complete(messages:, tools: nil, system: nil, model: nil)
-        @calls << { messages: messages, tools: tools, system: system, model: model }
+      # Like the real adapters, a scripted response whose tool calls all
+      # name lookup tools is "executed": the tools run, their results are
+      # recorded in #lookup_results, and the next scripted item is used.
+      def complete(messages:, tools: nil, system: nil, model: nil, lookup_tools: nil)
+        @calls << { messages: messages, tools: tools, system: system, model: model, lookup_tools: lookup_tools }
+        lookups = Array(lookup_tools).index_by(&:name)
 
-        raise ScriptExhausted, "Fake adapter has no more scripted responses (call ##{@calls.length})" if @responses.empty?
+        loop do
+          raise ScriptExhausted, "Fake adapter has no more scripted responses (call ##{@calls.length})" if @responses.empty?
 
-        item = @responses.shift
-        raise item if item.is_a?(Ai::Error)
+          item = @responses.shift
+          raise item if item.is_a?(Ai::Error)
+          return item unless item.tool_calls? && item.tool_calls.all? { |tc| lookups.key?(tc[:name]) }
 
-        item
+          item.tool_calls.each do |tc|
+            result = lookups[tc[:name]].call(**tc[:arguments].to_h.symbolize_keys)
+            lookup_results << { name: tc[:name], arguments: tc[:arguments], result: result }
+          end
+        end
+      end
+
+      def lookup_results
+        @lookup_results ||= []
       end
 
       def available?

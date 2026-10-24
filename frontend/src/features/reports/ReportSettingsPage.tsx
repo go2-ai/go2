@@ -217,6 +217,12 @@ export const ReportSettingsPage = () => {
         return tReports('journalEntryItemsPage');
       case 'currency_revaluation':
         return tReports('currencyRevaluationPage');
+      case 'financial_statement':
+        return tReports('financialStatementPage');
+      case 'trial_balance':
+        return tReports('trialBalancePage');
+      case 'financial_ratios':
+        return tReports('financialRatiosPage');
       default:
         return key;
     }

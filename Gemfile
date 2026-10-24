@@ -149,3 +149,7 @@ group :test do
   gem "webmock"
 end
 gem "graphiql-rails", group: :development
+
+gem "ruby_llm", "~> 2.1"
+
+gem "dentaku", "~> 4.1"

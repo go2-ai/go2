@@ -20,6 +20,7 @@ import { journalEntriesApi } from '../features/accounting/journalEntries/journal
 import { journalEntryItemsApi } from '../features/accounting/journalEntryItems/journalEntryItemsApi';
 import { reportTemplatesApi } from '../features/reportTemplates/reportTemplatesApi';
 import { chartOfAccountsAiApi } from '../features/accounting/chartOfAccountsAi/chartOfAccountsAiApi';
+import { reportingApi } from '../features/reporting/reportingApi';
 import { exchangeRatesApi } from '../features/accounting/exchangeRates/exchangeRatesApi';
 import { currencyRevaluationsApi } from '../features/accounting/currencyRevaluations/currencyRevaluationsApi';
 import { fiscalYearClosingApi } from '../features/accounting/fiscalYearClosing/fiscalYearClosingApi';
@@ -50,6 +51,7 @@ export const store = configureStore({
     [documentsApi.reducerPath]: documentsApi.reducer,
     [reportTemplatesApi.reducerPath]: reportTemplatesApi.reducer,
     [chartOfAccountsAiApi.reducerPath]: chartOfAccountsAiApi.reducer,
+    [reportingApi.reducerPath]: reportingApi.reducer,
     [exchangeRatesApi.reducerPath]: exchangeRatesApi.reducer,
     [currencyRevaluationsApi.reducerPath]: currencyRevaluationsApi.reducer,
     [fiscalYearClosingApi.reducerPath]: fiscalYearClosingApi.reducer,
@@ -79,6 +81,7 @@ export const store = configureStore({
       documentsApi.middleware,
       reportTemplatesApi.middleware,
       chartOfAccountsAiApi.middleware,
+      reportingApi.middleware,
       exchangeRatesApi.middleware,
       currencyRevaluationsApi.middleware,
       fiscalYearClosingApi.middleware,

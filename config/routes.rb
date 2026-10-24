@@ -104,7 +104,18 @@ Rails.application.routes.draw do
 
     resources :report_templates, only: [ :index, :show, :create, :update, :destroy ]
     resource :report_defaults, only: [ :show, :update, :destroy ]
-
+    namespace :reporting do
+      resources :reports, only: [ :index, :show, :update, :destroy ] do
+        member do
+          get :run
+          get :drill
+          post :copy
+          post :archive
+          post :unarchive
+        end
+        resources :grants, only: [ :index, :create, :destroy ], controller: "report_grants"
+      end
+    end
     resources :conversations do
       member do
         post :reply
@@ -121,6 +132,23 @@ Rails.application.routes.draw do
     resources :messages
 
     namespace :accounting do
+      # The layout editor of statement reports (:statement_id is the report id).
+      resources :statements, only: [] do
+        get :layout, to: "statement_layouts#show"
+        get :inspection, to: "statement_layouts#inspection"
+        resources :lines, controller: "statement_lines", only: [ :create, :update, :destroy ] do
+          member { post :move }
+        end
+        resources :rules, controller: "statement_mapping_rules", only: [ :create, :update, :destroy ]
+        resources :mapping_chats, only: [ :create, :show ], controller: "statement_mapping_ai/chats" do
+          member do
+            post :messages, action: :post_message
+            post :abandon
+            post :accept
+            get :preview
+          end
+        end
+      end
       resource :settings, only: [ :show, :update ]
       resources :currencies, only: [ :index, :create, :update, :destroy ]
       resources :center_types, only: [ :index, :create, :update, :destroy ]

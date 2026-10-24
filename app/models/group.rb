@@ -10,7 +10,7 @@ class Group < ApplicationRecord
   belongs_to :organization, optional: false
   has_and_belongs_to_many :members
   has_many :permissions, as: :grantee
-
+  has_many :report_grants, as: :grantee, class_name: "Reporting::ReportGrant", dependent: :destroy
   before_save :sync_member_id_cache
 
   validates_non_empty_translation :name, locales: ->(group) { [ group.organization&.locale ] }

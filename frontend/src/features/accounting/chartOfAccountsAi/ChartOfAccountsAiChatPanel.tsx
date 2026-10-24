@@ -2,16 +2,14 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Alert, Box, CircularProgress } from '@mui/material';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import { useTranslation } from 'react-i18next';
-import { useDispatch } from 'react-redux';
 import {
   AiChatPanel,
   type AiActionBannerConfig,
   type PendingAttachment,
-  useAiChatChannel,
+  useAiChatSession,
 } from '../../ai';
 import {
   useGetOrCreateChatMutation,
-  useGetChatQuery,
   usePostMessageMutation,
   useAcceptProposalMutation,
   chartOfAccountsAiApi,
@@ -19,6 +17,7 @@ import {
 import type { Proposal, ProposalError } from './types';
 import { useDocumentUpload } from '../../documents/hooks/useDocumentUpload';
 import { useToast } from '../../../contexts/ToastContext';
+import { apiErrorMessage } from '../../../utils/apiErrorMessage';
 
 interface ChartOfAccountsAiChatPanelProps {
   organizationId: number;
@@ -45,82 +44,22 @@ export const ChartOfAccountsAiChatPanel: React.FC<
   const { t } = useTranslation('accounting');
   const { showSuccess, showError } = useToast();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
-  const dispatch = useDispatch();
 
-  const [chatId, setChatId] = useState<number | null>(null);
-  const [pollingInterval, setPollingInterval] = useState(0);
   const [pendingAttachments, setPendingAttachments] = useState<PendingAttachment[]>([]);
-
-  const chatRequestRef = useRef<{ orgId: number; promise: Promise<{ id: number }> } | null>(null);
 
   const [getOrCreate, { error: createError }] = useGetOrCreateChatMutation();
   const [postMessage] = usePostMessageMutation();
   const [acceptProposal] = useAcceptProposalMutation();
 
-  useEffect(() => {
-    let cancelled = false;
-
-    if (!chatRequestRef.current || chatRequestRef.current.orgId !== organizationId) {
-      chatRequestRef.current = {
-        orgId: organizationId,
-        promise: getOrCreate({ organizationId }).unwrap(),
-      };
-    }
-
-    chatRequestRef.current.promise
-      .then((chat) => {
-        if (!cancelled) setChatId(chat.id);
-      })
-      .catch(() => {
-        if (chatRequestRef.current?.orgId === organizationId) {
-          chatRequestRef.current = null;
-        }
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [organizationId, getOrCreate]);
-
-  const { data: chat } = useGetChatQuery(
-    { organizationId, chatId: chatId! },
-    { skip: chatId === null, pollingInterval },
-  );
-
-  const processing = chat?.state?.processing === true;
-
-  // Subscribe to cable updates for this chat while the panel is mounted.
-  // The handler invalidates the getChat tag so RTK Query refetches
-  // immediately rather than waiting for the next poll.
-  const { connected: cableConnected } = useAiChatChannel({
-    organizationId,
-    chatId,
-    onChatChanged: () => {
-      if (chatId === null) return;
-      dispatch(
-        chartOfAccountsAiApi.util.invalidateTags([
-          { type: 'ChartOfAccountsAiChat', id: chatId },
-        ]),
-      );
-    },
+  // Gets or creates the chat, polls it while processing and refetches
+  // when the cable signals a change (see useAiChatSession).
+  const { chatId, chat, processing } = useAiChatSession({
+    args: { organizationId },
+    getOrCreate,
+    chatEndpoint: chartOfAccountsAiApi.endpoints.getChat,
+    invalidateChat: (id) =>
+      chartOfAccountsAiApi.util.invalidateTags([{ type: 'ChartOfAccountsAiChat', id }]),
   });
-
-  // Polling strategy:
-  //   - not processing:               poll disabled
-  //   - processing + cable connected: poll every 30s as a cheap safety net
-  //   - processing + cable down:      poll every 2s (pre-cable behavior)
-  //
-  // The WebSocket is the fast path; polling exists so a silently-dropped
-  // socket degrades to "30 seconds late" rather than "frozen forever".
-  useEffect(() => {
-    if (!processing) {
-      setPollingInterval(0);
-    } else if (cableConnected) {
-      setPollingInterval(30_000);
-    } else {
-      setPollingInterval(2_000);
-    }
-  }, [processing, cableConnected]);
 
   const { uploadFiles, uploading } = useDocumentUpload({
     organizationId,
@@ -154,8 +93,8 @@ export const ChartOfAccountsAiChatPanel: React.FC<
         attachmentIds,
       }).unwrap();
       setPendingAttachments([]);
-    } catch (err: any) {
-      showError(err?.data?.errors?.[0] || t('aiAssistant.messageFailed'));
+    } catch (err) {
+      showError(apiErrorMessage(err) || t('aiAssistant.messageFailed'));
     }
   };
 
@@ -166,8 +105,8 @@ export const ChartOfAccountsAiChatPanel: React.FC<
       showSuccess(t('aiAssistant.proposalAccepted'));
       onProposalChange?.(null);
       onAccepted?.();
-    } catch (err: any) {
-      showError(err?.data?.errors?.[0] || t('aiAssistant.acceptFailed'));
+    } catch (err) {
+      showError(apiErrorMessage(err) || t('aiAssistant.acceptFailed'));
     }
   };
 

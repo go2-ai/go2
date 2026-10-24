@@ -2,18 +2,17 @@
 
 module Ai
   module Adapters
-    # NaraRouter adapter. Speaks the OpenAI-compatible /v1/chat/completions
-    # protocol, so it inherits everything from Openrouter except the base URL
-    # and default model.
+    # NaraRouter adapter. Speaks OpenRouter's OpenAI-compatible
+    # /v1/chat/completions protocol, so it uses RubyLLM's OpenRouter
+    # provider with a different base URL and default model.
     #
     # Free tier: 5M tokens/day, no credit card. Model availability on the
     # free tier rotates — check https://router.bynara.id/models for the
     # current free-model list. All free models support tool calling.
     #
-    # Env vars: same as Openrouter (AI_API_KEY required, AI_MODEL optional,
-    # AI_OPEN_TIMEOUT / AI_READ_TIMEOUT / AI_REFERER / AI_APP_TITLE optional).
+    # Env vars: same as Openrouter.
     class Nararouter < Openrouter
-      API_URL = URI("https://router.bynara.id/v1/chat/completions")
+      API_BASE = "https://router.bynara.id/v1"
       DEFAULT_MODEL = "agnes-2.5-flash"
     end
   end

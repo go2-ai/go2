@@ -1,0 +1,11 @@
+# Common financial ratios (liquidity, leverage, profitability, efficiency)
+# over the primary statements; see services/ratios/catalog.yml.
+key: general.financial_ratios
+report_type: accounting.ratios
+category: analysis
+name:
+  en: Financial ratios
+  fa: نسبت‌های مالی
+description:
+  en: Liquidity, leverage, profitability and efficiency ratios, with the figures behind them.
+  fa: نسبت‌های نقدینگی، اهرمی، سودآوری و کارایی، همراه با ارقام تشکیل‌دهنده.

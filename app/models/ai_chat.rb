@@ -12,6 +12,7 @@ class AiChat < ApplicationRecord
   # means adding a kind here and a corresponding handler in the service layer.
   KINDS = %w[
     chart_of_accounts
+    statement_mapping
   ].freeze
 
   STATUSES = %w[open accepted abandoned].freeze

@@ -15,6 +15,7 @@ class Member < ApplicationRecord
   has_many :departments, through: :roles
   has_many :direct_permissions, as: :grantee, class_name: "Permission"
   has_many :ai_chats, dependent: :destroy
+  has_many :report_grants, as: :grantee, class_name: "Reporting::ReportGrant", dependent: :destroy
   has_many :report_defaults, dependent: :delete_all
 
   # Validations

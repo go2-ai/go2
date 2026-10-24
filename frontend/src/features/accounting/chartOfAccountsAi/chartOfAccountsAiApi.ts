@@ -46,7 +46,7 @@ export const chartOfAccountsAiApi = createApi({
         url: `/organizations/${organizationId}/accounting/chart_of_accounts_ai/chats/${chatId}`,
         method: 'GET',
       }),
-      providesTags: (result, error, { chatId }) => [
+      providesTags: (_result, _error, { chatId }) => [
         { type: 'ChartOfAccountsAiChat', id: chatId },
       ],
     }),
@@ -116,7 +116,7 @@ export const chartOfAccountsAiApi = createApi({
         url: `/organizations/${organizationId}/accounting/chart_of_accounts_ai/chats/${chatId}/accept`,
         method: 'POST',
       }),
-      invalidatesTags: (result, error, { chatId }) => [
+      invalidatesTags: (_result, _error, { chatId }) => [
         { type: 'ChartOfAccountsAiChat', id: chatId },
         // After acceptance the chart of accounts itself is stale, so
         // the caller should also invalidate the accounting slices. See
@@ -133,7 +133,7 @@ export const chartOfAccountsAiApi = createApi({
         url: `/organizations/${organizationId}/accounting/chart_of_accounts_ai/chats/${chatId}/abandon`,
         method: 'POST',
       }),
-      invalidatesTags: (result, error, { chatId }) => [
+      invalidatesTags: (_result, _error, { chatId }) => [
         { type: 'ChartOfAccountsAiChat', id: chatId },
         { type: 'ChartOfAccountsAiChat', id: 'LIST' },
       ],

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_10_21_100100) do
+ActiveRecord::Schema[8.0].define(version: 2026_10_24_120000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -567,6 +567,20 @@ ActiveRecord::Schema[8.0].define(version: 2026_10_21_100100) do
     t.index ["report_template_id"], name: "index_report_defaults_on_report_template_id"
   end
 
+  create_table "report_grants", force: :cascade do |t|
+    t.bigint "organization_id", null: false
+    t.bigint "report_id", null: false
+    t.string "grantee_type", null: false
+    t.bigint "grantee_id", null: false
+    t.integer "access", default: 0, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["grantee_type", "grantee_id"], name: "index_report_grants_on_grantee"
+    t.index ["organization_id"], name: "index_report_grants_on_organization_id"
+    t.index ["report_id", "grantee_type", "grantee_id"], name: "idx_report_grants_unique", unique: true
+    t.index ["report_id"], name: "index_report_grants_on_report_id"
+  end
+
   create_table "report_templates", force: :cascade do |t|
     t.jsonb "name", default: {}, null: false
     t.string "report_key", null: false
@@ -580,6 +594,30 @@ ActiveRecord::Schema[8.0].define(version: 2026_10_21_100100) do
     t.index ["organization_id", "report_key", "locale"], name: "idx_report_templates_org_key_locale"
     t.index ["organization_id"], name: "index_report_templates_on_organization_id"
     t.index ["report_key", "locale"], name: "idx_report_templates_system_unique", unique: true, where: "(organization_id IS NULL)"
+  end
+
+  create_table "reports", force: :cascade do |t|
+    t.bigint "organization_id"
+    t.string "report_type", null: false
+    t.string "key"
+    t.string "category", null: false
+    t.string "standard"
+    t.string "statement_type"
+    t.jsonb "name", default: {}, null: false
+    t.jsonb "description", default: {}, null: false
+    t.jsonb "settings", default: {}, null: false
+    t.bigint "parent_report_id"
+    t.bigint "created_by_id"
+    t.boolean "primary", default: false, null: false
+    t.datetime "archived_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["created_by_id"], name: "index_reports_on_created_by_id"
+    t.index ["key"], name: "index_reports_on_key", unique: true, where: "(organization_id IS NULL)"
+    t.index ["organization_id", "report_type"], name: "index_reports_on_organization_id_and_report_type"
+    t.index ["organization_id", "statement_type"], name: "idx_reports_primary_per_statement_type", unique: true, where: "(\"primary\" AND (archived_at IS NULL) AND (organization_id IS NOT NULL))"
+    t.index ["organization_id"], name: "index_reports_on_organization_id"
+    t.index ["parent_report_id"], name: "index_reports_on_parent_report_id"
   end
 
   create_table "roles", force: :cascade do |t|
@@ -597,6 +635,54 @@ ActiveRecord::Schema[8.0].define(version: 2026_10_21_100100) do
     t.index ["name"], name: "index_roles_on_name", using: :gin
     t.index ["organization_id"], name: "index_roles_on_organization_id"
     t.index ["parent_id"], name: "index_roles_on_parent_id"
+  end
+
+  create_table "statement_layouts", force: :cascade do |t|
+    t.bigint "report_id", null: false
+    t.jsonb "settings", default: {}, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["report_id"], name: "index_statement_layouts_on_report_id", unique: true
+  end
+
+  create_table "statement_lines", force: :cascade do |t|
+    t.bigint "statement_layout_id", null: false
+    t.string "key", null: false
+    t.bigint "parent_id"
+    t.integer "position", default: 0, null: false
+    t.integer "kind", default: 1, null: false
+    t.jsonb "label", default: {}, null: false
+    t.integer "normal_side", default: 0, null: false
+    t.string "formula"
+    t.jsonb "style", default: {}, null: false
+    t.jsonb "metadata", default: {}, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["parent_id"], name: "index_statement_lines_on_parent_id"
+    t.index ["statement_layout_id", "key"], name: "index_statement_lines_on_statement_layout_id_and_key", unique: true
+    t.index ["statement_layout_id"], name: "index_statement_lines_on_statement_layout_id"
+  end
+
+  create_table "statement_mapping_rules", force: :cascade do |t|
+    t.bigint "statement_layout_id", null: false
+    t.bigint "statement_line_id", null: false
+    t.bigint "opposite_line_id"
+    t.integer "selector_type", null: false
+    t.jsonb "selector", default: {}, null: false
+    t.integer "center_level"
+    t.bigint "center_ids", default: [], null: false, array: true
+    t.bigint "center_type_ids", default: [], null: false, array: true
+    t.bigint "currency_ids", default: [], null: false, array: true
+    t.string "grain", default: "account", null: false
+    t.string "measure", default: "balance", null: false
+    t.integer "priority"
+    t.integer "position", default: 0, null: false
+    t.text "note"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["opposite_line_id"], name: "index_statement_mapping_rules_on_opposite_line_id"
+    t.index ["statement_layout_id"], name: "index_statement_mapping_rules_on_statement_layout_id"
+    t.index ["statement_line_id"], name: "index_statement_mapping_rules_on_statement_line_id"
   end
 
   create_table "tasks", force: :cascade do |t|
@@ -772,11 +858,22 @@ ActiveRecord::Schema[8.0].define(version: 2026_10_21_100100) do
   add_foreign_key "report_defaults", "members", on_delete: :cascade
   add_foreign_key "report_defaults", "organizations", on_delete: :cascade
   add_foreign_key "report_defaults", "report_templates", on_delete: :cascade
+  add_foreign_key "report_grants", "organizations"
+  add_foreign_key "report_grants", "reports", on_delete: :cascade
   add_foreign_key "report_templates", "members", column: "created_by_id"
   add_foreign_key "report_templates", "organizations"
+  add_foreign_key "reports", "members", column: "created_by_id", on_delete: :nullify
+  add_foreign_key "reports", "organizations"
+  add_foreign_key "reports", "reports", column: "parent_report_id", on_delete: :nullify
   add_foreign_key "roles", "departments"
   add_foreign_key "roles", "members"
   add_foreign_key "roles", "organizations"
+  add_foreign_key "statement_layouts", "reports", on_delete: :cascade
+  add_foreign_key "statement_lines", "statement_layouts", on_delete: :cascade
+  add_foreign_key "statement_lines", "statement_lines", column: "parent_id", on_delete: :cascade
+  add_foreign_key "statement_mapping_rules", "statement_layouts", on_delete: :cascade
+  add_foreign_key "statement_mapping_rules", "statement_lines", column: "opposite_line_id", on_delete: :nullify
+  add_foreign_key "statement_mapping_rules", "statement_lines", on_delete: :cascade
   add_foreign_key "tasks", "organizations"
   add_foreign_key "tasks", "users"
 end

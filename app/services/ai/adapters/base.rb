@@ -14,8 +14,11 @@ module Ai
       # @param system [String, nil] optional system prompt
       # @param model [String, nil] model override; falls back to the
       #   adapter's configured default
+      # @param lookup_tools [Array<RubyLLM::Tool>, nil] read-only tools the
+      #   adapter executes itself (results go back to the model) until the
+      #   model answers or calls one of `tools`
       # @return [Ai::Response]
-      def complete(messages:, tools: nil, system: nil, model: nil)
+      def complete(messages:, tools: nil, system: nil, model: nil, lookup_tools: nil)
         raise NotImplementedError, "#{self.class} must implement #complete"
       end
 

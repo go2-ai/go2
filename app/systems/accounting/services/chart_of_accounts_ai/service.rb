@@ -75,13 +75,6 @@ module Accounting
           "\n\nTell me what to adjust, or describe the business differently.#{catalog_hint}"
       end
 
-      def format_validation_error(err)
-        path    = err.respond_to?(:path) ? err.path : "?"
-        field   = err.respond_to?(:field) ? err.field : "?"
-        message = err.respond_to?(:message) ? err.message : err.to_s
-        "#{path} (#{field}): #{message}"
-      end
-
       # ── Lifecycle hooks ───────────────────────────────────────────────
       # (unchanged)
 
@@ -154,16 +147,6 @@ module Accounting
         return nil unless @last_failed_tool_call
 
         Accounting::ChartOfAccountsProposal.from(@last_failed_tool_call[:arguments])
-      end
-
-      def serialize_errors(errors)
-        errors.map do |err|
-          {
-            "path"    => err.respond_to?(:path) ? err.path : nil,
-            "field"   => err.respond_to?(:field) ? err.field : nil,
-            "message" => err.respond_to?(:message) ? err.message : err.to_s
-          }
-        end
       end
 
       def pluralize(count, singular)

@@ -1,4 +1,5 @@
-AI_CHAT_MESSAGE_PATH = %r{_ai/chats/\d+/messages\z}
+# POST .../<feature>_ai/chats/:id/messages and .../statements/:id/mapping_chats/:id/messages
+AI_CHAT_MESSAGE_PATH = %r{(_ai/chats|/mapping_chats)/\d+/messages\z}
 
 class Rack::Attack
   ### Configure Cache ###
@@ -24,16 +25,16 @@ class Rack::Attack
       # req.params["user"]["email"].to_s.downcase.gsub(/\s+/, "")
     end
   end
-  
+
   throttle("ai/chat-messages/burst", limit: 30, period: 5.minutes) do |req|
     next unless req.post? && req.path =~ AI_CHAT_MESSAGE_PATH
- 
+
     req.env["warden"]&.user&.id || req.ip
   end
- 
+
   throttle("ai/chat-messages/hourly", limit: 200, period: 1.hour) do |req|
     next unless req.post? && req.path =~ AI_CHAT_MESSAGE_PATH
- 
+
     req.env["warden"]&.user&.id || req.ip
   end
 

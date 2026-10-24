@@ -1,0 +1,108 @@
+# Financial ratios over the lines of the organization's primary statements.
+#
+# Variables:
+#   bs.<line>       statement of financial position at the end of the period
+#   bs_open.<line>  the same at the start of the period (the day before);
+#                   equal to bs.<line> when the period starts with the books
+#   pl.<line>       statement of profit or loss for the period (credit
+#                   normal: expenses are negative, hence abs())
+#   days            the number of days of the period
+#
+# format: ratio (2 decimals), percent, days
+ratios:
+  - key: current_ratio
+    group: liquidity
+    format: ratio
+    formula: bs.current_assets / bs.current_liabilities
+    name: { en: Current ratio, fa: نسبت جاری }
+    description: { en: Current assets per unit of current liabilities., fa: دارایی‌های جاری به ازای هر واحد بدهی جاری. }
+  - key: quick_ratio
+    group: liquidity
+    format: ratio
+    formula: (bs.current_assets - bs.inventories) / bs.current_liabilities
+    name: { en: Quick ratio, fa: نسبت آنی }
+    description: { en: Current assets other than inventories per unit of current liabilities., fa: دارایی‌های جاری بدون موجودی‌ها به ازای هر واحد بدهی جاری. }
+  - key: cash_ratio
+    group: liquidity
+    format: ratio
+    formula: bs.cash_and_cash_equivalents / bs.current_liabilities
+    name: { en: Cash ratio, fa: نسبت نقد }
+    description: { en: Cash and cash equivalents per unit of current liabilities., fa: موجودی نقد به ازای هر واحد بدهی جاری. }
+  - key: debt_to_equity
+    group: leverage
+    format: ratio
+    formula: bs.total_liabilities / bs.equity
+    name: { en: Debt to equity, fa: نسبت بدهی به حقوق مالکانه }
+    description: { en: Liabilities per unit of equity., fa: بدهی‌ها به ازای هر واحد حقوق مالکانه. }
+  - key: debt_ratio
+    group: leverage
+    format: percent
+    formula: bs.total_liabilities / bs.total_assets
+    name: { en: Debt ratio, fa: نسبت بدهی }
+    description: { en: Share of assets financed by liabilities., fa: سهم دارایی‌هایی که از محل بدهی تأمین شده‌اند. }
+  - key: equity_ratio
+    group: leverage
+    format: percent
+    formula: bs.equity / bs.total_assets
+    name: { en: Equity ratio, fa: نسبت مالکانه }
+    description: { en: Share of assets financed by equity., fa: سهم دارایی‌هایی که از محل حقوق مالکانه تأمین شده‌اند. }
+  - key: interest_coverage
+    group: leverage
+    format: ratio
+    formula: pl.operating_profit / abs(pl.finance_costs)
+    name: { en: Interest coverage, fa: نسبت پوشش هزینه مالی }
+    description: { en: Operating profit per unit of finance costs., fa: سود عملیاتی به ازای هر واحد هزینه مالی. }
+  - key: gross_margin
+    group: profitability
+    format: percent
+    formula: pl.gross_profit / pl.revenue
+    name: { en: Gross margin, fa: حاشیه سود ناخالص }
+    description: { en: Gross profit as a share of revenue., fa: سود ناخالص به نسبت درآمد. }
+  - key: operating_margin
+    group: profitability
+    format: percent
+    formula: pl.operating_profit / pl.revenue
+    name: { en: Operating margin, fa: حاشیه سود عملیاتی }
+    description: { en: Operating profit as a share of revenue., fa: سود عملیاتی به نسبت درآمد. }
+  - key: net_margin
+    group: profitability
+    format: percent
+    formula: pl.profit_for_the_year / pl.revenue
+    name: { en: Net margin, fa: حاشیه سود خالص }
+    description: { en: Profit for the period as a share of revenue., fa: سود خالص به نسبت درآمد. }
+  - key: return_on_assets
+    group: profitability
+    format: percent
+    formula: pl.profit_for_the_year / avg(bs_open.total_assets, bs.total_assets)
+    name: { en: Return on assets, fa: بازده دارایی‌ها }
+    description: { en: Profit for the period on average total assets., fa: سود خالص به میانگین جمع دارایی‌ها. }
+  - key: return_on_equity
+    group: profitability
+    format: percent
+    formula: pl.profit_for_the_year / avg(bs_open.equity, bs.equity)
+    name: { en: Return on equity, fa: بازده حقوق مالکانه }
+    description: { en: Profit for the period on average equity., fa: سود خالص به میانگین حقوق مالکانه. }
+  - key: asset_turnover
+    group: efficiency
+    format: ratio
+    formula: pl.revenue / avg(bs_open.total_assets, bs.total_assets)
+    name: { en: Asset turnover, fa: گردش دارایی‌ها }
+    description: { en: Revenue per unit of average total assets., fa: درآمد به ازای هر واحد میانگین دارایی‌ها. }
+  - key: receivable_days
+    group: efficiency
+    format: days
+    formula: avg(bs_open.trade_and_other_receivables, bs.trade_and_other_receivables) / pl.revenue * days
+    name: { en: Receivable days, fa: دوره وصول مطالبات }
+    description: { en: Average days to collect receivables., fa: میانگین روزهای وصول مطالبات. }
+  - key: payable_days
+    group: efficiency
+    format: days
+    formula: avg(bs_open.trade_and_other_payables, bs.trade_and_other_payables) / abs(pl.cost_of_sales) * days
+    name: { en: Payable days, fa: دوره پرداخت بدهی‌ها }
+    description: { en: Average days to pay suppliers., fa: میانگین روزهای پرداخت به تأمین‌کنندگان. }
+  - key: inventory_days
+    group: efficiency
+    format: days
+    formula: avg(bs_open.inventories, bs.inventories) / abs(pl.cost_of_sales) * days
+    name: { en: Inventory days, fa: دوره گردش موجودی‌ها }
+    description: { en: Average days inventories are held., fa: میانگین روزهای نگهداری موجودی‌ها. }

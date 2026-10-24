@@ -14,6 +14,7 @@ import {
   CurrencyExchange,
   PriceChange,
   EventAvailable,
+  Assessment,
 } from '@mui/icons-material';
 import type { SvgIconComponent } from '@mui/icons-material';
 
@@ -49,6 +50,8 @@ export const PERMISSION_CODES = {
   ACCOUNTING_CLOSE_FISCAL_YEARS: 'Accounting.close_fiscal_years',
   REPORTS_MANAGE_JOURNAL_ENTRY: 'Reports.manage_journal_entry',
   REPORTS_MANAGE_CURRENCY_REVALUATION: 'Reports.manage_currency_revaluation',
+  REPORTS_MANAGE_STATEMENTS: 'Reports.manage_statements',
+  REPORTS_MANAGE_ACCESS: 'Reports.manage_access',
 } as const;
 
 export const SIDEBAR_MODULES: SidebarModule[] = [
@@ -175,6 +178,13 @@ export const SIDEBAR_MODULES: SidebarModule[] = [
         path: '/accounting/settings',
         icon: Settings,
         requiredPermission: PERMISSION_CODES.ACCOUNTING_VIEW_SETTINGS,
+      },
+      // Access is per report: the Report Center lists what the member may see.
+      {
+        pageId: 'report-center',
+        titleKey: 'financialReports',
+        path: '/reporting/reports',
+        icon: Assessment,
       },
       {
         pageId: 'explorer',

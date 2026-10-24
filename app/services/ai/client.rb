@@ -54,13 +54,12 @@ module Ai
     @adapters_mutex = Mutex.new
 
     class << self
-      def complete(messages:, tools: nil, system: nil, model: nil, feature: nil)
-        adapter(feature: feature).complete(
-          messages: messages,
-          tools:    tools,
-          system:   system,
-          model:    model
-        )
+      def complete(messages:, tools: nil, system: nil, model: nil, feature: nil, lookup_tools: nil)
+        options = { messages: messages, tools: tools, system: system, model: model }
+        # Only passed when given, so adapters written before lookup tools
+        # existed keep working.
+        options[:lookup_tools] = lookup_tools if lookup_tools.present?
+        adapter(feature: feature).complete(**options)
       end
 
       def available?(feature: nil)

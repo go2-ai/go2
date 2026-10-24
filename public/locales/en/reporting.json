@@ -1,0 +1,352 @@
+{
+  "en": {
+    "access": {
+      "access": "Access",
+      "add": "Grant",
+      "close": "Close",
+      "failed": "Could not change the access.",
+      "granted": "Access granted",
+      "grantee": "Grant to",
+      "granteeType": "Type",
+      "hint": "Members who may read journal entries, and those who manage statements, see every report. Grant this report to others here.",
+      "levels": {
+        "edit": "Edit",
+        "view": "View"
+      },
+      "none": "Nobody else has access to this report yet.",
+      "remove": "Remove access",
+      "title": "Access to {{name}}",
+      "types": {
+        "Department": "Department",
+        "Group": "Group",
+        "Member": "Member",
+        "Role": "Role"
+      }
+    },
+    "assistant": {
+      "actions": {
+        "add": "Add",
+        "remove": "Remove",
+        "update": "Change"
+      },
+      "applied_one": "{{count}} change applied",
+      "applied_other": "{{count}} changes applied",
+      "applyFailed": "Could not apply the changes.",
+      "apply_one": "Apply {{count}} selected",
+      "apply_other": "Apply {{count}} selected",
+      "centers": "centers {{codes}}",
+      "confidence": "{{value}}% sure",
+      "emptyState": "Ask me to map your accounts, e.g. \"Map my accounts to this statement\" or \"Show customers in credit as advances\".",
+      "invalidProposal": "The last proposal still has errors. Tell the assistant to fix them, e.g. \"Please fix these errors\".",
+      "noProposal": "No proposal yet. Ask the assistant in the chat.",
+      "notAvailable": "The assistant needs permission to manage financial statements and edit access to this report.",
+      "onlyChanged": "Only balances that move",
+      "opposite": "opposite balances to {{line}} (per {{grain}})",
+      "placeholder": "Describe the mapping you want",
+      "preview": "Preview",
+      "previewFailed": "Could not preview the changes.",
+      "previewOk": "With these changes the statement passes its checks.",
+      "previewTitle": "Where the balances would go",
+      "priority": "priority {{priority}}",
+      "proposal": "Proposed changes",
+      "selectorKeys": {
+        "account_codes": "Accounts",
+        "from": "From",
+        "identifiers": "Categories",
+        "ledger_codes": "Ledgers",
+        "period": "Period",
+        "settings": "Setting accounts",
+        "to": "To"
+      },
+      "send": "Send",
+      "sendFailed": "Could not send the message.",
+      "thinking": "Looking at your chart of accounts…"
+    },
+    "catalog": {
+      "all": "All",
+      "archived": "Archived",
+      "category": "Category",
+      "description": "Description",
+      "empty": "No reports are available to you.",
+      "loadFailed": "Could not load the reports.",
+      "name": "Name",
+      "open": "Open report",
+      "organization": "Organization",
+      "primary": "Primary report of its statement type",
+      "search": "Search reports",
+      "source": "Source",
+      "standard": "Standard",
+      "subtitle": "Financial statements, general ledger reports and analysis you have access to.",
+      "system": "System",
+      "title": "Report Center"
+    },
+    "categories": {
+      "all": "All",
+      "analysis": "Analysis",
+      "financial_statements": "Financial statements",
+      "general_ledger": "General ledger"
+    },
+    "checks": {
+      "cash_not_mapped": "{{column}}: no balances are mapped to the cash line, so cash at the beginning and end are zero. Map the cash ledgers to \"Movement of cash accounts\".",
+      "draft_entries": "{{column}}: {{count}} draft journal entries in the period are not included.",
+      "fiscal_year_open": "The fiscal year is not closed yet; figures may still change.",
+      "line_cycle": "{{column}}: the formula of line \"{{line_key}}\" refers to itself.",
+      "line_formula": "{{column}}: the formula of line \"{{line_key}}\" can't be computed ({{message}}).",
+      "line_missing_line": "{{column}}: a mapping rule points to a missing line.",
+      "line_unknown_line": "{{column}}: the formula of line \"{{line_key}}\" uses an unknown line ({{message}}).",
+      "not_balanced": "{{column}}: \"{{left}}\" and \"{{right}}\" differ by {{difference}}.",
+      "other_balances": "{{column}}: {{count}} balances of control or memorandum accounts are not part of this statement.",
+      "rule_conflict": "{{column}}: mapping rules {{rule_ids}} have the same priority and specificity and match the same {{rows}} balances.",
+      "trial_balance_unbalanced": "{{column}} debits and credits differ by {{difference}}.",
+      "unapproved_entries": "{{count}} booked entries that are not approved yet are included.",
+      "unmapped": "{{column}}: {{count}} balances (total {{amount}}) are not mapped to any line."
+    },
+    "editor": {
+      "accounts": "Accounts",
+      "addChild": "Add a line under it",
+      "addLine": "Add line",
+      "addRule": "Add rule",
+      "allRules": "All rules",
+      "categories": "Categories",
+      "centerFilter": "center level {{level}}: {{centers}}",
+      "centerLevel": "Center level",
+      "centerTypes": "Center types",
+      "centers": "Centers",
+      "currencies": "Currencies",
+      "deleteLineMessage": "Delete \"{{name}}\" with its lines and rules?",
+      "deleteLineTitle": "Delete line",
+      "deleteRuleMessage": "Delete rule {{number}}?",
+      "deleteRuleTitle": "Delete rule",
+      "editLine": "Edit {{name}}",
+      "editLineShort": "Edit",
+      "editRule": "Edit rule {{number}}",
+      "filters": "Narrow it down (optional)",
+      "formula": "Formula",
+      "formulaHint": "Line keys with + − * / and parentheses, e.g. revenue + cost_of_sales",
+      "grain": "Judge the side per",
+      "grainHint": "Per customer keeps balances gross; per account nets them.",
+      "grains": {
+        "account": "Account",
+        "account_centerN": "Account and center level {{level}}",
+        "account_currency": "Account and currency",
+        "row": "Balance row"
+      },
+      "key": "Key",
+      "keyHint": "Formulas and ratios use it; it can't be changed later.",
+      "kind": "Kind",
+      "kinds": {
+        "formula": "Formula",
+        "heading": "Heading",
+        "mapped": "Mapped"
+      },
+      "label": "Label",
+      "ledgers": "Ledgers",
+      "line": "Line",
+      "measures": {
+        "balance": "Balance",
+        "change": "Change in the period",
+        "credit_movement": "Credit movement",
+        "debit_movement": "Debit movement"
+      },
+      "moveDown": "Move down",
+      "moveUp": "Move up",
+      "noRules": "No rules",
+      "none": "None",
+      "normalSide": "Side",
+      "note": "Note",
+      "oppositeLine": "Opposite line",
+      "oppositeLineHint": "Balances on the other side go here, e.g. customers in credit to advances from customers.",
+      "period": "Period",
+      "periods": {
+        "current": "Current fiscal year",
+        "prior": "Prior years"
+      },
+      "precedenceHint": "When several rules match a balance, the highest priority wins; with equal priorities the most specific rule wins (account, range, ledger, category; center and currency filters add to it).",
+      "priority": "Priority",
+      "priorityHint": "Optional; higher wins.",
+      "rangeFrom": "From code",
+      "rangeHint": "Compared with the start of the account's full code.",
+      "rangeTo": "To code",
+      "readOnly": "You can view this layout but not change it. Copy the report to change its lines and mapping.",
+      "ruleLineFilter": "Line",
+      "rules": "Rules",
+      "selectorType": "Select by",
+      "selectorTypes": {
+        "account": "Account",
+        "account_range": "Code range",
+        "category": "Category",
+        "ledger": "Ledger",
+        "profit_or_loss": "Profit or loss"
+      },
+      "selects": "Selects",
+      "settingAccounts": {
+        "current_year_profit_account_id": "Current year profit account",
+        "income_summary_account_id": "Income summary account",
+        "retained_earnings_account_id": "Retained earnings account"
+      },
+      "settingAccountsLabel": "Accounts of the accounting settings",
+      "sides": {
+        "credit": "Credit",
+        "debit": "Debit"
+      },
+      "signSplit": "Opposite balances (optional)",
+      "styles": {
+        "bold": "Bold",
+        "hidden": "Hidden",
+        "hide_if_zero": "Hide when zero",
+        "underline": "Underline"
+      },
+      "subtitle": "Lines of the statement, the rules that map balances to them, and where each balance lands.",
+      "systemCategories": "System categories: {{identifiers}}",
+      "tabTitle": "Edit: {{name}}",
+      "tabs": {
+        "assistant": "AI assistant",
+        "inspection": "Inspection",
+        "lines": "Lines",
+        "preview": "Preview",
+        "rules": "Rules"
+      },
+      "targetLine": "Line",
+      "title": "Lines and mapping: {{name}}"
+    },
+    "export": {
+      "excel": "Excel",
+      "failed": "Could not create the Excel file."
+    },
+    "inspection": {
+      "account": "Account",
+      "balance": "Balance",
+      "category": "Category",
+      "center": "Center {{level}}",
+      "column": "Column",
+      "columns": {
+        "current": "Current",
+        "previous": "Comparison"
+      },
+      "currency": "Currency",
+      "empty": "No balances",
+      "filters": {
+        "all": "All",
+        "changed": "Changed",
+        "out_of_scope": "Not in statement",
+        "overridden": "Overridden",
+        "reclassified": "Reclassified",
+        "unmapped": "Unmapped"
+      },
+      "groupTotal": "Its group (per the rule's grain) totals {{amount}}, which decided the side.",
+      "ledger": "Ledger",
+      "line": "Line",
+      "mapRow": "Add a rule for this account",
+      "outOfScope": "Not in this statement",
+      "overridden": "Overridden rules",
+      "period": "Period",
+      "reflectedIn": "Reflected in",
+      "reflectedInProposed": "Reflected in (proposed)",
+      "rule": "Rule",
+      "ruleNumber": "Rule {{number}}",
+      "unmapped": "Unmapped"
+    },
+    "ratios": {
+      "days": "{{value}} days",
+      "daysVariable": "Days in the period",
+      "group": "Group",
+      "groups": {
+        "efficiency": "Efficiency",
+        "leverage": "Leverage",
+        "liquidity": "Liquidity",
+        "profitability": "Profitability"
+      },
+      "na": "n/a",
+      "opening": "At the start of the period",
+      "ratio": "Ratio",
+      "reasons": {
+        "missing_line": "The statement has no line this ratio needs.",
+        "no_access": "You don't have access to a statement this ratio uses.",
+        "no_statement": "The organization has no statement of this type.",
+        "not_computable": "It divides by zero or a figure is missing."
+      },
+      "source": "From: {{name}}",
+      "sourceNoAccess": "A statement you can’t open",
+      "statement": "Statement",
+      "unit": "Unit",
+      "units": {
+        "days": "Days",
+        "percent": "Fraction (1 = 100%)",
+        "ratio": "Ratio"
+      }
+    },
+    "reportActions": {
+      "access": "Access",
+      "archive": "Archive",
+      "archived": "Report archived",
+      "cancel": "Cancel",
+      "copied": "Report copied",
+      "copy": "Copy to my organization",
+      "delete": "Delete",
+      "deleteMessage": "Delete \"{{name}}\"? Its lines, mapping rules and access are deleted with it.",
+      "deleteTitle": "Delete report",
+      "deleted": "Report deleted",
+      "editLayout": "Edit lines and mapping",
+      "failed": "The action failed.",
+      "madePrimary": "This is now the primary report of its statement type",
+      "makePrimary": "Make primary",
+      "menu": "Actions",
+      "rename": "Rename",
+      "renamed": "Report renamed",
+      "save": "Save",
+      "unarchive": "Restore",
+      "unarchived": "Report restored"
+    },
+    "standards": {
+      "ifrs": "IFRS"
+    },
+    "trialBalance": {
+      "code": "Code",
+      "columns": {
+        "closing_credit": "Credit",
+        "closing_debit": "Debit",
+        "credit": "Credit",
+        "debit": "Debit",
+        "opening_credit": "Credit",
+        "opening_debit": "Debit"
+      },
+      "groups": {
+        "closing": "Closing",
+        "opening": "Opening",
+        "period": "Period"
+      },
+      "hideZero": "Hide zero rows",
+      "levels": {
+        "account": "Account",
+        "category": "Category",
+        "ledger": "Ledger"
+      },
+      "priorResult": "Prior years' result (not closed into equity in this view)",
+      "total": "Total"
+    },
+    "viewer": {
+      "approvedOnly": "Approved entries only",
+      "asOf": "As of {{date}}",
+      "centerLevel": "Center breakdown",
+      "centerLevelOption": "Center level {{level}}",
+      "comparison": "Compare with the previous year",
+      "date": "Date",
+      "drillFailed": "Could not load the breakdown.",
+      "formula": "Formula: {{formula}}",
+      "from": "From",
+      "itemsTabTitle": "Items: {{name}}",
+      "line": "Line",
+      "loadFailed": "Could not run the report.",
+      "noCenter": "No center",
+      "openItems": "Open the journal entry items",
+      "period": "{{from}} to {{to}}",
+      "priorYears": "Prior years",
+      "reclassified": "Reclassified",
+      "reclassifiedHint": "Its balance is on the opposite side, so a mapping rule moved it to this line.",
+      "to": "To",
+      "unsupported": "This report type can't be shown yet.",
+      "variance": "Change",
+      "variancePercent": "Change %"
+    }
+  }
+}

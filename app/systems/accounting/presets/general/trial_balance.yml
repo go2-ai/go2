@@ -1,0 +1,13 @@
+# Six-column trial balance (opening, period, closing). Not tied to a
+# standard; its options are report settings.
+key: general.trial_balance
+report_type: accounting.trial_balance
+category: general_ledger
+report_settings:
+  level: ledger
+name:
+  en: Trial balance
+  fa: تراز آزمایشی
+description:
+  en: Opening balances, period debits and credits, and closing balances of every account.
+  fa: مانده‌های ابتدای دوره، گردش بدهکار و بستانکار دوره و مانده‌های پایان دوره همه حساب‌ها.

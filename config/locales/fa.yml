@@ -27,6 +27,39 @@ fa:
       not_found: قالب گزارش پیدا نشد
       organization_not_found: سازمان پیدا نشد
       source_not_found: قالب گزارش مبدأ پیدا نشد
+    reports:
+      errors:
+        conflict: گزارش هم‌زمان تغییر کرد؛ دوباره تلاش کنید
+        not_found: گزارش پیدا نشد
+        organization_not_found: سازمان پیدا نشد
+    report_grants:
+      errors:
+        invalid_grant: یک عضو، نقش، گروه یا دپارتمان سازمان را انتخاب کنید
+        not_found: گزارش یا دسترسی پیدا نشد
+    statement_layouts:
+      errors:
+        inspection_not_allowed: فهرست بازبینی همه حساب‌ها را نشان می‌دهد؛ برای آن دسترسی ویرایش گزارش یا مجوز مشاهده اسناد لازم است
+    statement_lines:
+      errors:
+        not_found: قلم پیدا نشد
+    statement_mapping_rules:
+      errors:
+        not_found: قاعده نگاشت پیدا نشد
+    statement_mapping_ai:
+      errors:
+        no_proposal: دستیار هنوز قاعده‌ای پیشنهاد نکرده است
+        busy: دستیار هنوز در حال کار است؛ پس از پایان کار، پیشنهاد را اعمال کنید
+        rules_changed: قاعده‌ها پس از پیشنهاد تغییر کرده‌اند؛ دوباره از دستیار بخواهید
+      proposal_errors:
+        account_selector: account_codes یا settings را درون selector بدهید
+        action: باید add، update یا remove باشد
+        empty: دست‌کم یک تغییر پیشنهاد کنید
+        no_rule: "قاعده %{number} وجود ندارد"
+        period: باید current یا prior باشد
+        required: الزامی است (درون selector)
+        selector_type: "نوع انتخابگر ناشناخته: %{type}"
+        unknown: "ناشناخته: %{values}"
+        unknown_codes: "کدهای ناشناخته: %{codes}"
   devise:
     confirmations:
       confirmed: آدرس ایمیل شما با موفقیت تایید شد.
@@ -302,6 +335,15 @@ fa:
         income_summary_not_monetary: "نمی‌تواند حساب پولی باشد"
         must_be_income_statement: "باید حساب درآمد یا هزینه باشد"
         must_be_owners_equity: "باید از حساب‌های حقوق صاحبان سهام باشد"
+    accounting/statement_mapping_rule:
+      errors:
+        overlapping_rule: "با قاعده‌ای از قلم «%{line}» با همان اولویت بر مانده‌های یکسانی منطبق می‌شود؛ به یکی از آن‌ها اولویت بالاتری بدهید"
+        unknown_line: "قلم ناشناخته «%{key}»"
+        invalid_rules: "قواعد باید یک فهرست JSON باشند"
+    accounting/statement_line:
+      errors:
+        invalid_formula: "فرمول معتبر نیست: %{detail}"
+        key_in_use: "در فرمول %{lines} به کار رفته است"
     fiscal_year:
       default_name: "سال مالی %{year}"
       errors:
@@ -360,6 +402,11 @@ fa:
       manage_explorer_reports: کپی، طراحی، تغییر نام و حذف قالب‌های چاپ کاوشگر و تعیین قالب پیش‌فرض برای همه
       reports_manage_journal_entry_items: مدیریت قالب‌های چاپ آرتیکل‌های سند
       manage_journal_entry_items_reports: کپی، طراحی، تغییر نام و حذف قالب‌های چاپ آرتیکل‌های سند و تعیین قالب پیش‌فرض برای همه
+      reports_manage_statements: مدیریت گزارش‌های صورت‌های مالی
+      manage_statement_reports: کپی، تغییر نام، بایگانی و ویرایش گزارش‌های صورت‌های مالی، اقلام و قواعد نگاشت آن‌ها
+      use_statement_mapping_ai: استفاده از دستیار هوشمند نگاشت
+      reports_manage_access: مدیریت دسترسی به گزارش‌ها
+      manage_report_access: تعیین اعضا، نقش‌ها، گروه‌ها و دپارتمان‌هایی که می‌توانند هر گزارش را مشاهده یا ویرایش کنند
     report_default:
       errors:
         not_available: برای این سازمان در دسترس نیست
@@ -370,6 +417,8 @@ fa:
       errors:
         invalid_json: باید یک قالب گزارش JSON معتبر باشد
         too_large: بیش از حد بزرگ است (حداکثر %{size})
+    reporting/report:
+      copy_name: "%{name} (کپی)"
   onboarding:
     description: سازمان شما جایی است که تیم، پروژه‌ها و منابع خود را مدیریت خواهید کرد. همیشه می‌توانید این را بعداً تغییر دهید.
     error_message: خطایی در ایجاد سازمان شما رخ داد. لطفاً دوباره تلاش کنید.
@@ -429,6 +478,44 @@ fa:
       ref: مرجع
       row: ردیف
       title: آرتیکل‌های سند حسابداری
+    financial_ratios:
+      days:
+        one: "%{count} روز"
+        other: "%{count} روز"
+      description: نسبت‌های مالی یک دوره و دوره مقایسه‌ای.
+      group: گروه
+      groups:
+        efficiency: کارایی
+        leverage: اهرمی
+        liquidity: نقدینگی
+        profitability: سودآوری
+      not_available: نامشخص
+      ratio: نسبت
+      title: نسبت‌های مالی
+    financial_statement:
+      as_of: "در تاریخ %{date}"
+      description: صورت مالی همراه با ارقام مقایسه‌ای.
+      line: قلم
+      period: "%{from} تا %{to}"
+      title: صورت مالی
+      variance: تغییر
+    trial_balance:
+      closing_credit: مانده بستانکار پایان
+      closing_debit: مانده بدهکار پایان
+      code: کد
+      credit: گردش بستانکار
+      debit: گردش بدهکار
+      description: مانده‌های ابتدای دوره، گردش دوره و مانده‌های پایان دوره.
+      level: "سطح:"
+      levels:
+        account: حساب معین
+        category: گروه
+        ledger: حساب کل
+      name: نام
+      opening_credit: مانده بستانکار ابتدا
+      opening_debit: مانده بدهکار ابتدا
+      prior_result: نتیجه سال‌های قبل
+      title: تراز آزمایشی
     shared:
       currency: 'ارز:'
       dimensions:

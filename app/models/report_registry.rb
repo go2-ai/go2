@@ -32,7 +32,13 @@ module ReportRegistry
     "journal_entry_items" => {
       manage: Permission::REPORTS_MANAGE_JOURNAL_ENTRY_ITEMS,
       print: JOURNAL_ENTRY_VIEWERS
-    }
+    },
+    # Reports of the reporting platform: access is per report
+    # (Reporting::Access), checked when their print data is served. Every
+    # member may see their templates.
+    "financial_statement" => { manage: Permission::REPORTS_MANAGE_STATEMENTS, print: :reporting },
+    "trial_balance" => { manage: Permission::REPORTS_MANAGE_STATEMENTS, print: :reporting },
+    "financial_ratios" => { manage: Permission::REPORTS_MANAGE_STATEMENTS, print: :reporting }
   }.freeze
 
   def self.keys
@@ -48,7 +54,13 @@ module ReportRegistry
   end
 
   def self.print_permissions(report_key)
-    REPORTS.dig(report_key.to_s, :print) || []
+    permissions = REPORTS.dig(report_key.to_s, :print)
+    permissions.is_a?(Array) ? permissions : []
+  end
+
+  # Printing is decided per report by the reporting platform.
+  def self.reporting?(report_key)
+    REPORTS.dig(report_key.to_s, :print) == :reporting
   end
 
   def self.access(user, organization)
@@ -74,6 +86,7 @@ module ReportRegistry
     def can_print?(report_key)
       return false unless ReportRegistry.known?(report_key)
       return true if all?
+      return member.present? if ReportRegistry.reporting?(report_key)
 
       ReportRegistry.print_permissions(report_key).any? { |code| codes.include?(code) }
     end

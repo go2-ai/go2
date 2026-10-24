@@ -37,6 +37,9 @@ import { ExchangeRatesPage } from '../../features/accounting/exchangeRates/Excha
 import { CurrencyRevaluationsPage } from '../../features/accounting/currencyRevaluations/CurrencyRevaluationsPage';
 import { CurrencyRevaluationPage } from '../../features/accounting/currencyRevaluations/CurrencyRevaluationPage';
 import { FiscalYearClosingPage } from '../../features/accounting/fiscalYearClosing/FiscalYearClosingPage';
+import { ReportCenterPage } from '../../features/reporting/ReportCenterPage';
+import { ReportViewerPage } from '../../features/reporting/ReportViewerPage';
+import { StatementLayoutEditorPage } from '../../features/accounting/statements/StatementLayoutEditorPage';
 import { matchPath } from 'react-router-dom';
 
 export interface PageDefinition {
@@ -78,6 +81,9 @@ export const PAGE_DEFINITIONS: PageDefinition[] = [
   { pageId: 'currency-revaluation', path: 'accounting/currency-revaluations/:revaluationId', titleKey: 'currencyRevaluation', fallbackTitle: 'Monetary Items Revaluation', component: CurrencyRevaluationPage },
   // Closing wizard for the active fiscal year (sidebar) or a given one.
   { pageId: 'year-end-closing', path: 'accounting/year-end-closing', titleKey: 'yearEndClosing', fallbackTitle: 'Year-end Closing', component: FiscalYearClosingPage },
+  { pageId: 'report-center', path: 'reporting/reports', titleKey: 'reportCenter', fallbackTitle: 'Reports', component: ReportCenterPage },
+  { pageId: 'report-viewer', path: 'reporting/reports/:reportId', titleKey: 'reportViewer', fallbackTitle: 'Report', component: ReportViewerPage },
+  { pageId: 'statement-layout-editor', path: 'reporting/reports/:reportId/layout', titleKey: 'statementLayoutEditor', fallbackTitle: 'Statement Layout', component: StatementLayoutEditorPage },
   { pageId: 'fiscal-year-closing', path: 'accounting/year-end-closing/:fiscalYearId', titleKey: 'yearEndClosing', fallbackTitle: 'Year-end Closing', component: FiscalYearClosingPage },
 ];
 

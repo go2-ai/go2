@@ -139,11 +139,19 @@ module Ai
       authorize current_organization, :administrate?
     end
 
+    # The record a chat is about (e.g. a statement report), or nil for
+    # organization-level chats. A member has one open chat per kind and
+    # subject.
+    def chat_subject
+      nil
+    end
+
+    def scoped_chats
+      current_member.ai_chats.where(kind: chat_kind, subject: chat_subject)
+    end
+
     def load_chat
-      @chat = current_member
-                .ai_chats
-                .where(kind: chat_kind)
-                .find(params[:id])
+      @chat = scoped_chats.find(params[:id])
     end
 
     def check_availability
@@ -155,14 +163,13 @@ module Ai
     end
 
     def find_or_create_open_chat
-      current_member.ai_chats.where(kind: chat_kind, status: "open").order(:id).first ||
-        create_open_chat_safely
+      scoped_chats.open.order(:id).first || create_open_chat_safely
     end
 
     def create_open_chat_safely
-      current_member.ai_chats.create!(organization: current_organization, kind: chat_kind)
+      current_member.ai_chats.create!(organization: current_organization, kind: chat_kind, subject: chat_subject)
     rescue ActiveRecord::RecordNotUnique
-      current_member.ai_chats.where(kind: chat_kind, status: "open").order(:id).first!
+      scoped_chats.open.order(:id).first!
     end
 
     # Moves the requested Documents from this chat to the given user

@@ -1,0 +1,99 @@
+# IFRS statement of profit or loss, expenses by function (IAS 1 format).
+# Lines carry their IFRS 18 category in metadata, and the two IFRS 18
+# subtotals (operating profit; profit before financing and income taxes)
+# are already present. All lines are credit-normal: income is positive,
+# expenses negative, and subtotals add their lines.
+key: ifrs.income_statement
+standard: ifrs
+statement_type: income_statement
+category: financial_statements
+name:
+  en: Statement of profit or loss (IFRS)
+  fa: صورت سود و زیان (IFRS)
+description:
+  en: Income and expenses for a period by function, with comparative figures.
+  fa: درآمدها و هزینه‌های یک دوره به تفکیک کارکرد، همراه با ارقام مقایسه‌ای.
+settings:
+  category_types: [income_statement]
+lines:
+  - key: revenue
+    normal_side: credit
+    label: { en: Revenue, fa: درآمدهای عملیاتی }
+    metadata: { ifrs18_category: operating }
+  - key: cost_of_sales
+    normal_side: credit
+    label: { en: Cost of sales, fa: بهای تمام‌شده درآمدهای عملیاتی }
+    metadata: { ifrs18_category: operating }
+  - key: gross_profit
+    kind: formula
+    normal_side: credit
+    formula: revenue + cost_of_sales
+    label: { en: Gross profit, fa: سود (زیان) ناخالص }
+    style: { bold: true }
+  - key: other_income
+    normal_side: credit
+    label: { en: Other income, fa: سایر درآمدها }
+    metadata: { ifrs18_category: operating }
+  - key: distribution_costs
+    normal_side: credit
+    label: { en: Distribution costs, fa: هزینه‌های فروش و توزیع }
+    metadata: { ifrs18_category: operating }
+  - key: administrative_expenses
+    normal_side: credit
+    label: { en: Administrative expenses, fa: هزینه‌های اداری و عمومی }
+    metadata: { ifrs18_category: operating }
+  - key: other_expenses
+    normal_side: credit
+    label: { en: Other expenses, fa: سایر هزینه‌ها }
+    metadata: { ifrs18_category: operating }
+  - key: operating_profit
+    kind: formula
+    normal_side: credit
+    formula: gross_profit + other_income + distribution_costs + administrative_expenses + other_expenses
+    label: { en: Operating profit, fa: سود (زیان) عملیاتی }
+    style: { bold: true }
+  - key: share_of_profit_of_associates
+    normal_side: credit
+    label: { en: Share of profit of associates and joint ventures, fa: سهم از سود واحدهای وابسته و مشارکت‌های خاص }
+    metadata: { ifrs18_category: investing }
+  - key: investment_income
+    normal_side: credit
+    label: { en: Investment income, fa: درآمد سرمایه‌گذاری‌ها }
+    metadata: { ifrs18_category: investing }
+  - key: profit_before_financing_and_income_taxes
+    kind: formula
+    normal_side: credit
+    formula: operating_profit + share_of_profit_of_associates + investment_income
+    label: { en: Profit before financing and income taxes, fa: سود (زیان) قبل از تأمین مالی و مالیات }
+    style: { bold: true }
+  - key: finance_income
+    normal_side: credit
+    label: { en: Finance income, fa: درآمدهای مالی }
+    metadata: { ifrs18_category: financing }
+  - key: finance_costs
+    normal_side: credit
+    label: { en: Finance costs, fa: هزینه‌های مالی }
+    metadata: { ifrs18_category: financing }
+  - key: profit_before_tax
+    kind: formula
+    normal_side: credit
+    formula: profit_before_financing_and_income_taxes + finance_income + finance_costs
+    label: { en: Profit before tax, fa: سود (زیان) قبل از مالیات }
+    style: { bold: true }
+  - key: income_tax_expense
+    normal_side: credit
+    label: { en: Income tax expense, fa: هزینه مالیات بر درآمد }
+    metadata: { ifrs18_category: income_taxes }
+  - key: profit_for_the_year
+    kind: formula
+    normal_side: credit
+    formula: profit_before_tax + income_tax_expense
+    label: { en: Profit for the year, fa: سود (زیان) خالص }
+    style: { bold: true, underline: true }
+rules:
+  - line: revenue
+    selector_type: category
+    selector: { identifiers: [RE] }
+  - line: other_expenses
+    selector_type: category
+    selector: { identifiers: [EX] }

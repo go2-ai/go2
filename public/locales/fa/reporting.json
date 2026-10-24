@@ -1,0 +1,352 @@
+{
+  "fa": {
+    "access": {
+      "access": "سطح دسترسی",
+      "add": "اعطا",
+      "close": "بستن",
+      "failed": "تغییر دسترسی ممکن نشد.",
+      "granted": "دسترسی اعطا شد",
+      "grantee": "اعطا به",
+      "granteeType": "نوع",
+      "hint": "اعضایی که اسناد حسابداری را می‌بینند و مدیران صورت‌های مالی همه گزارش‌ها را می‌بینند. دسترسی دیگران را اینجا تعیین کنید.",
+      "levels": {
+        "edit": "ویرایش",
+        "view": "مشاهده"
+      },
+      "none": "هنوز دسترسی دیگری به این گزارش داده نشده است.",
+      "remove": "حذف دسترسی",
+      "title": "دسترسی به {{name}}",
+      "types": {
+        "Department": "دپارتمان",
+        "Group": "گروه",
+        "Member": "عضو",
+        "Role": "نقش"
+      }
+    },
+    "assistant": {
+      "actions": {
+        "add": "افزودن",
+        "remove": "حذف",
+        "update": "تغییر"
+      },
+      "applied_one": "{{count}} تغییر اعمال شد",
+      "applied_other": "{{count}} تغییر اعمال شد",
+      "applyFailed": "اعمال تغییرات ممکن نشد.",
+      "apply_one": "اعمال {{count}} مورد انتخابی",
+      "apply_other": "اعمال {{count}} مورد انتخابی",
+      "centers": "مراکز {{codes}}",
+      "confidence": "{{value}}٪ اطمینان",
+      "emptyState": "از من بخواهید حساب‌هایتان را نگاشت کنم، مثلاً «حساب‌هایم را به این صورت مالی نگاشت کن» یا «مشتریان بستانکار را پیش‌دریافت نشان بده».",
+      "invalidProposal": "آخرین پیشنهاد هنوز خطا دارد. از دستیار بخواهید آن‌ها را اصلاح کند، مثلاً «لطفاً این خطاها را اصلاح کن».",
+      "noProposal": "هنوز پیشنهادی وجود ندارد. در گفتگو از دستیار بخواهید.",
+      "notAvailable": "دستیار به مجوز مدیریت صورت‌های مالی و دسترسی ویرایش این گزارش نیاز دارد.",
+      "onlyChanged": "فقط مانده‌های جابه‌جاشده",
+      "opposite": "مانده‌های مخالف به {{line}} (به تفکیک {{grain}})",
+      "placeholder": "نگاشت مورد نظر را شرح دهید",
+      "preview": "پیش‌نمایش",
+      "previewFailed": "پیش‌نمایش تغییرات ممکن نشد.",
+      "previewOk": "با این تغییرات صورت مالی از همه کنترل‌ها عبور می‌کند.",
+      "previewTitle": "محل قرار گرفتن مانده‌ها",
+      "priority": "اولویت {{priority}}",
+      "proposal": "تغییرات پیشنهادی",
+      "selectorKeys": {
+        "account_codes": "حساب‌های معین",
+        "from": "از",
+        "identifiers": "گروه‌ها",
+        "ledger_codes": "حساب‌های کل",
+        "period": "دوره",
+        "settings": "حساب‌های تنظیمات",
+        "to": "تا"
+      },
+      "send": "ارسال",
+      "sendFailed": "ارسال پیام ممکن نشد.",
+      "thinking": "در حال بررسی نمودار حساب‌ها…"
+    },
+    "catalog": {
+      "all": "همه",
+      "archived": "بایگانی‌شده",
+      "category": "دسته",
+      "description": "توضیحات",
+      "empty": "گزارشی برای شما در دسترس نیست.",
+      "loadFailed": "بارگذاری گزارش‌ها ممکن نشد.",
+      "name": "نام",
+      "open": "باز کردن گزارش",
+      "organization": "سازمانی",
+      "primary": "گزارش اصلی این نوع صورت مالی",
+      "search": "جستجوی گزارش‌ها",
+      "source": "منبع",
+      "standard": "استاندارد",
+      "subtitle": "صورت‌های مالی، گزارش‌های دفتر کل و تحلیل‌هایی که به آن‌ها دسترسی دارید.",
+      "system": "سیستمی",
+      "title": "مرکز گزارش‌ها"
+    },
+    "categories": {
+      "all": "همه",
+      "analysis": "تحلیل",
+      "financial_statements": "صورت‌های مالی",
+      "general_ledger": "دفتر کل"
+    },
+    "checks": {
+      "cash_not_mapped": "{{column}}: هیچ مانده‌ای به قلم نقد نگاشت نشده، بنابراین موجودی نقد ابتدا و پایان صفر است. حساب‌های نقد را به «گردش حساب‌های نقد» نگاشت کنید.",
+      "draft_entries": "{{column}}: {{count}} سند پیش‌نویس در این دوره منظور نشده است.",
+      "fiscal_year_open": "سال مالی هنوز بسته نشده است و ارقام ممکن است تغییر کنند.",
+      "line_cycle": "{{column}}: فرمول قلم «{{line_key}}» به خودش ارجاع می‌دهد.",
+      "line_formula": "{{column}}: فرمول قلم «{{line_key}}» قابل محاسبه نیست ({{message}}).",
+      "line_missing_line": "{{column}}: یک قاعده نگاشت به قلمی ناموجود اشاره می‌کند.",
+      "line_unknown_line": "{{column}}: فرمول قلم «{{line_key}}» از قلم ناشناخته‌ای استفاده می‌کند ({{message}}).",
+      "not_balanced": "{{column}}: «{{left}}» و «{{right}}» به اندازه {{difference}} اختلاف دارند.",
+      "other_balances": "{{column}}: {{count}} مانده حساب‌های انتظامی یا کنترلی در این صورت مالی نیستند.",
+      "rule_conflict": "{{column}}: قواعد نگاشت {{rule_ids}} اولویت و دقت یکسانی دارند و بر {{rows}} مانده یکسان منطبق می‌شوند.",
+      "trial_balance_unbalanced": "بدهکار و بستانکار {{column}} به اندازه {{difference}} اختلاف دارند.",
+      "unapproved_entries": "{{count}} سند ثبت‌شده که هنوز تأیید نشده‌اند منظور شده‌اند.",
+      "unmapped": "{{column}}: {{count}} مانده (جمع {{amount}}) به هیچ قلمی نگاشت نشده است."
+    },
+    "editor": {
+      "accounts": "حساب‌های معین",
+      "addChild": "افزودن قلم زیرمجموعه",
+      "addLine": "افزودن قلم",
+      "addRule": "افزودن قاعده",
+      "allRules": "همه قواعد",
+      "categories": "گروه‌ها",
+      "centerFilter": "مرکز سطح {{level}}: {{centers}}",
+      "centerLevel": "سطح مرکز",
+      "centerTypes": "انواع مرکز",
+      "centers": "مراکز",
+      "currencies": "ارزها",
+      "deleteLineMessage": "«{{name}}» همراه با اقلام زیرمجموعه و قواعدش حذف شود؟",
+      "deleteLineTitle": "حذف قلم",
+      "deleteRuleMessage": "قاعده {{number}} حذف شود؟",
+      "deleteRuleTitle": "حذف قاعده",
+      "editLine": "ویرایش {{name}}",
+      "editLineShort": "ویرایش",
+      "editRule": "ویرایش قاعده {{number}}",
+      "filters": "محدودتر کردن (اختیاری)",
+      "formula": "فرمول",
+      "formulaHint": "کلید اقلام با + − * / و پرانتز، مثلاً revenue + cost_of_sales",
+      "grain": "تشخیص طرف به تفکیک",
+      "grainHint": "تفکیک مشتری مانده‌ها را ناخالص نگه می‌دارد؛ تفکیک حساب آن‌ها را تهاتر می‌کند.",
+      "grains": {
+        "account": "حساب",
+        "account_centerN": "حساب و مرکز سطح {{level}}",
+        "account_currency": "حساب و ارز",
+        "row": "ردیف مانده"
+      },
+      "key": "کلید",
+      "keyHint": "فرمول‌ها و نسبت‌ها از آن استفاده می‌کنند؛ بعداً قابل تغییر نیست.",
+      "kind": "نوع",
+      "kinds": {
+        "formula": "فرمولی",
+        "heading": "سرفصل",
+        "mapped": "نگاشتی"
+      },
+      "label": "عنوان",
+      "ledgers": "حساب‌های کل",
+      "line": "قلم",
+      "measures": {
+        "balance": "مانده",
+        "change": "تغییر در دوره",
+        "credit_movement": "گردش بستانکار",
+        "debit_movement": "گردش بدهکار"
+      },
+      "moveDown": "انتقال به پایین",
+      "moveUp": "انتقال به بالا",
+      "noRules": "قاعده‌ای وجود ندارد",
+      "none": "هیچ",
+      "normalSide": "ماهیت",
+      "note": "یادداشت",
+      "oppositeLine": "قلم مقابل",
+      "oppositeLineHint": "مانده‌های طرف مقابل به این قلم می‌روند، مثلاً مشتریان بستانکار به پیش‌دریافت‌ها.",
+      "period": "دوره",
+      "periods": {
+        "current": "سال مالی جاری",
+        "prior": "سال‌های قبل"
+      },
+      "precedenceHint": "اگر چند قاعده بر یک مانده منطبق شوند، بالاترین اولویت برنده است؛ در اولویت برابر، دقیق‌ترین قاعده (حساب معین، بازه کد، حساب کل، گروه؛ فیلتر مرکز و ارز دقت را افزایش می‌دهد).",
+      "priority": "اولویت",
+      "priorityHint": "اختیاری؛ عدد بزرگ‌تر برنده است.",
+      "rangeFrom": "از کد",
+      "rangeHint": "با ابتدای کد کامل حساب مقایسه می‌شود.",
+      "rangeTo": "تا کد",
+      "readOnly": "این ساختار را می‌توانید ببینید اما نمی‌توانید تغییر دهید. برای تغییر اقلام و نگاشت، گزارش را کپی کنید.",
+      "ruleLineFilter": "قلم",
+      "rules": "قواعد",
+      "selectorType": "انتخاب بر اساس",
+      "selectorTypes": {
+        "account": "حساب معین",
+        "account_range": "بازه کد",
+        "category": "گروه حساب",
+        "ledger": "حساب کل",
+        "profit_or_loss": "سود و زیان"
+      },
+      "selects": "انتخاب",
+      "settingAccounts": {
+        "current_year_profit_account_id": "حساب سود (زیان) سال جاری",
+        "income_summary_account_id": "حساب خلاصه سود و زیان",
+        "retained_earnings_account_id": "حساب سود (زیان) انباشته"
+      },
+      "settingAccountsLabel": "حساب‌های تنظیمات حسابداری",
+      "sides": {
+        "credit": "بستانکار",
+        "debit": "بدهکار"
+      },
+      "signSplit": "مانده‌های مخالف (اختیاری)",
+      "styles": {
+        "bold": "پررنگ",
+        "hidden": "پنهان",
+        "hide_if_zero": "پنهان در صورت صفر",
+        "underline": "زیرخط"
+      },
+      "subtitle": "اقلام صورت مالی، قواعدی که مانده‌ها را به آن‌ها نگاشت می‌کنند و محل هر مانده.",
+      "systemCategories": "گروه‌های سیستمی: {{identifiers}}",
+      "tabTitle": "ویرایش: {{name}}",
+      "tabs": {
+        "assistant": "دستیار هوشمند",
+        "inspection": "بازبینی",
+        "lines": "اقلام",
+        "preview": "پیش‌نمایش",
+        "rules": "قواعد"
+      },
+      "targetLine": "قلم",
+      "title": "اقلام و نگاشت: {{name}}"
+    },
+    "export": {
+      "excel": "اکسل",
+      "failed": "ساخت فایل اکسل ممکن نشد."
+    },
+    "inspection": {
+      "account": "حساب معین",
+      "balance": "مانده",
+      "category": "گروه",
+      "center": "مرکز {{level}}",
+      "column": "ستون",
+      "columns": {
+        "current": "جاری",
+        "previous": "مقایسه‌ای"
+      },
+      "currency": "ارز",
+      "empty": "مانده‌ای وجود ندارد",
+      "filters": {
+        "all": "همه",
+        "changed": "تغییرکرده",
+        "out_of_scope": "خارج از صورت",
+        "overridden": "کنارگذاشته‌شده",
+        "reclassified": "طبقه‌بندی مجدد",
+        "unmapped": "نگاشت‌نشده"
+      },
+      "groupTotal": "جمع گروه آن (بر اساس تفکیک قاعده) {{amount}} است که طرف را تعیین کرده است.",
+      "ledger": "حساب کل",
+      "line": "قلم",
+      "mapRow": "افزودن قاعده برای این حساب",
+      "outOfScope": "خارج از این صورت",
+      "overridden": "قواعد کنارگذاشته‌شده",
+      "period": "دوره",
+      "reflectedIn": "منعکس در",
+      "reflectedInProposed": "منعکس در (پیشنهادی)",
+      "rule": "قاعده",
+      "ruleNumber": "قاعده {{number}}",
+      "unmapped": "نگاشت‌نشده"
+    },
+    "ratios": {
+      "days": "{{value}} روز",
+      "daysVariable": "تعداد روزهای دوره",
+      "group": "گروه",
+      "groups": {
+        "efficiency": "کارایی",
+        "leverage": "اهرمی",
+        "liquidity": "نقدینگی",
+        "profitability": "سودآوری"
+      },
+      "na": "نامشخص",
+      "opening": "در ابتدای دوره",
+      "ratio": "نسبت",
+      "reasons": {
+        "missing_line": "صورت مالی قلم مورد نیاز این نسبت را ندارد.",
+        "no_access": "به یکی از صورت‌های مالی مورد استفاده این نسبت دسترسی ندارید.",
+        "no_statement": "سازمان صورت مالی از این نوع ندارد.",
+        "not_computable": "تقسیم بر صفر است یا رقمی موجود نیست."
+      },
+      "source": "از: {{name}}",
+      "sourceNoAccess": "صورت مالی بدون دسترسی",
+      "statement": "صورت مالی",
+      "unit": "واحد",
+      "units": {
+        "days": "روز",
+        "percent": "کسر (۱ = ۱۰۰٪)",
+        "ratio": "نسبت"
+      }
+    },
+    "reportActions": {
+      "access": "دسترسی",
+      "archive": "بایگانی",
+      "archived": "گزارش بایگانی شد",
+      "cancel": "انصراف",
+      "copied": "گزارش کپی شد",
+      "copy": "کپی در سازمان من",
+      "delete": "حذف",
+      "deleteMessage": "«{{name}}» حذف شود؟ اقلام، قواعد نگاشت و دسترسی‌های آن نیز حذف می‌شوند.",
+      "deleteTitle": "حذف گزارش",
+      "deleted": "گزارش حذف شد",
+      "editLayout": "ویرایش اقلام و نگاشت",
+      "failed": "عملیات انجام نشد.",
+      "madePrimary": "این گزارش اکنون گزارش اصلی این نوع صورت مالی است",
+      "makePrimary": "تعیین به‌عنوان اصلی",
+      "menu": "عملیات",
+      "rename": "تغییر نام",
+      "renamed": "نام گزارش تغییر کرد",
+      "save": "ذخیره",
+      "unarchive": "بازگردانی",
+      "unarchived": "گزارش بازگردانده شد"
+    },
+    "standards": {
+      "ifrs": "IFRS"
+    },
+    "trialBalance": {
+      "code": "کد",
+      "columns": {
+        "closing_credit": "بستانکار",
+        "closing_debit": "بدهکار",
+        "credit": "بستانکار",
+        "debit": "بدهکار",
+        "opening_credit": "بستانکار",
+        "opening_debit": "بدهکار"
+      },
+      "groups": {
+        "closing": "پایان دوره",
+        "opening": "ابتدای دوره",
+        "period": "گردش دوره"
+      },
+      "hideZero": "پنهان کردن ردیف‌های صفر",
+      "levels": {
+        "account": "حساب معین",
+        "category": "گروه",
+        "ledger": "حساب کل"
+      },
+      "priorResult": "نتیجه سال‌های قبل (در این نما به حقوق مالکانه بسته نشده)",
+      "total": "جمع"
+    },
+    "viewer": {
+      "approvedOnly": "فقط اسناد تأییدشده",
+      "asOf": "در تاریخ {{date}}",
+      "centerLevel": "تفکیک مرکز",
+      "centerLevelOption": "مرکز سطح {{level}}",
+      "comparison": "مقایسه با سال قبل",
+      "date": "تاریخ",
+      "drillFailed": "بارگذاری جزئیات ممکن نشد.",
+      "formula": "فرمول: {{formula}}",
+      "from": "از",
+      "itemsTabTitle": "آرتیکل‌ها: {{name}}",
+      "line": "قلم",
+      "loadFailed": "اجرای گزارش ممکن نشد.",
+      "noCenter": "بدون مرکز",
+      "openItems": "باز کردن آرتیکل‌های سند",
+      "period": "{{from}} تا {{to}}",
+      "priorYears": "سال‌های قبل",
+      "reclassified": "طبقه‌بندی مجدد",
+      "reclassifiedHint": "مانده آن در طرف مقابل است، بنابراین یک قاعده نگاشت آن را به این قلم منتقل کرده است.",
+      "to": "تا",
+      "unsupported": "نمایش این نوع گزارش هنوز ممکن نیست.",
+      "variance": "تغییر",
+      "variancePercent": "درصد تغییر"
+    }
+  }
+}
